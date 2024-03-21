@@ -1,0 +1,43 @@
+{
+  "name": "desolint-backend",
+  "version": "0.0.1",
+  "description": "Desol Int. app - Backend",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "staging": "nodemon index.js",
+    "prod": "nodemon index.js",
+    "test": "jest --watchAll --detectOpenHandles"
+  },
+  "keywords": [
+    "",
+    ""
+  ],
+  "author": "Amjad Majed",
+  "license": "ISC",
+  "dependencies": {
+    "@sendgrid/mail": "^8.1.1",
+    "@sentry/node": "^7.106.0",
+    "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.2",
+    "config": "^3.3.11",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "cron": "^3.1.6",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.3",
+    "jsonwebtoken": "^9.0.2",
+    "lodash": "^4.17.21",
+    "mongoose": "^8.2.1",
+    "winston": "^3.12.0",
+    "winston-transport-sentry-node": "^2.7.0",
+    "yup": "^1.4.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "mongodb-memory-server": "^9.1.3",
+    "nodemon": "^3.0.1",
+    "supertest": "^6.3.3"
+  }
+}
