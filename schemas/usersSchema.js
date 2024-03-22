@@ -23,6 +23,10 @@ module.exports.validateCreateRequest = (user) => {
     firstName: Yup.string().min(1).max(255).required('First name is required'),
     lastName: Yup.string().min(1).max(255).required('Last name is required'),
     role: Yup.string().oneOf(Object.keys(usersConstants.roles)),
+    companyName: Yup.string()
+      .min(1)
+      .max(255)
+      .required('Company Name is required'),
   });
 
   return validatorUtils.validate(schema, user);

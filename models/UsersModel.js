@@ -11,22 +11,26 @@ const permissionsSchema = {type: String, enum: levels, default: levels};
 
 const usersSchema = new Schema(
   {
-    firstName: {type: String, required: [true, 'User must have a first name']},
-    lastName: {type: String, required: [true, 'User must have a last name']},
+    firstName: {type: String},
+    lastName: {type: String},
+    companyName: {type: String},
     email: {
       type: String,
-      required: [true, 'User must have a email'],
+      required: true,
       minlength: 4,
       maxlength: 255,
       unique: true,
     },
     password: {
       type: String,
-      required: [true, 'User must have a password'],
+      required: true,
       minlength: 6,
       maxlength: 2048,
     },
+    role: {type: String, required: true},
     isVerified: {type: Boolean, default: false},
+    driverStatus: {type: String, default: 'available'},
+    // documents: [{type: String}],
     verificationToken: {type: String},
     loginResetToken: {type: String},
   },
