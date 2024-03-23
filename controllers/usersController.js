@@ -13,7 +13,6 @@ const {jwtUtils} = require('../utils');
 module.exports = class UsersController {
   static async createUser(req, res, next) {
     const data = req.body;
-    console.log(data);
 
     let isUserFound = await UsersServices.getUserByEmail({email: data.email});
     if (isUserFound) return next(UsersErrorsFactory.userAlreadyRegisteredErr());

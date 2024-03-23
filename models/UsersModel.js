@@ -30,7 +30,7 @@ const usersSchema = new Schema(
     role: {type: String, required: true},
     isVerified: {type: Boolean, default: false},
     driverStatus: {type: String, default: 'available'},
-    documents: [{type: String}],
+    documents: [{type: String, default: []}],
     verificationToken: {type: String},
     loginResetToken: {type: String},
   },
