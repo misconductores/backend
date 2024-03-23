@@ -15,15 +15,15 @@ module.exports = class UsersController {
     const data = req.body;
     console.log(data);
 
-    // let isUserFound = await UsersServices.getUserByEmail({email: data.email});
-    // if (isUserFound) return next(UsersErrorsFactory.userAlreadyRegisteredErr());
+    let isUserFound = await UsersServices.getUserByEmail({email: data.email});
+    if (isUserFound) return next(UsersErrorsFactory.userAlreadyRegisteredErr());
 
-    // const {success, err, user} = await UsersServices.createUser({data});
+    const {success, err, user} = await UsersServices.createUser({data});
 
-    // if (success) {
-    //   await actions.users.verifyUser({user});
-    //   return next(UsersResponsesFactory.userRegisteredSuccessfully());
-    // } else throw err;
+    if (success) {
+      // await actions.users.verifyUser({user});
+      return next(UsersResponsesFactory.userRegisteredSuccessfully());
+    } else throw err;
   }
 
   static async getLoggedInUserInformation(req, res, next) {

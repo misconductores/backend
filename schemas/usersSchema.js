@@ -20,13 +20,22 @@ const commonAuthSchema = {
 module.exports.validateCreateRequest = (user) => {
   const schema = Yup.object().shape({
     ...commonAuthSchema,
-    firstName: Yup.string().min(1).max(255).required('First name is required'),
-    lastName: Yup.string().min(1).max(255).required('Last name is required'),
+    firstName: Yup.string().when('role', {
+      is: (val) => val === 'driver',
+      then: () => Yup.string().required('First name is required'),
+      otherwise: () => Yup.string(),
+    }),
+    lastName: Yup.string().when('role', {
+      is: (val) => val === 'driver',
+      then: () => Yup.string().required('Last name is required'),
+      otherwise: () => Yup.string(),
+    }),
     role: Yup.string().oneOf(Object.keys(usersConstants.roles)),
-    companyName: Yup.string()
-      .min(1)
-      .max(255)
-      .required('Company Name is required'),
+    companyName: Yup.string().when('role', {
+      is: (val) => val === 'company',
+      then: () => Yup.string().required('Company name is required'),
+      otherwise: () => Yup.string(),
+    }),
   });
 
   return validatorUtils.validate(schema, user);
