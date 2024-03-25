@@ -9,7 +9,7 @@ module.exports = class UsersResponsesFactory {
     return new AppResponse({
       message: 'User registered successfully',
       statusCode: 201,
-      body: user,
+      body: {user},
     });
   }
 

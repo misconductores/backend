@@ -21,19 +21,24 @@ module.exports.validateCreateRequest = (user) => {
   const schema = Yup.object().shape({
     ...commonAuthSchema,
     firstName: Yup.string().when('role', {
-      is: (val) => val === 'driver',
+      is: (val) => val === usersConstants.roles.driver.value,
       then: () => Yup.string().required('First name is required'),
       otherwise: () => Yup.string(),
     }),
     lastName: Yup.string().when('role', {
-      is: (val) => val === 'driver',
+      is: (val) => val === usersConstants.roles.driver.value,
       then: () => Yup.string().required('Last name is required'),
       otherwise: () => Yup.string(),
     }),
     role: Yup.string().oneOf(Object.keys(usersConstants.roles)),
     companyName: Yup.string().when('role', {
-      is: (val) => val === 'company',
+      is: (val) => val === usersConstants.roles.company.value,
       then: () => Yup.string().required('Company name is required'),
+      otherwise: () => Yup.string(),
+    }),
+    licenseType: Yup.string().when('role', {
+      is: (val) => val === usersConstants.roles.driver.value,
+      then: () => Yup.string().required('License Type is required'),
       otherwise: () => Yup.string(),
     }),
   });

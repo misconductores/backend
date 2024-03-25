@@ -32,10 +32,7 @@ const usersSchema = new Schema(
     driverStatus: {type: String, default: 'available'},
     documents: [{type: String, default: []}],
     licenseType: {type: String},
-    profilePic: {
-      type: String,
-      default: 'https://cdn-icons-png.flaticon.com/512/6596/6596121.png',
-    },
+    profilePic: {type: String, default: null},
     verificationToken: {type: String},
     loginResetToken: {type: String},
   },
