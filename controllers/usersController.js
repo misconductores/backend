@@ -21,7 +21,7 @@ module.exports = class UsersController {
 
     if (success) {
       // await actions.users.verifyUser({user});
-      return next(UsersResponsesFactory.userRegisteredSuccessfully());
+      return next(UsersResponsesFactory.userRegisteredSuccessfully({user}));
     } else throw err;
   }
 
