@@ -20,8 +20,9 @@ module.exports = class UsersController {
     const {success, err, user} = await UsersServices.createUser({data});
 
     if (success) {
-      await actions.users.verifyUser({user});
-      return next(UsersResponsesFactory.userRegisteredSuccessfully());
+      // this is commented due to no access of sendGrid, will comment out later when sendGrid access granted
+      // await actions.users.verifyUser({user});
+      return next(UsersResponsesFactory.userRegisteredSuccessfully({user}));
     } else throw err;
   }
 

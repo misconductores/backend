@@ -5,11 +5,11 @@ const AppResponse = require('./AppResponse');
 module.exports = class UsersResponsesFactory {
   constructor() {}
 
-  static userRegisteredSuccessfully() {
+  static userRegisteredSuccessfully({user}) {
     return new AppResponse({
       message: 'User registered successfully',
       statusCode: 201,
-      body: {},
+      body: {user},
     });
   }
 

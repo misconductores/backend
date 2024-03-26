@@ -11,8 +11,12 @@ module.exports.roles = {
     value: 'admin',
     accessLevels: [levels.create, levels.read, levels.update, levels.delete],
   },
-  employee: {
-    value: 'employee',
-    accessLevels: [levels.read, levels.update],
+  driver: {
+    value: 'driver',
+    accessLevels: [levels.create, levels.read, levels.update],
+  },
+  company: {
+    value: 'company',
+    accessLevels: [levels.create, levels.read, levels.update],
   },
 };
