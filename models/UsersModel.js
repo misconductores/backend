@@ -29,7 +29,7 @@ const usersSchema = new Schema(
     },
     role: {type: String, required: true},
     isVerified: {type: Boolean, default: false},
-    driverStatus: {type: String, default: 'available'},
+    driverStatus: {type: String, default: null},
     documents: [{type: String, default: []}],
     licenseType: {type: String},
     profilePic: {type: String, default: null},

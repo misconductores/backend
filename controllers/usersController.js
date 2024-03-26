@@ -9,19 +9,26 @@ const {
 } = require('../factories');
 
 const {jwtUtils} = require('../utils');
+const {usersConstants} = require('../constants');
 
 module.exports = class UsersController {
   static async createUser(req, res, next) {
-    const data = req.body;
+    let data = req.body;
 
     let isUserFound = await UsersServices.getUserByEmail({email: data.email});
     if (isUserFound) return next(UsersErrorsFactory.userAlreadyRegisteredErr());
 
+    if (data.role === usersConstants.roles.driver.value) {
+      data = {
+        ...data,
+        driverStatus: usersConstants.driverStatuses.available.value,
+      };
+    }
+
     const {success, err, user} = await UsersServices.createUser({data});
 
     if (success) {
-      // this is commented due to no access of sendGrid, will comment out later when sendGrid access granted
-      // await actions.users.verifyUser({user});
+      await actions.users.verifyUser({user});
       return next(UsersResponsesFactory.userRegisteredSuccessfully({user}));
     } else throw err;
   }
