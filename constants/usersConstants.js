@@ -20,3 +20,18 @@ module.exports.roles = {
     accessLevels: [levels.create, levels.read, levels.update],
   },
 };
+
+module.exports.driverStatuses = {
+  available: {
+    value: 'available',
+  },
+  connected: {
+    value: 'connected',
+  },
+  availableSoon: {
+    value: 'availableSoon',
+  },
+  underInspection: {
+    value: 'underInspection',
+  },
+};
