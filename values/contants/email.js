@@ -8,3 +8,4 @@ module.exports.sendGridVerifyUserTemplateId =
   'd-a703468d158844edw3b01e8e8a5b6c8a';
 
 module.exports.sendGridDummyTemplateId = 'd-4ff6e84463c4470cb5ec0a9df73c2127';
+module.exports.sendGridResetDummyId = 'd-3fc5a1a29d4946e2a417afd7d98b51d4';
