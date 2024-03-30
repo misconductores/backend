@@ -53,6 +53,14 @@ module.exports = class UsersResponsesFactory {
     });
   }
 
+  static profileUpdateRes({user} = {}) {
+    return new AppResponse({
+      message: 'Profile updated successfully',
+      statusCode: 200,
+      body: user,
+    });
+  }
+
   static resetPasswordLinkGeneratedSuccessfully({resetToken, resetUrl}) {
     return new AppResponse({
       message: 'Reset password link sent successfully',

@@ -38,7 +38,14 @@ module.exports = class UsersErrorsFactory {
   static documentDeleteErr() {
     return new AppError({
       message: 'Document delete failed',
-      statusCode: 404,
+      statusCode: 400,
+    });
+  }
+
+  static profileUpdateErr() {
+    return new AppError({
+      message: 'Profile updating failed',
+      statusCode: 400,
     });
   }
 

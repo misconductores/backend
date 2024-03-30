@@ -235,4 +235,30 @@ module.exports = class UsersController {
       return next(UsersErrorsFactory.documentDeleteErr());
     }
   }
+
+  static async updateProfile(req, res, next) {
+    const data = req.body;
+    const {success, err, user} = await UsersServices.getUserById({
+      id: req.jwtToken.user.id,
+    });
+    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
+    if (!success) throw err;
+    const {
+      success: response,
+      user: updatedUser,
+      err: error,
+    } = await UsersServices.updateProfile({user, data});
+
+    if (!response) return next(UsersErrorsFactory.documentDeleteErr());
+    if (response) {
+      return next(
+        UsersResponsesFactory.deleteDocumentRes({
+          user: updatedUser,
+        })
+      );
+    }
+    if (error) {
+      return next(UsersErrorsFactory.profileUpdateErr());
+    }
+  }
 };

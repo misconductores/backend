@@ -52,6 +52,12 @@ router.patch(
   catchAsync(UsersController.deleteDocuments)
 );
 
+router.patch(
+  '/update-profile',
+  authMiddleware,
+  catchAsync(UsersController.updateProfile)
+);
+
 router.post(
   '/login',
   validatorMiddleware(usersSchema.validateLoginRequest),

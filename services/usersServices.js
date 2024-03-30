@@ -204,4 +204,19 @@ module.exports = class UsersServices {
       return {success: false, err};
     }
   }
+
+  static async updateProfile({user, data}) {
+    try {
+      const query = user.id;
+      const update = data;
+      const {success, doc: updateUser} = await MongosFactory.UpdateById(
+        UsersModel,
+        query,
+        update
+      );
+      return {success, user: updateUser};
+    } catch (err) {
+      return {success: false, err};
+    }
+  }
 };
