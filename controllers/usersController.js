@@ -156,4 +156,35 @@ module.exports = class UsersController {
 
     next(UsersResponsesFactory.resendVerificationEmail());
   }
+
+  static async updateProfileImage(req, res, next) {
+    const {success, err, user} = await UsersServices.getUserById({
+      id: req.jwtToken.user.id,
+    });
+
+    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
+
+    if (!success) throw err;
+
+    const {
+      success: response,
+      user: updatedUser,
+      err: error,
+    } = await UsersServices.updateProfileImage({user, file: req.file});
+
+    if (response) {
+      return next(
+        UsersResponsesFactory.updateUserProfilePicRes({
+          user: updatedUser,
+        })
+      );
+    }
+    if (error) {
+      return next(UsersErrorsFactory.profileImgUpdateErr());
+    }
+  }
+
+  static async uploadDriverDocuments(req, res, next) {
+    console.log('this ois', req);
+  }
 };

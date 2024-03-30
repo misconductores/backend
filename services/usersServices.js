@@ -1,7 +1,7 @@
 const {MongosFactory} = require('../factories');
 const UsersModel = require('../models/UsersModel');
-
 const {passwordsUtils} = require('../utils');
+const FilesServices = require('./fileServices');
 
 module.exports = class UsersServices {
   static async getUserByEmail({email}) {
@@ -122,6 +122,34 @@ module.exports = class UsersServices {
       );
 
       return {success};
+    } catch (err) {
+      return {success: false, err};
+    }
+  }
+
+  static async updateProfileImage({user, file}) {
+    try {
+      const filesUrl = await FilesServices.uploadSingleFile({
+        file,
+        fileDir: 'profile-images',
+      });
+
+      let modifiedKey = filesUrl.key.replace(/^profile-images\//, '');
+
+      const updatedData = {
+        url: filesUrl.url,
+        key: modifiedKey,
+      };
+      const query = user.id;
+      const update = {
+        profilePic: updatedData,
+      };
+      const {success, doc: updatedUser} = await MongosFactory.UpdateById(
+        UsersModel,
+        query,
+        update
+      );
+      return {success, user: updatedUser};
     } catch (err) {
       return {success: false, err};
     }

@@ -29,6 +29,14 @@ module.exports = class UsersResponsesFactory {
     });
   }
 
+  static updateUserProfilePicRes({user} = {}) {
+    return new AppResponse({
+      message: 'User profile image updated successfully',
+      statusCode: 200,
+      body: user,
+    });
+  }
+
   static resetPasswordLinkGeneratedSuccessfully({resetToken, resetUrl}) {
     return new AppResponse({
       message: 'Reset password link sent successfully',

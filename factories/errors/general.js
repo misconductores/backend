@@ -42,4 +42,11 @@ module.exports = class GeneralErrorsFactory {
       statusCode: 400,
     });
   }
+
+  static invalidFileFormat() {
+    return new AppError({
+      message: 'File invalid. Please provide a valid format file',
+      statusCode: 400,
+    });
+  }
 };

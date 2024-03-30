@@ -1,15 +1,46 @@
 const express = require('express');
 const {UsersController} = require('../controllers');
 const {validatorMiddleware, authMiddleware} = require('../middleware');
-const {catchAsync} = require('../utils');
+const {catchAsync, filesUtils} = require('../utils');
 const {usersSchema} = require('../schemas');
+const multer = require('multer');
+const {filesConstants} = require('../constants');
 
 const router = express.Router();
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: filesConstants.FILE_SIZE,
+  },
+  fileFilter: filesUtils.fileFilter,
+});
+
+const uploadDocument = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: filesConstants.FILE_SIZE,
+  },
+  fileFilter: filesUtils.fileFilter,
+});
 
 router.get(
   '/me',
   authMiddleware,
   catchAsync(UsersController.getLoggedInUserInformation)
+);
+
+router.patch(
+  '/update-profile-image',
+  upload.single('image'),
+  authMiddleware,
+  catchAsync(UsersController.updateProfileImage)
+);
+
+router.patch(
+  '/driver-documents',
+  upload.single('image'),
+  catchAsync(UsersController.uploadDriverDocuments)
 );
 
 router.post(

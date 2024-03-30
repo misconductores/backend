@@ -15,6 +15,13 @@ module.exports = class UsersErrorsFactory {
     });
   }
 
+  static profileImgUpdateErr() {
+    return new AppError({
+      message: 'Profile image update failed',
+      statusCode: 400,
+    });
+  }
+
   static wrongEmailOrPasswordErr() {
     return new AppError({
       message: 'wrong credentials',
