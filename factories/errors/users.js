@@ -22,6 +22,26 @@ module.exports = class UsersErrorsFactory {
     });
   }
 
+  static documentUpdateErr() {
+    return new AppError({
+      message: 'Document update failed',
+      statusCode: 400,
+    });
+  }
+  static documentLabelErr() {
+    return new AppError({
+      message: 'Document with given label already exist',
+      statusCode: 404,
+    });
+  }
+
+  static documentDeleteErr() {
+    return new AppError({
+      message: 'Document delete failed',
+      statusCode: 404,
+    });
+  }
+
   static wrongEmailOrPasswordErr() {
     return new AppError({
       message: 'wrong credentials',

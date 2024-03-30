@@ -129,6 +129,9 @@ module.exports = class UsersServices {
 
   static async updateProfileImage({user, file}) {
     try {
+      if (user.profilePic.key) {
+        await FilesServices.deleteSingleFile({file: user.profilePic.key});
+      }
       const filesUrl = await FilesServices.uploadSingleFile({
         file,
         fileDir: 'profile-images',
@@ -150,6 +153,53 @@ module.exports = class UsersServices {
         update
       );
       return {success, user: updatedUser};
+    } catch (err) {
+      return {success: false, err};
+    }
+  }
+
+  static async updateDocuments({user, file, label}) {
+    try {
+      const findDocument = user.documents.find((x) => x.label === label);
+
+      if (findDocument) {
+        return {success: false};
+      }
+      const filesUrl = await FilesServices.uploadSingleFile({
+        file,
+        fileDir: 'driver-documents',
+      });
+
+      let modifiedKey = filesUrl.key.replace(/^driver-documents\//, '');
+
+      const updatedData = {
+        url: filesUrl.url,
+        key: modifiedKey,
+        label: label,
+      };
+      const query = user.id;
+      const update = updatedData;
+      const {success, doc: updatedUser} =
+        await MongosFactory.UpdateDocumentsById(UsersModel, query, update);
+      return {success, user: updatedUser};
+    } catch (err) {
+      return {success: false, err};
+    }
+  }
+
+  static async deleteDocument({user, label}) {
+    try {
+      const findDocument = user.documents.find((x) => x.label === label);
+      if (findDocument) {
+        const query = user.id;
+        const update = label;
+        await FilesServices.deleteSingleFile({file: findDocument.key});
+        const {success, doc: updatedUser} =
+          await MongosFactory.deleteDocumentsById(UsersModel, query, update);
+        return {success, user: updatedUser};
+      } else {
+        return {success: false};
+      }
     } catch (err) {
       return {success: false, err};
     }

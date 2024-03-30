@@ -30,7 +30,13 @@ const usersSchema = new Schema(
     role: {type: String, required: true},
     isVerified: {type: Boolean, default: false},
     driverStatus: {type: String, default: null},
-    documents: [{type: String, default: []}],
+    documents: [
+      {
+        url: {type: String},
+        key: {type: String},
+        label: {type: String},
+      },
+    ],
     driverLicense: {type: String, default: null},
     bio: {type: String, default: ''},
     dob: {type: Date, default: ''},
@@ -45,7 +51,20 @@ const usersSchema = new Schema(
     verificationToken: {type: String},
     loginResetToken: {type: String},
   },
-  {timestamps: true, toObject: {virtuals: true}, toJSON: {virtuals: true}}
+  {
+    timestamps: true,
+    toObject: {virtuals: true},
+    toJSON: {
+      virtuals: true,
+      transform: function (doc, ret) {
+        ret.documents = ret.documents.map((doc) => {
+          const {_id, id, ...rest} = doc;
+          return rest;
+        });
+        return ret;
+      },
+    },
+  }
 );
 
 usersSchema.pre('save', async function (next) {

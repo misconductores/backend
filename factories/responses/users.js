@@ -37,6 +37,22 @@ module.exports = class UsersResponsesFactory {
     });
   }
 
+  static updateDocumentRes({user} = {}) {
+    return new AppResponse({
+      message: 'Document uploaded successfully',
+      statusCode: 200,
+      body: user,
+    });
+  }
+
+  static deleteDocumentRes({user} = {}) {
+    return new AppResponse({
+      message: 'Document deleted successfully',
+      statusCode: 200,
+      body: user,
+    });
+  }
+
   static resetPasswordLinkGeneratedSuccessfully({resetToken, resetUrl}) {
     return new AppResponse({
       message: 'Reset password link sent successfully',

@@ -59,23 +59,23 @@ module.exports.fileFilter = (req, file, next) => {
   }
 };
 
-// module.exports.fileFilter = (req, file, next) => {
-//   const timestamp = Date.now();
-//   const originalname = file.originalname;
-//   const newFilename = `${timestamp}-${originalname.replace(/\s+/g, '_')}`;
-//   file.nameWithTimestamp = newFilename;
+module.exports.documentFilter = (req, file, next) => {
+  const timestamp = Date.now();
+  const originalname = file.originalname;
+  const newFilename = `${timestamp}-${originalname.replace(/\s+/g, '_')}`;
+  file.nameWithTimestamp = newFilename;
 
-//   const allowedMimetype = Object.values(
-//     filesConstants.ALLOWED_DOCUMENT_FILE_MIMETYPE
-//   );
+  const allowedMimetype = Object.values(
+    filesConstants.ALLOWED_DOCUMENT_FILE_MIMETYPE
+  );
 
-//   const isFileAllowed = allowedMimetype.some((allowedType) =>
-//     file.mimetype.startsWith(allowedType)
-//   );
+  const isFileAllowed = allowedMimetype.some((allowedType) =>
+    file.mimetype.startsWith(allowedType)
+  );
 
-//   if (isFileAllowed) {
-//     next(null, true);
-//   } else {
-//     return next(GeneralErrorsFactory.invalidFileFormat());
-//   }
-// };
+  if (isFileAllowed) {
+    next(null, true);
+  } else {
+    return next(GeneralErrorsFactory.invalidFileFormat());
+  }
+};

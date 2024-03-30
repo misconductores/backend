@@ -21,7 +21,7 @@ const uploadDocument = multer({
   limits: {
     fileSize: filesConstants.FILE_SIZE,
   },
-  fileFilter: filesUtils.fileFilter,
+  fileFilter: filesUtils.documentFilter,
 });
 
 router.get(
@@ -39,8 +39,17 @@ router.patch(
 
 router.patch(
   '/driver-documents',
-  upload.single('image'),
-  catchAsync(UsersController.uploadDriverDocuments)
+  uploadDocument.single('image'),
+  authMiddleware,
+  validatorMiddleware(usersSchema.validateUploadDocumentRequest),
+  catchAsync(UsersController.uploadDocuments)
+);
+
+router.patch(
+  '/delete-documents',
+  authMiddleware,
+  validatorMiddleware(usersSchema.validateUploadDocumentRequest),
+  catchAsync(UsersController.deleteDocuments)
 );
 
 router.post(

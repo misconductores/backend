@@ -10,6 +10,10 @@ module.exports = class FilesServices {
     return fileObj;
   }
 
+  static async deleteSingleFile({file}) {
+    await filesUtils.deleteFile({key: file});
+  }
+
   static async uploadFiles({files, fileDir}) {
     const filesUrl = [];
     for (const file of files) {
