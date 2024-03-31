@@ -249,10 +249,10 @@ module.exports = class UsersController {
       err: error,
     } = await UsersServices.updateProfile({user, data});
 
-    if (!response) return next(UsersErrorsFactory.documentDeleteErr());
+    if (!response) return next(UsersErrorsFactory.profileUpdateErr());
     if (response) {
       return next(
-        UsersResponsesFactory.deleteDocumentRes({
+        UsersResponsesFactory.profileUpdateRes({
           user: updatedUser,
         })
       );

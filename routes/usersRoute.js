@@ -55,6 +55,7 @@ router.patch(
 router.patch(
   '/update-profile',
   authMiddleware,
+  validatorMiddleware(usersSchema.validateUpdateProfileRequest),
   catchAsync(UsersController.updateProfile)
 );
 
