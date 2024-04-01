@@ -29,7 +29,7 @@ const usersSchema = new Schema(
     },
     role: {type: String, required: true},
     isVerified: {type: Boolean, default: false},
-    driverStatus: {type: String, default: null},
+    driverStatus: {type: String, default: ''},
     documents: [
       {
         url: {type: String},
@@ -37,12 +37,12 @@ const usersSchema = new Schema(
         label: {type: String},
       },
     ],
-    driverLicense: {type: String, default: null},
+    driverLicense: {type: String, default: ''},
     bio: {type: String, default: ''},
     dob: {type: Date, default: ''},
     contact: {type: String, default: ''},
-    dot: {type: String, default: null},
-    mc: {type: String, default: null},
+    dot: {type: String, default: ''},
+    mc: {type: String, default: ''},
     licenseType: {type: String},
     profilePic: {
       url: {type: String, default: null},
