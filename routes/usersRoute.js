@@ -5,24 +5,9 @@ const {catchAsync, filesUtils} = require('../utils');
 const {usersSchema} = require('../schemas');
 const multer = require('multer');
 const {filesConstants} = require('../constants');
-
+const {uploadImage} = require('../middleware/uploadImageMiddleware');
+const {uploadDocument} = require('../middleware/documentUploadMiddleware');
 const router = express.Router();
-
-const upload = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: filesConstants.FILE_SIZE,
-  },
-  fileFilter: filesUtils.fileFilter,
-});
-
-const uploadDocument = multer({
-  storage: multer.memoryStorage(),
-  limits: {
-    fileSize: filesConstants.FILE_SIZE,
-  },
-  fileFilter: filesUtils.documentFilter,
-});
 
 router.get(
   '/me',
@@ -32,7 +17,7 @@ router.get(
 
 router.patch(
   '/update-profile-image',
-  upload.single('image'),
+  uploadImage.single('image'),
   authMiddleware,
   catchAsync(UsersController.updateProfileImage)
 );

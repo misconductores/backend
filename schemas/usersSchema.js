@@ -67,21 +67,6 @@ module.exports.validateResetPasswordRequest = (data) => {
   return validatorUtils.validate(schema, data);
 };
 
-const parseFormData = (formData) => {
-  try {
-    const newData = {};
-
-    for (const key in formData) {
-      const isUndefined = formData[key] === 'undefined';
-      newData[key] = isUndefined ? formData[key] : JSON.parse(formData[key]);
-    }
-
-    return newData;
-  } catch (err) {
-    console.log(err);
-  }
-};
-
 module.exports.validateUploadDocumentRequest = (data) => {
   const schema = Yup.object().shape({
     label: Yup.string().required('Label is required'),
