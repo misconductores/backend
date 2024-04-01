@@ -25,7 +25,7 @@ module.exports = class UsersResponsesFactory {
     return new AppResponse({
       message: 'User info retrieved successfully',
       statusCode: 200,
-      body: user,
+      body: {user},
     });
   }
 
@@ -33,7 +33,7 @@ module.exports = class UsersResponsesFactory {
     return new AppResponse({
       message: 'User profile image updated successfully',
       statusCode: 200,
-      body: user,
+      body: {user},
     });
   }
 
@@ -41,7 +41,7 @@ module.exports = class UsersResponsesFactory {
     return new AppResponse({
       message: 'Document uploaded successfully',
       statusCode: 200,
-      body: user,
+      body: {user},
     });
   }
 
@@ -49,7 +49,7 @@ module.exports = class UsersResponsesFactory {
     return new AppResponse({
       message: 'Document deleted successfully',
       statusCode: 200,
-      body: user,
+      body: {user},
     });
   }
 
@@ -57,7 +57,7 @@ module.exports = class UsersResponsesFactory {
     return new AppResponse({
       message: 'Profile updated successfully',
       statusCode: 200,
-      body: user,
+      body: {user},
     });
   }
 
