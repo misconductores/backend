@@ -39,10 +39,10 @@ const usersSchema = new Schema(
     ],
     driverLicense: {type: String, default: ''},
     bio: {type: String, default: ''},
-    dob: {type: Date, default: ''},
+    dateOfBirth: {type: String, default: ''},
     contact: {type: String, default: ''},
-    dot: {type: String, default: ''},
-    mc: {type: String, default: ''},
+    deptOfTransportation: {type: String, default: ''},
+    managementCommittee: {type: String, default: ''},
     licenseType: {type: String},
     profilePic: {
       url: {type: String, default: null},
