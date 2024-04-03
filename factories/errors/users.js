@@ -15,6 +15,40 @@ module.exports = class UsersErrorsFactory {
     });
   }
 
+  static profileImgUpdateErr() {
+    return new AppError({
+      message: 'Profile image update failed',
+      statusCode: 400,
+    });
+  }
+
+  static documentUpdateErr() {
+    return new AppError({
+      message: 'Document update failed',
+      statusCode: 400,
+    });
+  }
+  static documentLabelErr() {
+    return new AppError({
+      message: 'Document with given label already exist',
+      statusCode: 404,
+    });
+  }
+
+  static documentDeleteErr() {
+    return new AppError({
+      message: 'Document delete failed',
+      statusCode: 400,
+    });
+  }
+
+  static profileUpdateErr() {
+    return new AppError({
+      message: 'Profile updating failed',
+      statusCode: 400,
+    });
+  }
+
   static wrongEmailOrPasswordErr() {
     return new AppError({
       message: 'wrong credentials',

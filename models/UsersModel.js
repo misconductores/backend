@@ -29,14 +29,42 @@ const usersSchema = new Schema(
     },
     role: {type: String, required: true},
     isVerified: {type: Boolean, default: false},
-    driverStatus: {type: String, default: null},
-    documents: [{type: String, default: []}],
+    driverStatus: {type: String, default: ''},
+    documents: [
+      {
+        url: {type: String},
+        key: {type: String},
+        label: {type: String},
+      },
+    ],
+    driverLicense: {type: String, default: ''},
+    bio: {type: String, default: ''},
+    dateOfBirth: {type: String, default: ''},
+    contact: {type: String, default: ''},
+    deptOfTransportation: {type: String, default: ''},
+    managementCommittee: {type: String, default: ''},
     licenseType: {type: String},
-    profilePic: {type: String, default: null},
+    profilePic: {
+      url: {type: String, default: null},
+      key: {type: String, default: null},
+    },
     verificationToken: {type: String},
     loginResetToken: {type: String},
   },
-  {timestamps: true, toObject: {virtuals: true}, toJSON: {virtuals: true}}
+  {
+    timestamps: true,
+    toObject: {virtuals: true},
+    toJSON: {
+      virtuals: true,
+      transform: function (doc, ret) {
+        ret.documents = ret.documents.map((doc) => {
+          const {_id, id, ...rest} = doc;
+          return rest;
+        });
+        return ret;
+      },
+    },
+  }
 );
 
 usersSchema.pre('save', async function (next) {

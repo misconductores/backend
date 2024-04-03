@@ -4,6 +4,7 @@ const validatorUtils = require('./validatorUtils');
 const passwordsUtils = require('./passwordsUtils');
 const catchAsync = require('./catchAsync');
 const generalUtils = require('./general');
+const filesUtils = require('./fileUtils');
 
 module.exports = {
   cronJobsUtils,
@@ -11,5 +12,6 @@ module.exports = {
   validatorUtils,
   passwordsUtils,
   catchAsync,
+  filesUtils,
   ...generalUtils,
 };

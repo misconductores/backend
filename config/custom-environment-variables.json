@@ -4,5 +4,9 @@
   "frontendURL": "FRONTEND_URL",
   "jwtPrivateKey": "JWT_SECRET",
   "mongoUri": "MONGO_DB_CONNECT_STRING",
-  "sentryDsn": "SENTRY_DSN"
+  "sentryDsn": "SENTRY_DSN",
+  "awsAccessKey": "AWS_ACCESS_KEY",
+  "awsSecretAccessKey": "AWS_SECRET_ACCESS_KEY",
+  "awsBucket": "AWS_BUCKET",
+  "awsBucketRegion": "AWS_BUCKET_REGION"
 }

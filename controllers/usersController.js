@@ -156,4 +156,109 @@ module.exports = class UsersController {
 
     next(UsersResponsesFactory.resendVerificationEmail());
   }
+
+  static async updateProfileImage(req, res, next) {
+    const {success, err, user} = await UsersServices.getUserById({
+      id: req.jwtToken.user.id,
+    });
+
+    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
+
+    if (!success) throw err;
+
+    const {
+      success: response,
+      user: updatedUser,
+      err: error,
+    } = await UsersServices.updateProfileImage({user, file: req.file});
+
+    if (response) {
+      return next(
+        UsersResponsesFactory.updateUserProfilePicRes({
+          user: updatedUser,
+        })
+      );
+    }
+    if (error) {
+      return next(UsersErrorsFactory.profileImgUpdateErr());
+    }
+  }
+
+  static async uploadDocuments(req, res, next) {
+    const {label} = req.body;
+    const {success, err, user} = await UsersServices.getUserById({
+      id: req.jwtToken.user.id,
+    });
+    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
+    if (!success) throw err;
+    const {
+      success: response,
+      user: updatedUser,
+      err: error,
+    } = await UsersServices.updateDocuments({user, file: req.file, label});
+    if (response) {
+      return next(
+        UsersResponsesFactory.updateDocumentRes({
+          user: updatedUser,
+        })
+      );
+    }
+    if (!response) return next(UsersErrorsFactory.documentLabelErr());
+
+    if (error) {
+      return next(UsersErrorsFactory.documentUpdateErr());
+    }
+  }
+
+  static async deleteDocuments(req, res, next) {
+    const {label} = req.params;
+    const {success, err, user} = await UsersServices.getUserById({
+      id: req.jwtToken.user.id,
+    });
+    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
+    if (!success) throw err;
+    const {
+      success: response,
+      user: updatedUser,
+      err: error,
+    } = await UsersServices.deleteDocument({user, label});
+
+    if (!response) return next(UsersErrorsFactory.documentDeleteErr());
+    if (response) {
+      return next(
+        UsersResponsesFactory.deleteDocumentRes({
+          user: updatedUser,
+        })
+      );
+    }
+    if (error) {
+      return next(UsersErrorsFactory.documentDeleteErr());
+    }
+  }
+
+  static async updateProfile(req, res, next) {
+    const data = req.body;
+    const {success, err, user} = await UsersServices.getUserById({
+      id: req.jwtToken.user.id,
+    });
+    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
+    if (!success) throw err;
+    const {
+      success: response,
+      user: updatedUser,
+      err: error,
+    } = await UsersServices.updateProfile({user, data});
+
+    if (!response) return next(UsersErrorsFactory.profileUpdateErr());
+    if (response) {
+      return next(
+        UsersResponsesFactory.profileUpdateRes({
+          user: updatedUser,
+        })
+      );
+    }
+    if (error) {
+      return next(UsersErrorsFactory.profileUpdateErr());
+    }
+  }
 };

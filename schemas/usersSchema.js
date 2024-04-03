@@ -66,3 +66,44 @@ module.exports.validateResetPasswordRequest = (data) => {
 
   return validatorUtils.validate(schema, data);
 };
+
+module.exports.validateUploadDocumentRequest = (data) => {
+  const schema = Yup.object().shape({
+    label: Yup.string().required('Label is required'),
+  });
+  return validatorUtils.validate(schema, data);
+};
+
+module.exports.validateDeleteDocumentParams = (data) => {
+  const schema = Yup.object().shape({
+    label: Yup.string().required('Label is required'),
+  });
+  return validatorUtils.validate(schema, data);
+};
+
+module.exports.validateUpdateProfileRequest = (user) => {
+  const schema = Yup.object().shape({
+    firstName: Yup.string().when('role', {
+      is: (val) => val === usersConstants.roles.driver.value,
+      then: () => Yup.string().required('First name is required'),
+      otherwise: () => Yup.string(),
+    }),
+    lastName: Yup.string().when('role', {
+      is: (val) => val === usersConstants.roles.driver.value,
+      then: () => Yup.string().required('Last name is required'),
+      otherwise: () => Yup.string(),
+    }),
+    companyName: Yup.string().when('role', {
+      is: (val) => val === usersConstants.roles.company.value,
+      then: () => Yup.string().required('Company name is required'),
+      otherwise: () => Yup.string(),
+    }),
+    licenseType: Yup.string().when('role', {
+      is: (val) => val === usersConstants.roles.driver.value,
+      then: () => Yup.string().required('License Type is required'),
+      otherwise: () => Yup.string(),
+    }),
+  });
+
+  return validatorUtils.validate(schema, user);
+};

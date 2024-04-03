@@ -5,6 +5,10 @@ const {
   sendGridDummyTemplateId,
 } = require('../../../values/contants/email');
 const {usersConstants} = require('../../../constants');
+const {
+  SENDGRID_EMAIL,
+  SENDGRID_EMAIL_NAME,
+} = require('../../../constants/usersConstants');
 
 module.exports = async ({user, verifyUrl}) => {
   const {email, firstName, lastName, companyName, role} = user;
@@ -18,8 +22,7 @@ module.exports = async ({user, verifyUrl}) => {
 
   const to = {email, name};
 
-  // this email and name will replaced when original sendGrid access will granted
-  const from = {email: 'hamza.siddique@desolint.com', name: 'Desol Int.'};
+  const from = {email: SENDGRID_EMAIL, name: SENDGRID_EMAIL_NAME};
 
   // currently i am using dummy sendGrid template for user verification
   const templateId = sendGridDummyTemplateId;

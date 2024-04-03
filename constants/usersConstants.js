@@ -35,3 +35,7 @@ module.exports.driverStatuses = {
     value: 'underInspection',
   },
 };
+
+module.exports.SENDGRID_EMAIL = 'mitodo.oficios@gmail.com';
+module.exports.SENDGRID_EMAIL_NAME = 'Desol Int.';
+module.exports.PARAMS_PROPERTY = 'params';
