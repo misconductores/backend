@@ -6,6 +6,10 @@ const {
   sendGridResetDummyId,
 } = require('../../../values/contants/email');
 const {usersConstants} = require('../../../constants');
+const {
+  SENDGRID_EMAIL,
+  SENDGRID_EMAIL_NAME,
+} = require('../../../constants/usersConstants');
 
 module.exports = async ({user, resetUrl}) => {
   const {email, firstName, lastName, companyName, role} = user;
@@ -18,8 +22,7 @@ module.exports = async ({user, resetUrl}) => {
   }
 
   const to = {email, name};
-  // this email and name will replaced when original sendGrid access will granted
-  const from = {email: 'mitodo.oficios@gmail.com', name: 'Desol Int.'};
+  const from = {email: SENDGRID_EMAIL, name: SENDGRID_EMAIL_NAME};
 
   // this dummy id will replaced with original one later
   const templateId = sendGridResetDummyId;

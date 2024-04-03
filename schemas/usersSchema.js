@@ -74,6 +74,13 @@ module.exports.validateUploadDocumentRequest = (data) => {
   return validatorUtils.validate(schema, data);
 };
 
+module.exports.validateDeleteDocumentParams = (data) => {
+  const schema = Yup.object().shape({
+    label: Yup.string().required('Label is required'),
+  });
+  return validatorUtils.validate(schema, data);
+};
+
 module.exports.validateUpdateProfileRequest = (user) => {
   const schema = Yup.object().shape({
     firstName: Yup.string().when('role', {

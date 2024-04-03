@@ -1,12 +1,11 @@
 const express = require('express');
 const {UsersController} = require('../controllers');
 const {validatorMiddleware, authMiddleware} = require('../middleware');
-const {catchAsync, filesUtils} = require('../utils');
+const {catchAsync} = require('../utils');
 const {usersSchema} = require('../schemas');
-const multer = require('multer');
-const {filesConstants} = require('../constants');
 const {uploadImage} = require('../middleware/uploadImageMiddleware');
 const {uploadDocument} = require('../middleware/documentUploadMiddleware');
+const {PARAMS_PROPERTY} = require('../constants/usersConstants');
 const router = express.Router();
 
 router.get(
@@ -16,7 +15,7 @@ router.get(
 );
 
 router.patch(
-  '/update-profile-image',
+  '/profile-image',
   uploadImage.single('image'),
   authMiddleware,
   catchAsync(UsersController.updateProfileImage)
@@ -30,15 +29,18 @@ router.patch(
   catchAsync(UsersController.uploadDocuments)
 );
 
-router.patch(
-  '/delete-documents',
+router.delete(
+  '/document/:label',
   authMiddleware,
-  validatorMiddleware(usersSchema.validateUploadDocumentRequest),
+  validatorMiddleware(
+    usersSchema.validateDeleteDocumentParams,
+    PARAMS_PROPERTY
+  ),
   catchAsync(UsersController.deleteDocuments)
 );
 
 router.patch(
-  '/update-profile',
+  '/profile',
   authMiddleware,
   validatorMiddleware(usersSchema.validateUpdateProfileRequest),
   catchAsync(UsersController.updateProfile)

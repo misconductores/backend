@@ -211,7 +211,7 @@ module.exports = class UsersController {
   }
 
   static async deleteDocuments(req, res, next) {
-    const {label} = req.body;
+    const {label} = req.params;
     const {success, err, user} = await UsersServices.getUserById({
       id: req.jwtToken.user.id,
     });
