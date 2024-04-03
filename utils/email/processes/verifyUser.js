@@ -19,7 +19,7 @@ module.exports = async ({user, verifyUrl}) => {
   const to = {email, name};
 
   // this email and name will replaced when original sendGrid access will granted
-  const from = {email: 'hamza.siddique@desolint.com', name: 'Desol Int.'};
+  const from = {email: 'mitodo.oficios@gmail.com', name: 'Desol Int.'};
 
   // currently i am using dummy sendGrid template for user verification
   const templateId = sendGridDummyTemplateId;

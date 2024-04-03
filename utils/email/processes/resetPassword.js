@@ -19,7 +19,7 @@ module.exports = async ({user, resetUrl}) => {
 
   const to = {email, name};
   // this email and name will replaced when original sendGrid access will granted
-  const from = {email: 'hamza.siddique@desolint.com', name: 'Desol Int.'};
+  const from = {email: 'mitodo.oficios@gmail.com', name: 'Desol Int.'};
 
   // this dummy id will replaced with original one later
   const templateId = sendGridResetDummyId;
