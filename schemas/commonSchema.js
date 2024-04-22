@@ -1,7 +1,7 @@
 const Yup = require('yup');
 const {usersConstants} = require('../constants');
 
-exports.commonUserSchema = {
+const driverSchema = {
   firstName: Yup.string().when('role', {
     is: (val) => val === usersConstants.roles.driver.value,
     then: () => Yup.string().required('First name is required'),
@@ -32,37 +32,6 @@ exports.commonUserSchema = {
     otherwise: () => Yup.date(),
   }),
   gender: Yup.string(),
-  companyName: Yup.string().when('role', {
-    is: (val) => val === usersConstants.roles.company.value,
-    then: () => Yup.string().required('Company Name is required'),
-    otherwise: () => Yup.string(),
-  }),
-  taxNumber: Yup.string().when('role', {
-    is: (val) => val === usersConstants.roles.company.value,
-    then: () => Yup.string().required('Tax number is required'),
-    otherwise: () => Yup.string(),
-  }),
-  auditTechnique: Yup.string().when('role', {
-    is: (val) => val === usersConstants.roles.company.value,
-    then: () => Yup.string().required('CAAT is required'),
-    otherwise: () => Yup.string(),
-  }),
-  marginalCost: Yup.string(),
-  deptOfTransport: Yup.string(),
-  alphaCode: Yup.string(),
-  companyDescription: Yup.string().when('role', {
-    is: (val) => val === usersConstants.roles.company.value,
-    then: () => Yup.string().required('Company description is required'),
-    otherwise: () => Yup.string(),
-  }),
-  contact: Yup.string()
-    .required('Contact number is required')
-    .matches(/^\d+$/, 'Contact number must contain only numbers'),
-  reqForComments: Yup.string(),
-  postalAddress: Yup.string().required('Postal address is required'),
-  city: Yup.string().required('City is required'),
-  country: Yup.string().required('Country is required'),
-  postalCode: Yup.string().required('Postal code is required'),
   licenseName: Yup.string().when('role', {
     is: (val) => val === usersConstants.roles.driver.value,
     then: () => Yup.string().required('License name is required'),
@@ -138,4 +107,47 @@ exports.commonUserSchema = {
     then: () => Yup.string().required('Additional document ID is required'),
     otherwise: () => Yup.string(),
   }),
+};
+
+const companySchema = {
+  companyName: Yup.string().when('role', {
+    is: (val) => val === usersConstants.roles.company.value,
+    then: () => Yup.string().required('Company Name is required'),
+    otherwise: () => Yup.string(),
+  }),
+  taxNumber: Yup.string().when('role', {
+    is: (val) => val === usersConstants.roles.company.value,
+    then: () => Yup.string().required('Tax number is required'),
+    otherwise: () => Yup.string(),
+  }),
+  auditTechnique: Yup.string().when('role', {
+    is: (val) => val === usersConstants.roles.company.value,
+    then: () => Yup.string().required('CAAT is required'),
+    otherwise: () => Yup.string(),
+  }),
+  companyDescription: Yup.string().when('role', {
+    is: (val) => val === usersConstants.roles.company.value,
+    then: () => Yup.string().required('Company description is required'),
+    otherwise: () => Yup.string(),
+  }),
+  marginalCost: Yup.string(),
+  deptOfTransport: Yup.string(),
+  alphaCode: Yup.string(),
+};
+
+const commonFields = {
+  contact: Yup.string()
+    .required('Contact number is required')
+    .matches(/^\d+$/, 'Contact number must contain only numbers'),
+  reqForComments: Yup.string(),
+  postalAddress: Yup.string().required('Postal address is required'),
+  city: Yup.string().required('City is required'),
+  country: Yup.string().required('Country is required'),
+  postalCode: Yup.string().required('Postal code is required'),
+};
+
+exports.commonUserSchema = {
+  ...driverSchema,
+  ...companySchema,
+  ...commonFields,
 };
