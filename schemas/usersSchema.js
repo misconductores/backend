@@ -19,20 +19,7 @@ const commonAuthSchema = {
 };
 
 module.exports.validateCreateRequest = (user) => {
-  let schema;
-  if (user.role === usersConstants.roles.driver.value) {
-    schema = Yup.object().shape({
-      role: Yup.string().oneOf(Object.keys(usersConstants.roles)),
-      ...driverSchema,
-      ...commonFields,
-    });
-  } else {
-    schema = Yup.object().shape({
-      role: Yup.string().oneOf(Object.keys(usersConstants.roles)),
-      ...companySchema,
-      ...commonFields,
-    });
-  }
+  const schema = roleSwiperSchema(user);
 
   return validatorUtils.validate(schema, user);
 };
@@ -73,6 +60,12 @@ module.exports.validateDeleteDocumentParams = (data) => {
 };
 
 module.exports.validateUpdateProfileRequest = (user) => {
+  const schema = roleSwiperSchema(user);
+
+  return validatorUtils.validate(schema, user);
+};
+
+const roleSwiperSchema = (user) => {
   let schema;
   if (user.role === usersConstants.roles.driver.value) {
     schema = Yup.object().shape({
@@ -87,6 +80,5 @@ module.exports.validateUpdateProfileRequest = (user) => {
       ...commonFields,
     });
   }
-
-  return validatorUtils.validate(schema, user);
+  return schema;
 };
