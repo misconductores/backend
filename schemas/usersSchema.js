@@ -2,7 +2,7 @@ const Yup = require('yup');
 
 const {usersConstants} = require('../constants');
 const {validatorUtils} = require('../utils');
-const {commonUserSchema} = require('./commonSchema');
+const {driverSchema, commonFields, companySchema} = require('./commonSchema');
 
 const commonAuthSchema = {
   email: Yup.string().email().required('Email is required'),
@@ -19,11 +19,20 @@ const commonAuthSchema = {
 };
 
 module.exports.validateCreateRequest = (user) => {
-  const schema = Yup.object().shape({
-    ...commonAuthSchema,
-    role: Yup.string().oneOf(Object.keys(usersConstants.roles)),
-    ...commonUserSchema,
-  });
+  let schema;
+  if (user.role === usersConstants.roles.driver.value) {
+    schema = Yup.object().shape({
+      role: Yup.string().oneOf(Object.keys(usersConstants.roles)),
+      ...driverSchema,
+      ...commonFields,
+    });
+  } else {
+    schema = Yup.object().shape({
+      role: Yup.string().oneOf(Object.keys(usersConstants.roles)),
+      ...companySchema,
+      ...commonFields,
+    });
+  }
 
   return validatorUtils.validate(schema, user);
 };
@@ -64,9 +73,20 @@ module.exports.validateDeleteDocumentParams = (data) => {
 };
 
 module.exports.validateUpdateProfileRequest = (user) => {
-  const schema = Yup.object().shape({
-    ...commonUserSchema,
-  });
+  let schema;
+  if (user.role === usersConstants.roles.driver.value) {
+    schema = Yup.object().shape({
+      role: Yup.string().oneOf(Object.keys(usersConstants.roles)),
+      ...driverSchema,
+      ...commonFields,
+    });
+  } else {
+    schema = Yup.object().shape({
+      role: Yup.string().oneOf(Object.keys(usersConstants.roles)),
+      ...companySchema,
+      ...commonFields,
+    });
+  }
 
   return validatorUtils.validate(schema, user);
 };
