@@ -3,6 +3,14 @@ const Yup = require('yup');
 const {usersConstants} = require('../constants');
 const {validatorUtils} = require('../utils');
 const {driverSchema, commonFields, companySchema} = require('./commonSchema');
+const {
+  driverDocumentNames,
+  companyDocumentNames,
+} = require('../constants/usersConstants');
+
+const allowedRoles = Object.keys(usersConstants.roles).filter(
+  (x) => x !== usersConstants.roles.admin.value
+);
 
 const commonAuthSchema = {
   email: Yup.string().email().required('Email is required'),
@@ -46,9 +54,32 @@ module.exports.validateResetPasswordRequest = (data) => {
 };
 
 module.exports.validateUploadDocumentRequest = (data) => {
-  const schema = Yup.object().shape({
-    label: Yup.string().required('Label is required'),
-  });
+  let schema;
+  if (data.role === usersConstants.roles.driver.value) {
+    schema = Yup.object().shape({
+      label: Yup.string()
+        .oneOf(
+          Object.values(driverDocumentNames).map((x) => x.label),
+          'Only driver documents are required'
+        )
+        .required('Label is required'),
+      role: Yup.string()
+        .oneOf(allowedRoles, 'Only driver or company can upload document')
+        .required('Role is required'),
+    });
+  } else {
+    schema = Yup.object().shape({
+      label: Yup.string()
+        .oneOf(
+          Object.values(companyDocumentNames).map((x) => x.label),
+          'Only company documents are required'
+        )
+        .required('Label is required'),
+      role: Yup.string()
+        .oneOf(allowedRoles, 'Only driver or company can upload document')
+        .required('Role is required'),
+    });
+  }
   return validatorUtils.validate(schema, data);
 };
 
