@@ -49,6 +49,7 @@ exports.driverSchema = {
   additionalDocumentId: Yup.string().required(
     'Additional document ID is required'
   ),
+  driverStatus: Yup.string().required('Driver Status is required'),
 };
 
 exports.companySchema = {

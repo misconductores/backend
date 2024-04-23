@@ -55,7 +55,7 @@ const usersSchema = new Schema(
     additionalDocumentId: {type: String},
     role: {type: String, required: true},
     isVerified: {type: Boolean, default: false},
-    driverStatus: {type: String, default: ''},
+    driverStatus: {type: String},
     documents: [
       {
         url: {type: String},
