@@ -137,3 +137,6 @@ module.exports.driverDocumentNames = {
     label: 'ANAM Badge',
   },
 };
+
+module.exports.federalLicenseTypes = ['A', 'B', 'C', 'E'];
+module.exports.stateLicenseTypes = ['A', 'B', 'C', 'D'];

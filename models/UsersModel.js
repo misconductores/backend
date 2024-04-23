@@ -29,11 +29,11 @@ const usersSchema = new Schema(
     },
     gender: {type: String},
     taxNumber: {type: String},
-    auditTechnique: {type: String},
-    marginalCost: {type: String},
-    alphaCode: {type: String},
+    carrierCode: {type: String}, // CAAT
+    motorCarrier: {type: String}, // MC
+    alphaCode: {type: String}, // SCAC
     companyDescription: {type: String},
-    reqForComments: {type: String},
+    federalRegisterTax: {type: String}, // RFC
     postalAddress: {type: String},
     city: {type: String},
     country: {type: String},
@@ -65,7 +65,7 @@ const usersSchema = new Schema(
     ],
     dateOfBirth: {type: String},
     contact: {type: String},
-    deptOfTransport: {type: String},
+    deptOfTransport: {type: String}, // DOT
     profilePic: {
       url: {type: String, default: null},
       key: {type: String, default: null},
