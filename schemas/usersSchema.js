@@ -100,12 +100,14 @@ const roleSwiperSchema = (user) => {
   let schema;
   if (user.role === usersConstants.roles.driver.value) {
     schema = Yup.object().shape({
+      ...commonAuthSchema,
       role: Yup.string().oneOf(Object.keys(usersConstants.roles)),
       ...driverSchema,
       ...commonFields,
     });
   } else {
     schema = Yup.object().shape({
+      ...commonAuthSchema,
       role: Yup.string().oneOf(Object.keys(usersConstants.roles)),
       ...companySchema,
       ...commonFields,
