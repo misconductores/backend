@@ -2,6 +2,8 @@ const Yup = require('yup');
 const {
   federalLicenseTypes,
   stateLicenseTypes,
+  genderOptions,
+  driverStatuses,
 } = require('../constants/usersConstants');
 
 exports.driverSchema = {
@@ -21,7 +23,7 @@ exports.driverSchema = {
       return birthDate <= cutoffDate;
     }
   ),
-  gender: Yup.string(),
+  gender: Yup.string().oneOf(genderOptions, 'Please select a gender'),
   licenseName: Yup.string().required('License name is required'),
   licenseCity: Yup.string().required('License city is required'),
   licenseCountry: Yup.string().required('License country is required'),
@@ -30,10 +32,10 @@ exports.driverSchema = {
     .required('Federal license number is required'),
   federalLicenseType: Yup.string()
     .oneOf(federalLicenseTypes, 'Please select a type')
-    .required('Federal license number is required'),
+    .required('Federal license type is required'),
   stateLicenseNo: Yup.string()
     .max(15, 'State License number should be maximum 15 digits long')
-    .required('State license number is required'),
+    .required('State license type is required'),
   stateLicenseType: Yup.string()
     .oneOf(stateLicenseTypes, 'Please select a type')
     .required('State license number is required'),
@@ -49,7 +51,9 @@ exports.driverSchema = {
   additionalDocumentId: Yup.string().required(
     'Additional document ID is required'
   ),
-  driverStatus: Yup.string().required('Driver Status is required'),
+  driverStatus: Yup.string()
+    .oneOf(Object.keys(driverStatuses, 'Please select driver status'))
+    .required('Driver Status is required'),
 };
 
 exports.companySchema = {

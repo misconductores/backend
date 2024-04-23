@@ -140,3 +140,4 @@ module.exports.driverDocumentNames = {
 
 module.exports.federalLicenseTypes = ['A', 'B', 'C', 'E'];
 module.exports.stateLicenseTypes = ['A', 'B', 'C', 'D'];
+module.exports.genderOptions = ['male', 'female', 'other'];

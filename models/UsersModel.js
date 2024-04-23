@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 
 const {jwtUtils, passwordsUtils} = require('../utils');
 const {usersConstants, generalConstant} = require('../constants');
+const {
+  genderOptions,
+  federalLicenseTypes,
+  stateLicenseTypes,
+} = require('../constants/usersConstants');
 
 const Schema = mongoose.Schema;
 
@@ -27,13 +32,13 @@ const usersSchema = new Schema(
       minlength: 6,
       maxlength: 2048,
     },
-    gender: {type: String},
+    gender: {type: String, enum: genderOptions},
     taxNumber: {type: String},
-    carrierCode: {type: String}, // CAAT
-    motorCarrier: {type: String}, // MC
-    alphaCode: {type: String}, // SCAC
+    carrierCode: {type: String, maxlength: 11}, // CAAT
+    motorCarrier: {type: String, maxlength: 8}, // MC
+    alphaCode: {type: String, maxlength: 4}, // SCAC
     companyDescription: {type: String},
-    federalRegisterTax: {type: String}, // RFC
+    federalRegisterTax: {type: String, maxlength: 13}, // RFC
     postalAddress: {type: String},
     city: {type: String},
     country: {type: String},
@@ -41,10 +46,10 @@ const usersSchema = new Schema(
     licenseName: {type: String},
     licenseCity: {type: String},
     licenseCountry: {type: String},
-    federalLicenseNo: {type: String},
-    federalLicenseType: {type: String},
-    stateLicenseNo: {type: String},
-    stateLicenseType: {type: String},
+    federalLicenseNo: {type: String, maxlength: 15},
+    federalLicenseType: {type: String, enum: federalLicenseTypes},
+    stateLicenseNo: {type: String, maxlength: 15},
+    stateLicenseType: {type: String, enum: stateLicenseTypes},
     experience: {type: Number},
     handleEquipment: {type: String},
     visaNumber: {type: String},
@@ -65,7 +70,7 @@ const usersSchema = new Schema(
     ],
     dateOfBirth: {type: String},
     contact: {type: String},
-    deptOfTransport: {type: String}, // DOT
+    deptOfTransport: {type: String, maxlength: 12}, // DOT
     profilePic: {
       url: {type: String, default: null},
       key: {type: String, default: null},
