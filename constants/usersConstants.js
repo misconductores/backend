@@ -39,3 +39,105 @@ module.exports.driverStatuses = {
 module.exports.SENDGRID_EMAIL = 'mitodo.oficios@gmail.com';
 module.exports.SENDGRID_EMAIL_NAME = 'Desol Int.';
 module.exports.PARAMS_PROPERTY = 'params';
+
+module.exports.companyDocumentNames = {
+  taxCertificate: {
+    value: 'taxCertificate',
+    label: 'Tax Certificate',
+  },
+  legalProof: {
+    value: 'legalProof',
+    label: 'Legal Proof',
+  },
+  operatingAuthority: {
+    value: 'operatingAuthority',
+    label: 'Operating Authority',
+  },
+  alphaCode: {
+    value: 'alphaCode',
+    label: 'SCAC',
+  },
+  carrierCode: {
+    value: 'carrierCode',
+    label: 'CAAT',
+  },
+  ctpatCertificate: {
+    value: 'ctpatCertificate',
+    label: 'CTPAT Certificate',
+  },
+  oeaCertificate: {
+    value: 'oeaCertificate',
+    label: 'OEA Certificate',
+  },
+  sctPermit: {
+    value: 'sctPermit',
+    label: 'SCT Permit',
+  },
+};
+
+module.exports.driverDocumentNames = {
+  taxCertificate: {
+    value: 'taxCertificate',
+    label: 'Tax Certificate',
+  },
+  ineCertificate: {
+    value: 'ineCertificate',
+    label: 'INE Certificate',
+  },
+  birthCertificate: {
+    value: 'birthCertificate',
+    label: 'Birth Certificate',
+  },
+  domicile: {
+    value: 'domicile',
+    label: 'Domicile',
+  },
+  medicalCertificate: {
+    value: 'medicalCertificate',
+    label: 'Medical Certificate',
+  },
+  noCriminalLetter: {
+    value: 'noCriminalLetter',
+    label: 'No Criminal Letter',
+  },
+  visa: {
+    value: 'visa',
+    label: 'VISA',
+  },
+  fast: {
+    value: 'fast',
+    label: 'FAST',
+  },
+  passport: {
+    value: 'passport',
+    label: 'Passport',
+  },
+  binationalLicense: {
+    value: 'binationalLicense',
+    label: 'Binational License',
+  },
+  federalLicense: {
+    value: 'federalLicense',
+    label: 'Federal License',
+  },
+  recommendationLetter: {
+    value: 'recommendationLetter',
+    label: 'Recommendation Letter',
+  },
+  resume: {
+    value: 'resume',
+    label: 'Resume',
+  },
+  pitaBadge: {
+    value: 'pitaBadge',
+    label: 'PITA Badge',
+  },
+  anamBadge: {
+    value: 'anamBadge',
+    label: 'ANAM Badge',
+  },
+};
+
+module.exports.federalLicenseTypes = ['A', 'B', 'C', 'E'];
+module.exports.stateLicenseTypes = ['A', 'B', 'C', 'D'];
+module.exports.genderOptions = ['male', 'female', 'other'];

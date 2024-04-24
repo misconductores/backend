@@ -2,6 +2,15 @@ const Yup = require('yup');
 
 const {usersConstants} = require('../constants');
 const {validatorUtils} = require('../utils');
+const {driverSchema, commonFields, companySchema} = require('./commonSchema');
+const {
+  driverDocumentNames,
+  companyDocumentNames,
+} = require('../constants/usersConstants');
+
+const allowedRoles = Object.keys(usersConstants.roles).filter(
+  (x) => x !== usersConstants.roles.admin.value
+);
 
 const commonAuthSchema = {
   email: Yup.string().email().required('Email is required'),
@@ -18,30 +27,7 @@ const commonAuthSchema = {
 };
 
 module.exports.validateCreateRequest = (user) => {
-  const schema = Yup.object().shape({
-    ...commonAuthSchema,
-    firstName: Yup.string().when('role', {
-      is: (val) => val === usersConstants.roles.driver.value,
-      then: () => Yup.string().required('First name is required'),
-      otherwise: () => Yup.string(),
-    }),
-    lastName: Yup.string().when('role', {
-      is: (val) => val === usersConstants.roles.driver.value,
-      then: () => Yup.string().required('Last name is required'),
-      otherwise: () => Yup.string(),
-    }),
-    role: Yup.string().oneOf(Object.keys(usersConstants.roles)),
-    companyName: Yup.string().when('role', {
-      is: (val) => val === usersConstants.roles.company.value,
-      then: () => Yup.string().required('Company name is required'),
-      otherwise: () => Yup.string(),
-    }),
-    licenseType: Yup.string().when('role', {
-      is: (val) => val === usersConstants.roles.driver.value,
-      then: () => Yup.string().required('License Type is required'),
-      otherwise: () => Yup.string(),
-    }),
-  });
+  const schema = roleSwiperSchema(user);
 
   return validatorUtils.validate(schema, user);
 };
@@ -68,9 +54,32 @@ module.exports.validateResetPasswordRequest = (data) => {
 };
 
 module.exports.validateUploadDocumentRequest = (data) => {
-  const schema = Yup.object().shape({
-    label: Yup.string().required('Label is required'),
-  });
+  let schema;
+  if (data.role === usersConstants.roles.driver.value) {
+    schema = Yup.object().shape({
+      label: Yup.string()
+        .oneOf(
+          Object.values(driverDocumentNames).map((x) => x.label),
+          'Only driver documents are required'
+        )
+        .required('Label is required'),
+      role: Yup.string()
+        .oneOf(allowedRoles, 'Only driver or company can upload document')
+        .required('Role is required'),
+    });
+  } else {
+    schema = Yup.object().shape({
+      label: Yup.string()
+        .oneOf(
+          Object.values(companyDocumentNames).map((x) => x.label),
+          'Only company documents are required'
+        )
+        .required('Label is required'),
+      role: Yup.string()
+        .oneOf(allowedRoles, 'Only driver or company can upload document')
+        .required('Role is required'),
+    });
+  }
   return validatorUtils.validate(schema, data);
 };
 
@@ -82,28 +91,27 @@ module.exports.validateDeleteDocumentParams = (data) => {
 };
 
 module.exports.validateUpdateProfileRequest = (user) => {
-  const schema = Yup.object().shape({
-    firstName: Yup.string().when('role', {
-      is: (val) => val === usersConstants.roles.driver.value,
-      then: () => Yup.string().required('First name is required'),
-      otherwise: () => Yup.string(),
-    }),
-    lastName: Yup.string().when('role', {
-      is: (val) => val === usersConstants.roles.driver.value,
-      then: () => Yup.string().required('Last name is required'),
-      otherwise: () => Yup.string(),
-    }),
-    companyName: Yup.string().when('role', {
-      is: (val) => val === usersConstants.roles.company.value,
-      then: () => Yup.string().required('Company name is required'),
-      otherwise: () => Yup.string(),
-    }),
-    licenseType: Yup.string().when('role', {
-      is: (val) => val === usersConstants.roles.driver.value,
-      then: () => Yup.string().required('License Type is required'),
-      otherwise: () => Yup.string(),
-    }),
-  });
+  const schema = roleSwiperSchema(user);
 
   return validatorUtils.validate(schema, user);
+};
+
+const roleSwiperSchema = (user) => {
+  let schema;
+  if (user.role === usersConstants.roles.driver.value) {
+    schema = Yup.object().shape({
+      ...commonAuthSchema,
+      role: Yup.string().oneOf(Object.keys(usersConstants.roles)),
+      ...driverSchema,
+      ...commonFields,
+    });
+  } else {
+    schema = Yup.object().shape({
+      ...commonAuthSchema,
+      role: Yup.string().oneOf(Object.keys(usersConstants.roles)),
+      ...companySchema,
+      ...commonFields,
+    });
+  }
+  return schema;
 };

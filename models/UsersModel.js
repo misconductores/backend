@@ -2,6 +2,11 @@ const mongoose = require('mongoose');
 
 const {jwtUtils, passwordsUtils} = require('../utils');
 const {usersConstants, generalConstant} = require('../constants');
+const {
+  genderOptions,
+  federalLicenseTypes,
+  stateLicenseTypes,
+} = require('../constants/usersConstants');
 
 const Schema = mongoose.Schema;
 
@@ -27,9 +32,35 @@ const usersSchema = new Schema(
       minlength: 6,
       maxlength: 2048,
     },
+    gender: {type: String, enum: genderOptions},
+    taxNumber: {type: String},
+    carrierCode: {type: String, maxlength: 11}, // CAAT
+    motorCarrier: {type: String, maxlength: 8}, // MC
+    alphaCode: {type: String, maxlength: 4}, // SCAC
+    companyDescription: {type: String},
+    federalRegisterTax: {type: String, maxlength: 13}, // RFC
+    postalAddress: {type: String},
+    city: {type: String},
+    country: {type: String},
+    postalCode: {type: String},
+    licenseName: {type: String},
+    licenseCity: {type: String},
+    licenseCountry: {type: String},
+    federalLicenseNo: {type: String, maxlength: 15},
+    federalLicenseType: {type: String, enum: federalLicenseTypes},
+    stateLicenseNo: {type: String, maxlength: 15},
+    stateLicenseType: {type: String, enum: stateLicenseTypes},
+    experience: {type: Number},
+    handleEquipment: {type: String},
+    visaNumber: {type: String},
+    visaExpiry: {type: String},
+    fastNumber: {type: String},
+    fastExpiry: {type: String},
+    additionalDocumentName: {type: String},
+    additionalDocumentId: {type: String},
     role: {type: String, required: true},
     isVerified: {type: Boolean, default: false},
-    driverStatus: {type: String, default: ''},
+    driverStatus: {type: String},
     documents: [
       {
         url: {type: String},
@@ -37,13 +68,9 @@ const usersSchema = new Schema(
         label: {type: String},
       },
     ],
-    driverLicense: {type: String, default: ''},
-    bio: {type: String, default: ''},
-    dateOfBirth: {type: String, default: ''},
-    contact: {type: String, default: ''},
-    deptOfTransportation: {type: String, default: ''},
-    managementCommittee: {type: String, default: ''},
-    licenseType: {type: String},
+    dateOfBirth: {type: String},
+    contact: {type: String},
+    deptOfTransport: {type: String, maxlength: 12}, // DOT
     profilePic: {
       url: {type: String, default: null},
       key: {type: String, default: null},

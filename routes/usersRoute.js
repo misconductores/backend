@@ -22,7 +22,7 @@ router.patch(
 );
 
 router.patch(
-  '/driver-documents',
+  '/documents',
   uploadDocument.single('image'),
   authMiddleware,
   validatorMiddleware(usersSchema.validateUploadDocumentRequest),
