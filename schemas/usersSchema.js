@@ -59,7 +59,7 @@ module.exports.validateUploadDocumentRequest = (data) => {
     schema = Yup.object().shape({
       label: Yup.string()
         .oneOf(
-          Object.values(driverDocumentNames).map((x) => x.label),
+          Object.values(driverDocumentNames).map((x) => x.value),
           'Only driver documents are required'
         )
         .required('Label is required'),
@@ -71,7 +71,7 @@ module.exports.validateUploadDocumentRequest = (data) => {
     schema = Yup.object().shape({
       label: Yup.string()
         .oneOf(
-          Object.values(companyDocumentNames).map((x) => x.label),
+          Object.values(companyDocumentNames).map((x) => x.value),
           'Only company documents are required'
         )
         .required('Label is required'),
@@ -86,6 +86,13 @@ module.exports.validateUploadDocumentRequest = (data) => {
 module.exports.validateDeleteDocumentParams = (data) => {
   const schema = Yup.object().shape({
     label: Yup.string().required('Label is required'),
+  });
+  return validatorUtils.validate(schema, data);
+};
+
+module.exports.validatePreRegisterDeleteDocumentParams = (data) => {
+  const schema = Yup.object().shape({
+    key: Yup.string().required('Document key is required'),
   });
   return validatorUtils.validate(schema, data);
 };

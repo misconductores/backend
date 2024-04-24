@@ -34,6 +34,12 @@ module.exports = class UsersErrorsFactory {
       statusCode: 404,
     });
   }
+  static documentUploadErr() {
+    return new AppError({
+      message: 'Document upload failed',
+      statusCode: 400,
+    });
+  }
 
   static documentDeleteErr() {
     return new AppError({

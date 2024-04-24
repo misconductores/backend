@@ -167,10 +167,10 @@ module.exports = class UsersServices {
       }
       const filesUrl = await FilesServices.uploadSingleFile({
         file,
-        fileDir: 'driver-documents',
+        fileDir: 'documents',
       });
 
-      let modifiedKey = filesUrl.key.replace(/^driver-documents\//, '');
+      let modifiedKey = filesUrl.key.replace(/^documents\//, '');
 
       const updatedData = {
         url: filesUrl.url,

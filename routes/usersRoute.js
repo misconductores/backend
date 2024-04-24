@@ -29,6 +29,13 @@ router.patch(
   catchAsync(UsersController.uploadDocuments)
 );
 
+router.post(
+  '/pre-register-documents',
+  uploadDocument.single('image'),
+  validatorMiddleware(usersSchema.validateUploadDocumentRequest),
+  catchAsync(UsersController.uploadPreRegisterDocuments)
+);
+
 router.delete(
   '/document/:label',
   authMiddleware,
@@ -37,6 +44,15 @@ router.delete(
     PARAMS_PROPERTY
   ),
   catchAsync(UsersController.deleteDocuments)
+);
+
+router.delete(
+  '/pre-register-document/:key',
+  validatorMiddleware(
+    usersSchema.validatePreRegisterDeleteDocumentParams,
+    PARAMS_PROPERTY
+  ),
+  catchAsync(UsersController.deletePreRegisterDocuments)
 );
 
 router.patch(
