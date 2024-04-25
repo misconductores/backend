@@ -6,7 +6,7 @@ const {
   driverStatuses,
 } = require('../constants/usersConstants');
 
-exports.driverSchema = {
+const commonDriverFields = {
   firstName: Yup.string().required('First name is required'),
   lastName: Yup.string().required('Last name is required'),
   dateOfBirth: Yup.date().test(
@@ -26,6 +26,10 @@ exports.driverSchema = {
   gender: Yup.string()
     .oneOf(genderOptions, 'Please select a gender')
     .required('Gender is required'),
+};
+
+exports.driverSchema = {
+  ...commonDriverFields,
   licenseName: Yup.string().required('License name is required'),
   licenseCity: Yup.string().required('License city is required'),
   licenseCountry: Yup.string().required('License country is required'),
@@ -55,25 +59,7 @@ exports.driverSchema = {
 };
 
 exports.updateDriverSchema = {
-  firstName: Yup.string().required('First name is required'),
-  lastName: Yup.string().required('Last name is required'),
-  dateOfBirth: Yup.date().test(
-    'is-18-or-older',
-    'You must be at least 18 years old',
-    (value) => {
-      const today = new Date();
-      const birthDate = new Date(value);
-      const cutoffDate = new Date(
-        today.getFullYear() - 18,
-        today.getMonth(),
-        today.getDate()
-      );
-      return birthDate <= cutoffDate;
-    }
-  ),
-  gender: Yup.string()
-    .oneOf(genderOptions, 'Please select a gender')
-    .required('Gender is required'),
+  ...commonDriverFields,
   licenseName: Yup.string(),
   licenseCity: Yup.string(),
   licenseCountry: Yup.string(),
