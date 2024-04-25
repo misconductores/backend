@@ -2,7 +2,12 @@ const Yup = require('yup');
 
 const {usersConstants} = require('../constants');
 const {validatorUtils} = require('../utils');
-const {driverSchema, commonFields, companySchema} = require('./commonSchema');
+const {
+  driverSchema,
+  commonFields,
+  companySchema,
+  updateDriverSchema,
+} = require('./commonSchema');
 const {
   driverDocumentNames,
   companyDocumentNames,
@@ -98,7 +103,7 @@ module.exports.validatePreRegisterDeleteDocumentParams = (data) => {
 };
 
 module.exports.validateUpdateProfileRequest = (user) => {
-  const schema = roleSwiperSchema(user);
+  const schema = updateProfileRoleSwiperSchema(user);
 
   return validatorUtils.validate(schema, user);
 };
@@ -115,6 +120,24 @@ const roleSwiperSchema = (user) => {
   } else {
     schema = Yup.object().shape({
       ...commonAuthSchema,
+      role: Yup.string().oneOf(Object.keys(usersConstants.roles)),
+      ...companySchema,
+      ...commonFields,
+    });
+  }
+  return schema;
+};
+
+const updateProfileRoleSwiperSchema = (user) => {
+  let schema;
+  if (user.role === usersConstants.roles.driver.value) {
+    schema = Yup.object().shape({
+      role: Yup.string().oneOf(Object.keys(usersConstants.roles)),
+      ...updateDriverSchema,
+      ...commonFields,
+    });
+  } else {
+    schema = Yup.object().shape({
       role: Yup.string().oneOf(Object.keys(usersConstants.roles)),
       ...companySchema,
       ...commonFields,
