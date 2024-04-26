@@ -2,7 +2,12 @@ const Yup = require('yup');
 
 const {usersConstants} = require('../constants');
 const {validatorUtils} = require('../utils');
-const {driverSchema, commonFields, companySchema} = require('./commonSchema');
+const {
+  driverSchema,
+  commonFields,
+  companySchema,
+  updateDriverSchema,
+} = require('./commonSchema');
 const {
   driverDocumentNames,
   companyDocumentNames,
@@ -59,7 +64,7 @@ module.exports.validateUploadDocumentRequest = (data) => {
     schema = Yup.object().shape({
       label: Yup.string()
         .oneOf(
-          Object.values(driverDocumentNames).map((x) => x.label),
+          Object.values(driverDocumentNames).map((x) => x.value),
           'Only driver documents are required'
         )
         .required('Label is required'),
@@ -71,7 +76,7 @@ module.exports.validateUploadDocumentRequest = (data) => {
     schema = Yup.object().shape({
       label: Yup.string()
         .oneOf(
-          Object.values(companyDocumentNames).map((x) => x.label),
+          Object.values(companyDocumentNames).map((x) => x.value),
           'Only company documents are required'
         )
         .required('Label is required'),
@@ -90,8 +95,15 @@ module.exports.validateDeleteDocumentParams = (data) => {
   return validatorUtils.validate(schema, data);
 };
 
+module.exports.validatePreRegisterDeleteDocumentParams = (data) => {
+  const schema = Yup.object().shape({
+    key: Yup.string().required('Document key is required'),
+  });
+  return validatorUtils.validate(schema, data);
+};
+
 module.exports.validateUpdateProfileRequest = (user) => {
-  const schema = roleSwiperSchema(user);
+  const schema = updateProfileRoleSwiperSchema(user);
 
   return validatorUtils.validate(schema, user);
 };
@@ -108,6 +120,24 @@ const roleSwiperSchema = (user) => {
   } else {
     schema = Yup.object().shape({
       ...commonAuthSchema,
+      role: Yup.string().oneOf(Object.keys(usersConstants.roles)),
+      ...companySchema,
+      ...commonFields,
+    });
+  }
+  return schema;
+};
+
+const updateProfileRoleSwiperSchema = (user) => {
+  let schema;
+  if (user.role === usersConstants.roles.driver.value) {
+    schema = Yup.object().shape({
+      role: Yup.string().oneOf(Object.keys(usersConstants.roles)),
+      ...updateDriverSchema,
+      ...commonFields,
+    });
+  } else {
+    schema = Yup.object().shape({
       role: Yup.string().oneOf(Object.keys(usersConstants.roles)),
       ...companySchema,
       ...commonFields,

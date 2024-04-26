@@ -45,11 +45,26 @@ module.exports = class UsersResponsesFactory {
     });
   }
 
+  static uploadPreRegisterDocumentRes({document} = {}) {
+    return new AppResponse({
+      message: 'Document uploaded successfully',
+      statusCode: 200,
+      body: {document},
+    });
+  }
+
   static deleteDocumentRes({user} = {}) {
     return new AppResponse({
       message: 'Document deleted successfully',
       statusCode: 200,
       body: {user},
+    });
+  }
+
+  static deletePreRegisterDocumentRes({user} = {}) {
+    return new AppResponse({
+      message: 'Document deleted successfully',
+      statusCode: 200,
     });
   }
 

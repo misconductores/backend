@@ -1,5 +1,5 @@
 const config = require('config');
-const {UsersServices} = require('../services');
+const {UsersServices, FilesServices} = require('../services');
 const actions = require('../utils/actions');
 const {
   UsersErrorsFactory,
@@ -210,6 +210,29 @@ module.exports = class UsersController {
     }
   }
 
+  static async uploadPreRegisterDocuments(req, res, next) {
+    const {label} = req.body;
+    const file = req.file;
+    const filesUrl = await FilesServices.uploadSingleFile({
+      file,
+      fileDir: 'documents',
+    });
+    if (filesUrl.url) {
+      let modifiedKey = filesUrl.key.replace(/^documents\//, '');
+      const updatedData = {
+        url: filesUrl.url,
+        key: modifiedKey,
+        label: label,
+      };
+      return next(
+        UsersResponsesFactory.uploadPreRegisterDocumentRes({
+          document: updatedData,
+        })
+      );
+    }
+    if (!filesUrl.url) return next(UsersErrorsFactory.documentUploadErr());
+  }
+
   static async deleteDocuments(req, res, next) {
     const {label} = req.params;
     const {success, err, user} = await UsersServices.getUserById({
@@ -234,6 +257,16 @@ module.exports = class UsersController {
     if (error) {
       return next(UsersErrorsFactory.documentDeleteErr());
     }
+  }
+
+  static async deletePreRegisterDocuments(req, res, next) {
+    const {key} = req.params;
+    await FilesServices.deleteSingleFile({file: key});
+    return next(
+      UsersResponsesFactory.deleteDocumentRes({
+        user: {},
+      })
+    );
   }
 
   static async updateProfile(req, res, next) {
