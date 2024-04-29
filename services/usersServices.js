@@ -3,6 +3,7 @@ const UsersModel = require('../models/UsersModel');
 const {passwordsUtils} = require('../utils');
 const FilesServices = require('./fileServices');
 const DocumentsModel = require('../models/DocumentsModel');
+const moment = require('moment');
 
 module.exports = class UsersServices {
   static async getUserByEmail({email}) {
@@ -32,6 +33,12 @@ module.exports = class UsersServices {
 
       user.generateVerificationToken();
       await user.save();
+
+      if (data.documents) {
+        for (const document of data.documents) {
+          await DocumentsModel.deleteOne({key: document.key});
+        }
+      }
 
       return {success: true, user};
     } catch (err) {
@@ -242,15 +249,21 @@ module.exports = class UsersServices {
 
   static async deleteAllDocuments() {
     try {
-      const documents = await DocumentsModel.find();
+      const twentyFourHoursAgo = moment().subtract(24, 'hours').toDate();
+      const documents = await DocumentsModel.find({
+        createdAt: {$lt: twentyFourHoursAgo},
+      });
+
       if (documents.length > 0) {
         for (const document of documents) {
           await FilesServices.deleteSingleFile({file: document.key});
         }
-        await DocumentsModel.deleteMany();
+        await DocumentsModel.deleteMany({createdAt: {$lt: twentyFourHoursAgo}});
         return {success: true};
       } else {
-        return {success: false};
+        return {
+          success: false,
+        };
       }
     } catch (err) {
       return {success: false, err};

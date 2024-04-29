@@ -9,7 +9,7 @@ const documentSchema = new Schema(
     label: {type: String, required: true},
   },
   {
-    timestamps: false,
+    timestamps: true,
     toObject: {virtuals: true},
     toJSON: {
       virtuals: true,
