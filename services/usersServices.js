@@ -2,6 +2,7 @@ const {MongosFactory} = require('../factories');
 const UsersModel = require('../models/UsersModel');
 const {passwordsUtils} = require('../utils');
 const FilesServices = require('./fileServices');
+const DocumentsModel = require('../models/DocumentsModel');
 
 module.exports = class UsersServices {
   static async getUserByEmail({email}) {
@@ -215,6 +216,39 @@ module.exports = class UsersServices {
         update
       );
       return {success, user: updateUser};
+    } catch (err) {
+      return {success: false, err};
+    }
+  }
+
+  static async createDocuments({data}) {
+    try {
+      const document = new DocumentsModel(data);
+      await document.save();
+      return {success: true, document};
+    } catch (err) {
+      return {success: false, err};
+    }
+  }
+
+  static async deletePreRegisterDocument({key}) {
+    try {
+      await DocumentsModel.findOneAndDelete({key: key});
+      return {success: true};
+    } catch (err) {
+      return {success: false, err};
+    }
+  }
+
+  static async deleteAllDocuments() {
+    try {
+      const documents = await DocumentsModel.find();
+      if (documents.length > 0) {
+        await DocumentsModel.deleteMany();
+        return {success: true};
+      } else {
+        return {success: false};
+      }
     } catch (err) {
       return {success: false, err};
     }

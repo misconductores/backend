@@ -224,11 +224,18 @@ module.exports = class UsersController {
         key: modifiedKey,
         label: label,
       };
-      return next(
-        UsersResponsesFactory.uploadPreRegisterDocumentRes({
-          document: updatedData,
-        })
-      );
+      const {success} = await UsersServices.createDocuments({
+        data: updatedData,
+      });
+      if (success) {
+        return next(
+          UsersResponsesFactory.uploadPreRegisterDocumentRes({
+            document: updatedData,
+          })
+        );
+      } else {
+        return next(UsersErrorsFactory.documentUploadErr());
+      }
     }
     if (!filesUrl.url) return next(UsersErrorsFactory.documentUploadErr());
   }
@@ -262,11 +269,16 @@ module.exports = class UsersController {
   static async deletePreRegisterDocuments(req, res, next) {
     const {key} = req.params;
     await FilesServices.deleteSingleFile({file: key});
-    return next(
-      UsersResponsesFactory.deleteDocumentRes({
-        user: {},
-      })
-    );
+    const {success} = await UsersServices.deletePreRegisterDocument({key: key});
+    if (success) {
+      return next(
+        UsersResponsesFactory.deleteDocumentRes({
+          user: {},
+        })
+      );
+    } else {
+      return next(UsersErrorsFactory.documentDeleteErr());
+    }
   }
 
   static async updateProfile(req, res, next) {
