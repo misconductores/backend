@@ -244,6 +244,9 @@ module.exports = class UsersServices {
     try {
       const documents = await DocumentsModel.find();
       if (documents.length > 0) {
+        for (const document of documents) {
+          await FilesServices.deleteSingleFile({file: document.key});
+        }
         await DocumentsModel.deleteMany();
         return {success: true};
       } else {
