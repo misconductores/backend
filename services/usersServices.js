@@ -34,9 +34,8 @@ module.exports = class UsersServices {
       await user.save();
 
       if (data.documents) {
-        for (const document of data.documents) {
-          await DocumentsModel.deleteOne({key: document.key});
-        }
+        const keysToDelete = data.documents.map((document) => document.key);
+        await DocumentsModel.deleteMany({key: {$in: keysToDelete}});
       }
 
       return {success: true, user};
