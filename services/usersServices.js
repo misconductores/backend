@@ -3,7 +3,6 @@ const UsersModel = require('../models/UsersModel');
 const {passwordsUtils} = require('../utils');
 const FilesServices = require('./fileServices');
 const DocumentsModel = require('../models/DocumentsModel');
-const moment = require('moment');
 
 module.exports = class UsersServices {
   static async getUserByEmail({email}) {
@@ -249,7 +248,7 @@ module.exports = class UsersServices {
 
   static async deleteAllDocuments() {
     try {
-      const twentyFourHoursAgo = moment().subtract(24, 'hours').toDate();
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
       const documents = await DocumentsModel.find({
         createdAt: {$lt: twentyFourHoursAgo},
       });
