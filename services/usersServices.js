@@ -2,6 +2,7 @@ const {MongosFactory} = require('../factories');
 const UsersModel = require('../models/UsersModel');
 const {passwordsUtils} = require('../utils');
 const FilesServices = require('./fileServices');
+const DocumentsModel = require('../models/DocumentsModel');
 
 module.exports = class UsersServices {
   static async getUserByEmail({email}) {
@@ -31,6 +32,11 @@ module.exports = class UsersServices {
 
       user.generateVerificationToken();
       await user.save();
+
+      if (data.documents) {
+        const keysToDelete = data.documents.map((document) => document.key);
+        await DocumentsModel.deleteMany({key: {$in: keysToDelete}});
+      }
 
       return {success: true, user};
     } catch (err) {
@@ -215,6 +221,48 @@ module.exports = class UsersServices {
         update
       );
       return {success, user: updateUser};
+    } catch (err) {
+      return {success: false, err};
+    }
+  }
+
+  static async createDocuments({data}) {
+    try {
+      const document = new DocumentsModel(data);
+      await document.save();
+      return {success: true, document};
+    } catch (err) {
+      return {success: false, err};
+    }
+  }
+
+  static async deletePreRegisterDocument({key}) {
+    try {
+      await DocumentsModel.findOneAndDelete({key: key});
+      return {success: true};
+    } catch (err) {
+      return {success: false, err};
+    }
+  }
+
+  static async deleteAllDocuments() {
+    try {
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      const documents = await DocumentsModel.find({
+        createdAt: {$lt: twentyFourHoursAgo},
+      });
+
+      if (documents.length > 0) {
+        for (const document of documents) {
+          await FilesServices.deleteSingleFile({file: document.key});
+        }
+        await DocumentsModel.deleteMany({createdAt: {$lt: twentyFourHoursAgo}});
+        return {success: true};
+      } else {
+        return {
+          success: false,
+        };
+      }
     } catch (err) {
       return {success: false, err};
     }
