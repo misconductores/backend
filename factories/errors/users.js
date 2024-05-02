@@ -17,7 +17,7 @@ module.exports = class UsersErrorsFactory {
 
   static postalCodesFoundErr() {
     return new AppError({
-      message: 'Postal codes not found',
+      message: 'No address found against this postal code',
       statusCode: 404,
     });
   }
