@@ -40,6 +40,7 @@ const usersSchema = new Schema(
     companyDescription: {type: String},
     federalRegisterTax: {type: String, maxlength: 13}, // RFC
     postalAddress: {type: String},
+    area: {type: String},
     city: {type: String},
     country: {type: String},
     postalCode: {type: String},

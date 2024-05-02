@@ -306,4 +306,22 @@ module.exports = class UsersController {
       return next(UsersErrorsFactory.profileUpdateErr());
     }
   }
+
+  static async getPostalCodes(req, res, next) {
+    const {postalCode} = req.params;
+    const {success, data, err} = await UsersServices.getPostalCodes({
+      postalCode,
+    });
+
+    if (data.length === 0)
+      return next(UsersErrorsFactory.postalCodesFoundErr());
+
+    if (!success) throw err;
+
+    return next(
+      UsersResponsesFactory.postalCodeInfoRes({
+        data,
+      })
+    );
+  }
 };

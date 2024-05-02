@@ -96,4 +96,10 @@ router.post(
   catchAsync(UsersController.regenerateVerifyToken)
 );
 
+router.get(
+  '/postal-codes/:postalCode',
+  validatorMiddleware(usersSchema.validatePostalCodeParams, PARAMS_PROPERTY),
+  catchAsync(UsersController.getPostalCodes)
+);
+
 module.exports = router;

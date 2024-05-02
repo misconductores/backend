@@ -15,6 +15,13 @@ module.exports = class UsersErrorsFactory {
     });
   }
 
+  static postalCodesFoundErr() {
+    return new AppError({
+      message: 'No address found against this postal code',
+      statusCode: 404,
+    });
+  }
+
   static profileImgUpdateErr() {
     return new AppError({
       message: 'Profile image update failed',
