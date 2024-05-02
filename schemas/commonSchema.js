@@ -30,21 +30,13 @@ const commonDriverFields = {
 
 exports.driverSchema = {
   ...commonDriverFields,
-  licenseName: Yup.string().required('License name is required'),
-  licenseCity: Yup.string().required('License city is required'),
-  licenseCountry: Yup.string().required('License country is required'),
-  federalLicenseNo: Yup.string()
-    .max(15, 'Federal License number should be maximum 15 digits long')
-    .required('Federal license number is required'),
-  federalLicenseType: Yup.string()
-    .oneOf(federalLicenseTypes, 'Please select a type')
-    .required('Federal license type is required'),
-  stateLicenseNo: Yup.string()
-    .max(15, 'State License number should be maximum 15 digits long')
-    .required('State license type is required'),
-  stateLicenseType: Yup.string()
-    .oneOf(stateLicenseTypes, 'Please select a type')
-    .required('State license number is required'),
+  licenseName: Yup.string(),
+  licenseCity: Yup.string(),
+  licenseCountry: Yup.string(),
+  federalLicenseNo: Yup.string(),
+  federalLicenseType: Yup.string(),
+  stateLicenseNo: Yup.string(),
+  stateLicenseType: Yup.string(),
   experience: Yup.number(),
   handleEquipment: Yup.string(),
   visaNumber: Yup.string(),
