@@ -117,6 +117,7 @@ exports.commonFields = {
     'RFC number should be maximum 13 digits long'
   ),
   postalAddress: Yup.string(),
+  area: Yup.string(),
   city: Yup.string(),
   country: Yup.string(),
   postalCode: Yup.string(),

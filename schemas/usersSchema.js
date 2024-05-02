@@ -102,6 +102,13 @@ module.exports.validatePreRegisterDeleteDocumentParams = (data) => {
   return validatorUtils.validate(schema, data);
 };
 
+module.exports.validatePostalCodeParams = (data) => {
+  const schema = Yup.object().shape({
+    postalCode: Yup.string().required('Postal code is required'),
+  });
+  return validatorUtils.validate(schema, data);
+};
+
 module.exports.validateUpdateProfileRequest = (user) => {
   const schema = updateProfileRoleSwiperSchema(user);
 

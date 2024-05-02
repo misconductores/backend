@@ -29,6 +29,14 @@ module.exports = class UsersResponsesFactory {
     });
   }
 
+  static postalCodeInfoRes({data} = {}) {
+    return new AppResponse({
+      message: 'Postal codes retrieved successfully',
+      statusCode: 200,
+      body: {data},
+    });
+  }
+
   static updateUserProfilePicRes({user} = {}) {
     return new AppResponse({
       message: 'User profile image updated successfully',

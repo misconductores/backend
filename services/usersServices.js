@@ -3,6 +3,7 @@ const UsersModel = require('../models/UsersModel');
 const {passwordsUtils} = require('../utils');
 const FilesServices = require('./fileServices');
 const DocumentsModel = require('../models/DocumentsModel');
+const PostalCodeModel = require('../models/PostalCodeModel');
 
 module.exports = class UsersServices {
   static async getUserByEmail({email}) {
@@ -263,6 +264,17 @@ module.exports = class UsersServices {
           success: false,
         };
       }
+    } catch (err) {
+      return {success: false, err};
+    }
+  }
+  static async getPostalCodes({postalCode}) {
+    const newPostalCode = Number(postalCode);
+    try {
+      const data = await PostalCodeModel.find({
+        postalCode: newPostalCode,
+      });
+      return {success: true, data};
     } catch (err) {
       return {success: false, err};
     }
