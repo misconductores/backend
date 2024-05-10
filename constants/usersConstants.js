@@ -141,3 +141,8 @@ module.exports.driverDocumentNames = {
 module.exports.federalLicenseTypes = ['A', 'B', 'C', 'E'];
 module.exports.stateLicenseTypes = ['A', 'B', 'C', 'D'];
 module.exports.genderOptions = ['male', 'female', 'other'];
+
+module.exports.errorCodes = {
+  INVALID_TOKEN_ERR: 'INVALID_TOKEN_ERR',
+  USER_NOT_VERIFIED: 'USER_NOT_VERIFIED',
+};

@@ -1,3 +1,4 @@
+const {errorCodes} = require('../../constants/usersConstants');
 const AppError = require('./AppError');
 
 module.exports = class UsersErrorsFactory {
@@ -74,6 +75,9 @@ module.exports = class UsersErrorsFactory {
       message:
         'Token is either expired or is invalid. Please create a new token and try again',
       statusCode: 400,
+      err: {
+        type: errorCodes.INVALID_TOKEN_ERR,
+      },
     });
   }
 
@@ -90,7 +94,7 @@ module.exports = class UsersErrorsFactory {
       message: 'User Not Verified',
       statusCode: 403,
       err: {
-        type: 'USER_NOT_VERIFIED',
+        type: errorCodes.USER_NOT_VERIFIED,
       },
     });
   }
