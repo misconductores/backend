@@ -103,7 +103,9 @@ exports.companySchema = {
 exports.commonFields = {
   contact: Yup.string()
     .required('Contact number is required')
-    .matches(/^\d+$/, 'Contact number must contain only numbers'),
+    .matches(/^\+\d+$/, 'Contact number must be in digits with country code')
+    .min(10, 'Invalid contact number')
+    .max(15, 'Invalid contact number'),
   federalRegisterTax: Yup.string().max(
     13,
     'RFC number should be maximum 13 digits long'
