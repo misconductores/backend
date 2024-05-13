@@ -313,8 +313,7 @@ module.exports = class UsersController {
       postalCode,
     });
 
-    if (data.length === 0)
-      return next(UsersErrorsFactory.postalCodesFoundErr());
+    if (!data) return next(UsersErrorsFactory.postalCodesFoundErr());
 
     if (!success) throw err;
 
