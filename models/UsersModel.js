@@ -47,18 +47,31 @@ const usersSchema = new Schema(
     licenseName: {type: String},
     licenseCity: {type: String},
     licenseCountry: {type: String},
-    federalLicenseNo: {type: String, maxlength: 15},
-    federalLicenseType: {type: String, enum: federalLicenseTypes},
-    stateLicenseNo: {type: String, maxlength: 15},
-    stateLicenseType: {type: String, enum: stateLicenseTypes},
+    federalLicenses: [
+      {
+        federalLicenseNo: {type: String, maxlength: 15},
+        federalLicenseType: {type: String, enum: federalLicenseTypes},
+      },
+    ],
+    stateLicenses: [
+      {
+        stateLicenseNo: {type: String, maxlength: 15},
+        stateLicenseType: {type: String, enum: stateLicenseTypes},
+      },
+    ],
     experience: {type: Number},
-    handleEquipment: {type: String},
+    handleEquipment: [{type: String}],
     visaNumber: {type: String},
     visaExpiry: {type: String},
     fastNumber: {type: String},
     fastExpiry: {type: String},
-    additionalDocumentName: {type: String},
-    additionalDocumentId: {type: String},
+    additionalDocuments: [
+      {
+        additionalDocumentName: {type: String},
+        additionalDocumentId: {type: String},
+      },
+    ],
+
     role: {type: String, required: true},
     isVerified: {type: Boolean, default: false},
     driverStatus: {type: String},
@@ -84,13 +97,6 @@ const usersSchema = new Schema(
     toObject: {virtuals: true},
     toJSON: {
       virtuals: true,
-      transform: function (doc, ret) {
-        ret.documents = ret.documents.map((doc) => {
-          const {_id, id, ...rest} = doc;
-          return rest;
-        });
-        return ret;
-      },
     },
   }
 );
