@@ -5,4 +5,4 @@ module.exports.isEnvProd =
 
 module.exports.isEnvDev = config.get('env') === config.get('envVariables.dev');
 
-module.exports.corsOrigin = this.isEnvDev ? true : config.get('frontendURL');
+module.exports.corsOrigin = this.isEnvProd ? config.get('frontendURL') : true;

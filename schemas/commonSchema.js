@@ -28,6 +28,25 @@ const commonDriverFields = {
     .required('Gender is required'),
 };
 
+const commonExpDocSchema = {
+  experience: Yup.number(),
+  handleEquipment: Yup.array(),
+  visaNumber: Yup.string(),
+  visaExpiry: Yup.string(),
+  fastNumber: Yup.string(),
+  fastExpiry: Yup.string(),
+  additionalDocuments: Yup.array().of(
+    Yup.object().shape({
+      additionalDocumentName: Yup.string(),
+      additionalDocumentId: Yup.string().when('additionalDocumentName', {
+        is: (val) => val !== '',
+        then: () => Yup.string().required('Document Id is required'),
+        otherwise: () => Yup.string(),
+      }),
+    })
+  ),
+};
+
 exports.driverSchema = {
   ...commonDriverFields,
   licenseName: Yup.string(),
@@ -37,14 +56,7 @@ exports.driverSchema = {
   federalLicenseType: Yup.string(),
   stateLicenseNo: Yup.string(),
   stateLicenseType: Yup.string(),
-  experience: Yup.number(),
-  handleEquipment: Yup.string(),
-  visaNumber: Yup.string(),
-  visaExpiry: Yup.string(),
-  fastNumber: Yup.string(),
-  fastExpiry: Yup.string(),
-  additionalDocumentName: Yup.string(),
-  additionalDocumentId: Yup.string(),
+  ...commonExpDocSchema,
   driverStatus: Yup.string()
     .oneOf(Object.keys(driverStatuses, 'Please select driver status'))
     .required('Driver Status is required'),
@@ -55,30 +67,33 @@ exports.updateDriverSchema = {
   licenseName: Yup.string(),
   licenseCity: Yup.string(),
   licenseCountry: Yup.string(),
-  federalLicenseNo: Yup.string().max(
-    15,
-    'Federal License number should be maximum 15 digits long'
+  federalLicenses: Yup.array().of(
+    Yup.object().shape({
+      federalLicenseNo: Yup.string().max(
+        15,
+        'Federal License number should be maximum 15 digits long'
+      ),
+      federalLicenseType: Yup.string().when('federalLicenseNo', {
+        is: (val) => val !== '',
+        then: () => Yup.string().required('Federal license type is required'),
+        otherwise: () => Yup.string(),
+      }),
+    })
   ),
-  federalLicenseType: Yup.string().oneOf(
-    federalLicenseTypes,
-    'Please select a type'
+  stateLicenses: Yup.array().of(
+    Yup.object().shape({
+      stateLicenseNo: Yup.string().max(
+        15,
+        'State License number should be maximum 15 digits long'
+      ),
+      stateLicenseType: Yup.string().when('stateLicenseNo', {
+        is: (val) => val !== '',
+        then: () => Yup.string().required('State license type is required'),
+        otherwise: () => Yup.string(),
+      }),
+    })
   ),
-  stateLicenseNo: Yup.string().max(
-    15,
-    'State License number should be maximum 15 digits long'
-  ),
-  stateLicenseType: Yup.string().oneOf(
-    stateLicenseTypes,
-    'Please select a type'
-  ),
-  experience: Yup.number(),
-  handleEquipment: Yup.string(),
-  visaNumber: Yup.string(),
-  visaExpiry: Yup.string(),
-  fastNumber: Yup.string(),
-  fastExpiry: Yup.string(),
-  additionalDocumentName: Yup.string(),
-  additionalDocumentId: Yup.string(),
+  ...commonExpDocSchema,
 };
 
 exports.companySchema = {
@@ -96,6 +111,7 @@ exports.companySchema = {
     'DOT number should be maximum 12 digits long'
   ),
   alphaCode: Yup.string()
+    .required('SCAC is required')
     .matches(/^[A-Za-z]+$/, 'Only alphabets are allowed')
     .max(4, 'SCAC number should be maximum 4 digits long'),
 };
