@@ -28,15 +28,7 @@ const commonDriverFields = {
     .required('Gender is required'),
 };
 
-exports.driverSchema = {
-  ...commonDriverFields,
-  licenseName: Yup.string(),
-  licenseCity: Yup.string(),
-  licenseCountry: Yup.string(),
-  federalLicenseNo: Yup.string(),
-  federalLicenseType: Yup.string(),
-  stateLicenseNo: Yup.string(),
-  stateLicenseType: Yup.string(),
+const commonExpDocSchema = {
   experience: Yup.number(),
   handleEquipment: Yup.array(),
   visaNumber: Yup.string(),
@@ -53,6 +45,18 @@ exports.driverSchema = {
       }),
     })
   ),
+};
+
+exports.driverSchema = {
+  ...commonDriverFields,
+  licenseName: Yup.string(),
+  licenseCity: Yup.string(),
+  licenseCountry: Yup.string(),
+  federalLicenseNo: Yup.string(),
+  federalLicenseType: Yup.string(),
+  stateLicenseNo: Yup.string(),
+  stateLicenseType: Yup.string(),
+  ...commonExpDocSchema,
   driverStatus: Yup.string()
     .oneOf(Object.keys(driverStatuses, 'Please select driver status'))
     .required('Driver Status is required'),
@@ -89,22 +93,7 @@ exports.updateDriverSchema = {
       }),
     })
   ),
-  experience: Yup.number(),
-  handleEquipment: Yup.array(),
-  visaNumber: Yup.string(),
-  visaExpiry: Yup.string(),
-  fastNumber: Yup.string(),
-  fastExpiry: Yup.string(),
-  additionalDocuments: Yup.array().of(
-    Yup.object().shape({
-      additionalDocumentName: Yup.string(),
-      additionalDocumentId: Yup.string().when('additionalDocumentName', {
-        is: (val) => val !== '',
-        then: () => Yup.string().required('Document Id is required'),
-        otherwise: () => Yup.string(),
-      }),
-    })
-  ),
+  ...commonExpDocSchema,
 };
 
 exports.companySchema = {
