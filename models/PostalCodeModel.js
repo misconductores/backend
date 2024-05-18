@@ -5,9 +5,9 @@ const Schema = mongoose.Schema;
 const postalCodeSchema = new Schema(
   {
     postalCode: {type: Number},
-    area_type: {type: String},
     area: {type: String},
-    muncipality: {type: String},
+    d_estado: {type: String},
+    d_ciudad: {type: String},
     city: {type: String},
   },
   {
