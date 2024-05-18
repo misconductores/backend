@@ -111,7 +111,6 @@ exports.companySchema = {
     'DOT number should be maximum 12 digits long'
   ),
   alphaCode: Yup.string()
-    .required('SCAC is required')
     .matches(/^[A-Za-z]+$/, 'Only alphabets are allowed')
     .max(4, 'SCAC number should be maximum 4 digits long'),
 };
