@@ -7,4 +7,10 @@ module.exports = class JobErrorsFactory {
       statusCode: 400,
     });
   }
+  static jobNotFoundErr() {
+    return new AppError({
+      message: 'Jobs not found!',
+      statusCode: 400,
+    });
+  }
 };

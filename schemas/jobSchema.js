@@ -15,3 +15,15 @@ module.exports.validateJobCreateReq = (data) => {
   });
   return validatorUtils.validate(schema, data);
 };
+
+module.exports.validateJobListQueries = (data) => {
+  const schema = Yup.object().shape({
+    page: Yup.number()
+      .typeError('Page number is required')
+      .required('Page number is required'),
+    limit: Yup.number()
+      .typeError('Page limit is required')
+      .required('Page limit is required'),
+  });
+  return validatorUtils.validate(schema, data);
+};
