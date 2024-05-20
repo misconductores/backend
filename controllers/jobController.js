@@ -35,9 +35,10 @@ module.exports = class JobController {
     });
     if (!user) return next(UsersErrorsFactory.userNotFoundErr());
     if (!success) throw err;
-    let {page, limit} = req.query;
+    let {page, limit, title, location} = req.query;
     page = parseInt(page);
     limit = parseInt(limit);
+
     const {
       success: response,
       result,
@@ -45,6 +46,8 @@ module.exports = class JobController {
     } = await JobServices.getJobList({
       page,
       limit,
+      title,
+      location,
     });
     if (response)
       return next(
@@ -55,8 +58,7 @@ module.exports = class JobController {
           perPage: limit,
         })
       );
-    if (!result || result.data.length === 0)
-      return next(JobErrors.jobNotFoundErr());
+    if (!result) return next(JobErrors.jobNotFoundErr());
     if (error) throw error;
   }
   static async getJobById(req, res, next) {

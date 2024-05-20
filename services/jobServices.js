@@ -14,18 +14,30 @@ module.exports = class JobServices {
     }
   }
 
-  static async getJobList({page, limit}) {
+  static async getJobList({page, limit, title, location}) {
     try {
-      const totalCount = await JobModel.countDocuments();
       const skip = (page - 1) * limit;
-      const data = await JobModel.find({}, null, {skip, limit}).populate(
-        'companyId'
-      );
+      const query = {};
+
+      if (title) {
+        query.title = {$regex: title, $options: 'i'};
+      }
+
+      if (location) {
+        query.location = {$regex: location, $options: 'i'};
+      }
+
+      const [totalCount, data] = await Promise.all([
+        JobModel.countDocuments(query),
+        JobModel.find(query, null, {skip, limit}).populate('companyId'),
+      ]);
+
       return {success: true, result: {totalCount, data}};
     } catch (err) {
       return {success: false, err};
     }
   }
+
   static async getJobById({id}) {
     try {
       const data = await JobModel.findById(id).populate('companyId');
