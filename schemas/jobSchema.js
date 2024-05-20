@@ -27,3 +27,10 @@ module.exports.validateJobListQueries = (data) => {
   });
   return validatorUtils.validate(schema, data);
 };
+
+module.exports.validatejobIdParams = (data) => {
+  const schema = Yup.object().shape({
+    id: Yup.string().required('Id is required'),
+  });
+  return validatorUtils.validate(schema, data);
+};

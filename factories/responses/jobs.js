@@ -15,4 +15,11 @@ module.exports = class JobResponsesFactory {
       body: {count, data, page, perPage},
     });
   }
+  static getJobByIdSuccessfully({job}) {
+    return new AppResponse({
+      message: 'Job retrieved successfully',
+      statusCode: 200,
+      body: {job},
+    });
+  }
 };
