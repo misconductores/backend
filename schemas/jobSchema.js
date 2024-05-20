@@ -16,14 +16,10 @@ module.exports.validateJobReq = (data) => {
   return validatorUtils.validate(schema, data);
 };
 
-module.exports.validateJobListQueries = (data) => {
+module.exports.validatePaginationParams = (data) => {
   const schema = Yup.object().shape({
-    page: Yup.number()
-      .typeError('Page number is required')
-      .required('Page number is required'),
-    limit: Yup.number()
-      .typeError('Page limit is required')
-      .required('Page limit is required'),
+    page: Yup.string().required('Page number is required'),
+    limit: Yup.string().required('Page limit is required'),
   });
   return validatorUtils.validate(schema, data);
 };

@@ -12,7 +12,7 @@ const router = require('express').Router();
 router.get(
   '/list',
   authMiddleware,
-  validatorMiddleware(jobSchema.validateJobListQueries, QUERY_PROPERTY),
+  validatorMiddleware(jobSchema.validatePaginationParams, QUERY_PROPERTY),
   catchAsync(JobController.getJobList)
 );
 router.get(
@@ -38,6 +38,18 @@ router.delete(
   authMiddleware,
   validatorMiddleware(jobSchema.validateJobIdParams, PARAMS_PROPERTY),
   catchAsync(JobController.deleteJobById)
+);
+router.get(
+  '/user/drivers',
+  authMiddleware,
+  validatorMiddleware(jobSchema.validatePaginationParams, QUERY_PROPERTY),
+  catchAsync(JobController.getDriverList)
+);
+router.get(
+  '/user/companies',
+  authMiddleware,
+  validatorMiddleware(jobSchema.validatePaginationParams, QUERY_PROPERTY),
+  catchAsync(JobController.getCompanyList)
 );
 
 module.exports = router;

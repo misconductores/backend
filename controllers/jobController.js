@@ -130,4 +130,64 @@ module.exports = class JobController {
       return next(JobResponsesFactory.jobDeletedSuccessfully());
     if (error) throw next(JobErrors.jobDeleteErr());
   }
+  static async getDriverList(req, res, next) {
+    const {success, err, user} = await UsersServices.getUserById({
+      id: req.jwtToken.user.id,
+    });
+    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
+    if (!success) throw err;
+    let {page, limit} = req.query;
+    page = parseInt(page);
+    limit = parseInt(limit);
+    const {
+      success: response,
+      result,
+      err: error,
+    } = await JobServices.getDriverList({
+      page,
+      limit,
+    });
+    if (response)
+      return next(
+        JobResponsesFactory.driversRetrievedSuccessfully({
+          count: result.totalCount,
+          data: result.data,
+          page: page,
+          perPage: limit,
+        })
+      );
+    if (!result || result.data.length === 0)
+      return next(JobErrors.driverNotFoundErr());
+    if (error) throw error;
+  }
+  static async getCompanyList(req, res, next) {
+    const {success, err, user} = await UsersServices.getUserById({
+      id: req.jwtToken.user.id,
+    });
+    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
+    if (!success) throw err;
+    let {page, limit} = req.query;
+    page = parseInt(page);
+    limit = parseInt(limit);
+    const {
+      success: response,
+      result,
+      err: error,
+    } = await JobServices.getCompanyList({
+      page,
+      limit,
+    });
+    if (response)
+      return next(
+        JobResponsesFactory.companyRetrievedSuccessfully({
+          count: result.totalCount,
+          data: result.data,
+          page: page,
+          perPage: limit,
+        })
+      );
+    if (!result || result.data.length === 0)
+      return next(JobErrors.companyNotFoundErr());
+    if (error) throw error;
+  }
 };
