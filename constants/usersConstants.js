@@ -39,6 +39,7 @@ module.exports.driverStatuses = {
 module.exports.SENDGRID_EMAIL = 'mitodo.oficios@gmail.com';
 module.exports.SENDGRID_EMAIL_NAME = 'Desol Int.';
 module.exports.PARAMS_PROPERTY = 'params';
+module.exports.QUERY_PROPERTY = 'query';
 
 module.exports.companyDocumentNames = {
   taxCertificate: {

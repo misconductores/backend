@@ -10,4 +10,17 @@ module.exports = class JobServices {
       return {success: false, err};
     }
   }
+
+  static async getJobList({page, limit}) {
+    try {
+      const totalCount = await JobModel.countDocuments();
+      const skip = (page - 1) * limit;
+      const data = await JobModel.find({}, null, {skip, limit}).populate(
+        'companyId'
+      );
+      return {success: true, result: {totalCount, data}};
+    } catch (err) {
+      return {success: false, err};
+    }
+  }
 };

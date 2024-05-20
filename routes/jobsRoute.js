@@ -1,3 +1,4 @@
+const {QUERY_PROPERTY} = require('../constants/usersConstants');
 const {JobController} = require('../controllers');
 const {authMiddleware, validatorMiddleware} = require('../middleware');
 const {jobSchema} = require('../schemas');
@@ -5,7 +6,12 @@ const {catchAsync} = require('../utils');
 
 const router = require('express').Router();
 
-router.get('/list', authMiddleware);
+router.get(
+  '/list',
+  authMiddleware,
+  validatorMiddleware(jobSchema.validateJobListQueries, QUERY_PROPERTY),
+  catchAsync(JobController.getJobList)
+);
 router.get('/:id', authMiddleware);
 router.post(
   '/create',
