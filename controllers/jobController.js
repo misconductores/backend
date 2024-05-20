@@ -34,8 +34,6 @@ module.exports = class JobController {
       id: req.jwtToken.user.id,
     });
     if (!user) return next(UsersErrorsFactory.userNotFoundErr());
-    if (user?.role !== roles.company.value)
-      return next(UsersErrorsFactory.forbiddenCompanyErr());
     if (!success) throw err;
     let {page, limit} = req.query;
     page = parseInt(page);
@@ -59,6 +57,6 @@ module.exports = class JobController {
       );
     if (!result || result.data.length === 0)
       return next(JobErrors.jobNotFoundErr());
-    if (err) throw err;
+    if (error) throw err;
   }
 };
