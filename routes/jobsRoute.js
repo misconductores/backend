@@ -18,16 +18,26 @@ router.get(
 router.get(
   '/:id',
   authMiddleware,
-  validatorMiddleware(jobSchema.validatejobIdParams, PARAMS_PROPERTY),
+  validatorMiddleware(jobSchema.validateJobIdParams, PARAMS_PROPERTY),
   catchAsync(JobController.getJobById)
 );
 router.post(
   '/create',
   authMiddleware,
-  validatorMiddleware(jobSchema.validateJobCreateReq),
+  validatorMiddleware(jobSchema.validateJobReq),
   catchAsync(JobController.createJob)
 );
-router.patch('/:id', authMiddleware);
-router.delete('/:id', authMiddleware);
+router.patch(
+  '/:id',
+  authMiddleware,
+  validatorMiddleware(jobSchema.validateJobReq),
+  catchAsync(JobController.updateJobById)
+);
+router.delete(
+  '/:id',
+  authMiddleware,
+  validatorMiddleware(jobSchema.validateJobIdParams, PARAMS_PROPERTY),
+  catchAsync(JobController.deleteJobById)
+);
 
 module.exports = router;

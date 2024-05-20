@@ -82,4 +82,52 @@ module.exports = class JobController {
     if (!data) return next(JobErrors.jobByIdNotFoundErr());
     if (error) throw error;
   }
+  static async updateJobById(req, res, next) {
+    const {success, err, user} = await UsersServices.getUserById({
+      id: req.jwtToken.user.id,
+    });
+    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
+    if (!success) throw err;
+    if (user?.role !== roles.company.value)
+      return next(UsersErrorsFactory.forbiddenCompanyErr());
+    if (!success) throw err;
+    const {id} = req.params;
+    const data = req.body;
+    const {
+      success: response,
+      updatedData,
+      err: error,
+    } = await JobServices.updateJobById({
+      id,
+      data,
+    });
+    if (response)
+      return next(
+        JobResponsesFactory.getJobByIdSuccessfully({
+          job: updatedData,
+        })
+      );
+    if (error) throw next(JobErrors.jobUpdateErr());
+  }
+  static async deleteJobById(req, res, next) {
+    const {success, err, user} = await UsersServices.getUserById({
+      id: req.jwtToken.user.id,
+    });
+    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
+    if (!success) throw err;
+    if (user?.role !== roles.company.value)
+      return next(UsersErrorsFactory.forbiddenCompanyErr());
+    if (!success) throw err;
+    const {id} = req.params;
+    const {
+      success: response,
+      deletedData,
+      err: error,
+    } = await JobServices.deleteJobById({
+      id,
+    });
+    if (response && deletedData)
+      return next(JobResponsesFactory.jobDeletedSuccessfully());
+    if (error) throw next(JobErrors.jobDeleteErr());
+  }
 };

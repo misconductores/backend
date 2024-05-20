@@ -22,4 +22,18 @@ module.exports = class JobResponsesFactory {
       body: {job},
     });
   }
+  static jobUpdatedSuccessfully({job}) {
+    return new AppResponse({
+      message: 'Job updated successfully',
+      statusCode: 200,
+      body: {job},
+    });
+  }
+  static jobDeletedSuccessfully() {
+    return new AppResponse({
+      message: 'Job deleted successfully',
+      statusCode: 200,
+      body: {},
+    });
+  }
 };
