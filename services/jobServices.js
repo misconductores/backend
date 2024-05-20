@@ -23,4 +23,12 @@ module.exports = class JobServices {
       return {success: false, err};
     }
   }
+  static async getJobById({id}) {
+    try {
+      const data = await JobModel.findById(id).populate('companyId');
+      return {success: true, data};
+    } catch (err) {
+      return {success: false, err};
+    }
+  }
 };

@@ -13,4 +13,10 @@ module.exports = class JobErrorsFactory {
       statusCode: 400,
     });
   }
+  static jobByIdNotFoundErr() {
+    return new AppError({
+      message: 'Job not found against this id!',
+      statusCode: 400,
+    });
+  }
 };
