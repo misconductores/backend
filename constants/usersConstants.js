@@ -145,4 +145,5 @@ module.exports.genderOptions = ['male', 'female', 'other'];
 module.exports.errorCodes = {
   INVALID_TOKEN_ERR: 'INVALID_TOKEN_ERR',
   USER_NOT_VERIFIED: 'USER_NOT_VERIFIED',
+  ONLY_COMPANY_ALLOWED: 'ONLY_COMPANY_ALLOWED',
 };

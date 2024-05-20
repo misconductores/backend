@@ -15,6 +15,15 @@ module.exports = class UsersErrorsFactory {
       statusCode: 404,
     });
   }
+  static forbiddenCompanyErr() {
+    return new AppError({
+      message: 'Only company can create post',
+      statusCode: 403,
+      err: {
+        type: errorCodes.ONLY_COMPANY_ALLOWED,
+      },
+    });
+  }
 
   static postalCodesFoundErr() {
     return new AppError({
