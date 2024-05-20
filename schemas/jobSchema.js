@@ -9,7 +9,7 @@ const commonFields = {
   responsibility: Yup.string().required('Responsibility detail is required'),
 };
 
-module.exports.validateJobCreateReq = (data) => {
+module.exports.validateJobReq = (data) => {
   const schema = Yup.object().shape({
     ...commonFields,
   });
@@ -28,7 +28,7 @@ module.exports.validateJobListQueries = (data) => {
   return validatorUtils.validate(schema, data);
 };
 
-module.exports.validatejobIdParams = (data) => {
+module.exports.validateJobIdParams = (data) => {
   const schema = Yup.object().shape({
     id: Yup.string().required('Id is required'),
   });

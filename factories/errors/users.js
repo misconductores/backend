@@ -17,7 +17,7 @@ module.exports = class UsersErrorsFactory {
   }
   static forbiddenCompanyErr() {
     return new AppError({
-      message: 'Only company can create post',
+      message: 'Only company profile allowed!',
       statusCode: 403,
       err: {
         type: errorCodes.ONLY_COMPANY_ALLOWED,

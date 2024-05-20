@@ -1,3 +1,4 @@
+const {UpdateById} = require('../factories/MongoFactories');
 const JobModel = require('../models/JobModel');
 
 module.exports = class JobServices {
@@ -27,6 +28,22 @@ module.exports = class JobServices {
     try {
       const data = await JobModel.findById(id).populate('companyId');
       return {success: true, data};
+    } catch (err) {
+      return {success: false, err};
+    }
+  }
+  static async updateJobById({id, data}) {
+    try {
+      const {doc, success} = await UpdateById(JobModel, id, data);
+      if (success) return {success: true, updatedData: doc};
+    } catch (err) {
+      return {success: false, err};
+    }
+  }
+  static async deleteJobById({id}) {
+    try {
+      const data = await JobModel.findByIdAndDelete(id);
+      return {success: true, deletedData: data};
     } catch (err) {
       return {success: false, err};
     }
