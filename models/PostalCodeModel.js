@@ -6,8 +6,6 @@ const postalCodeSchema = new Schema(
   {
     postalCode: {type: Number},
     area: {type: String},
-    d_estado: {type: String},
-    d_ciudad: {type: String},
     city: {type: String},
   },
   {

@@ -103,16 +103,15 @@ exports.companySchema = {
     .max(11, 'CAAT number should be maximum 11 digits long')
     .required('CAAT is required'),
   companyDescription: Yup.string().required('Company description is required'),
-  motorCarrier: Yup.string()
-    .matches(/^\d+$/, 'Only digits are allowed')
-    .max(8, 'MC number should be maximum 8 digits long'),
+  motorCarrier: Yup.string().max(
+    8,
+    'MC number should be maximum 8 digits long'
+  ),
   deptOfTransport: Yup.string().max(
     12,
     'DOT number should be maximum 12 digits long'
   ),
-  alphaCode: Yup.string()
-    .matches(/^[A-Za-z]+$/, 'Only alphabets are allowed')
-    .max(4, 'SCAC number should be maximum 4 digits long'),
+  alphaCode: Yup.string().max(4, 'SCAC number should be maximum 4 digits long'),
 };
 
 exports.commonFields = {
