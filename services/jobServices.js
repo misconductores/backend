@@ -20,7 +20,10 @@ module.exports = class JobServices {
       const query = {};
 
       if (title) {
-        query.title = {$regex: title, $options: 'i'};
+        query.$or = [
+          {title: {$regex: title, $options: 'i'}},
+          {description: {$regex: title, $options: 'i'}},
+        ];
       }
 
       if (location) {
@@ -77,13 +80,26 @@ module.exports = class JobServices {
       return {success: false, err};
     }
   }
-  static async getDriverList({page, limit}) {
+  static async getDriverList({page, limit, title, location}) {
+    const query = {
+      role: roles.driver.value,
+    };
+
+    if (title) {
+      query.$or = [
+        {firstName: {$regex: title, $options: 'i'}},
+        {lastName: {$regex: title, $options: 'i'}},
+      ];
+    }
+
+    if (location) {
+      query.city = {$regex: location, $options: 'i'};
+    }
+
     try {
-      const totalCount = await UsersModel.find({
-        role: roles.driver.value,
-      }).countDocuments();
+      const totalCount = await UsersModel.find(query).countDocuments();
       const skip = (page - 1) * limit;
-      const data = await UsersModel.find({role: roles.driver.value}, null, {
+      const data = await UsersModel.find(query, null, {
         skip,
         limit,
       });
@@ -92,14 +108,24 @@ module.exports = class JobServices {
       return {success: false, err};
     }
   }
-  static async getCompanyList({page, limit}) {
+  static async getCompanyList({page, limit, title, location}) {
     try {
-      let finalList = [];
-      const totalCount = await UsersModel.find({
+      const query = {
         role: roles.company.value,
-      }).countDocuments();
+      };
+
+      if (title) {
+        query.companyName = {$regex: title, $options: 'i'};
+      }
+
+      if (location) {
+        query.city = {$regex: location, $options: 'i'};
+      }
+
+      let finalList = [];
+      const totalCount = await UsersModel.find(query).countDocuments();
       const skip = (page - 1) * limit;
-      const data = await UsersModel.find({role: roles.company.value}, null, {
+      const data = await UsersModel.find(query, null, {
         skip,
         limit,
       });

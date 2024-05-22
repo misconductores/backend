@@ -168,7 +168,7 @@ module.exports = class JobController {
     });
     if (!user) return next(UsersErrorsFactory.userNotFoundErr());
     if (!success) throw err;
-    let {page, limit} = req.query;
+    let {page, limit, title, location} = req.query;
     page = parseInt(page);
     limit = parseInt(limit);
     const {
@@ -178,6 +178,8 @@ module.exports = class JobController {
     } = await JobServices.getDriverList({
       page,
       limit,
+      title,
+      location,
     });
     if (response)
       return next(
@@ -198,7 +200,7 @@ module.exports = class JobController {
     });
     if (!user) return next(UsersErrorsFactory.userNotFoundErr());
     if (!success) throw err;
-    let {page, limit} = req.query;
+    let {page, limit, title, location} = req.query;
     page = parseInt(page);
     limit = parseInt(limit);
     const {
@@ -208,6 +210,8 @@ module.exports = class JobController {
     } = await JobServices.getCompanyList({
       page,
       limit,
+      title,
+      location,
     });
     if (response)
       return next(
