@@ -36,6 +36,13 @@ module.exports = class UsersResponsesFactory {
       body: {data},
     });
   }
+  static cityListResponse({data} = {}) {
+    return new AppResponse({
+      message: 'City list retrieved successfully',
+      statusCode: 200,
+      body: {data},
+    });
+  }
 
   static updateUserProfilePicRes({user} = {}) {
     return new AppResponse({

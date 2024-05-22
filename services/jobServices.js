@@ -38,6 +38,21 @@ module.exports = class JobServices {
     }
   }
 
+  static async getCompanyJobList({page, limit, id}) {
+    try {
+      const skip = (page - 1) * limit;
+      const [totalCount, data] = await Promise.all([
+        JobModel.countDocuments({companyId: id}),
+        JobModel.find({companyId: id}, null, {skip, limit}).populate(
+          'companyId'
+        ),
+      ]);
+      return {success: true, result: {totalCount, data}};
+    } catch (err) {
+      return {success: false, err};
+    }
+  }
+
   static async getJobById({id}) {
     try {
       const data = await JobModel.findById(id).populate('companyId');

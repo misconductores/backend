@@ -61,6 +61,36 @@ module.exports = class JobController {
     if (!result) return next(JobErrors.jobNotFoundErr());
     if (error) throw error;
   }
+  static async getCompanyJobList(req, res, next) {
+    const {success, err, user} = await UsersServices.getUserById({
+      id: req.jwtToken.user.id,
+    });
+    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
+    if (!success) throw err;
+    let {page, limit} = req.query;
+    page = parseInt(page);
+    limit = parseInt(limit);
+    const {
+      success: response,
+      result,
+      err: error,
+    } = await JobServices.getCompanyJobList({
+      page,
+      limit,
+      id: user.id,
+    });
+    if (response)
+      return next(
+        JobResponsesFactory.jobRetrievedSuccessfully({
+          count: result.totalCount,
+          data: result.data,
+          page: page,
+          perPage: limit,
+        })
+      );
+    if (!result) return next(JobErrors.jobNotFoundErr());
+    if (error) throw error;
+  }
   static async getJobById(req, res, next) {
     const {success, err, user} = await UsersServices.getUserById({
       id: req.jwtToken.user.id,
@@ -105,7 +135,7 @@ module.exports = class JobController {
     });
     if (response)
       return next(
-        JobResponsesFactory.getJobByIdSuccessfully({
+        JobResponsesFactory.jobUpdatedSuccessfully({
           job: updatedData,
         })
       );

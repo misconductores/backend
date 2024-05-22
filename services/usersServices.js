@@ -279,4 +279,15 @@ module.exports = class UsersServices {
       return {success: false, err};
     }
   }
+  static async getCityList() {
+    try {
+      let data = await PostalCodeModel.distinct('city');
+      data = data.map((x) => ({
+        label: x,
+      }));
+      return {success: true, data};
+    } catch (err) {
+      return {success: false, err};
+    }
+  }
 };

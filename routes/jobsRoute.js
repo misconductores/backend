@@ -15,6 +15,14 @@ router.get(
   validatorMiddleware(jobSchema.validatePaginationParams, QUERY_PROPERTY),
   catchAsync(JobController.getJobList)
 );
+
+router.get(
+  '/list/company-jobs',
+  authMiddleware,
+  validatorMiddleware(jobSchema.validatePaginationParams, QUERY_PROPERTY),
+  catchAsync(JobController.getCompanyJobList)
+);
+
 router.get(
   '/:id',
   authMiddleware,

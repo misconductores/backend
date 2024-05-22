@@ -32,6 +32,13 @@ module.exports = class UsersErrorsFactory {
     });
   }
 
+  static cityFoundErr() {
+    return new AppError({
+      message: 'No city found',
+      statusCode: 404,
+    });
+  }
+
   static profileImgUpdateErr() {
     return new AppError({
       message: 'Profile image update failed',

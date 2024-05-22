@@ -9,7 +9,7 @@ const jobSchema = new Schema(
     location: {type: String},
     description: {type: String},
     responsibility: {type: String},
-    participants: [
+    applicants: [
       {type: mongoose.Schema.Types.ObjectId, ref: 'Users', default: []},
     ],
     companyId: {

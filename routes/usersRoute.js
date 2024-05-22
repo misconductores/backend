@@ -14,6 +14,12 @@ router.get(
   catchAsync(UsersController.getLoggedInUserInformation)
 );
 
+router.get(
+  '/city-list',
+  authMiddleware,
+  catchAsync(UsersController.getCityList)
+);
+
 router.patch(
   '/profile-image',
   uploadImage.single('image'),

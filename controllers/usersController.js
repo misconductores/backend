@@ -323,4 +323,18 @@ module.exports = class UsersController {
       })
     );
   }
+
+  static async getCityList(req, res, next) {
+    const {success, data, err} = await UsersServices.getCityList();
+
+    if (!data) return next(UsersErrorsFactory.cityFoundErr());
+
+    if (!success) throw err;
+
+    return next(
+      UsersResponsesFactory.cityListResponse({
+        data,
+      })
+    );
+  }
 };
