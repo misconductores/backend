@@ -4,7 +4,8 @@ const {
   JobErrors,
   UsersErrorsFactory,
 } = require('../factories');
-const {JobServices, UsersServices} = require('../services');
+const {JobsServices, UsersServices, GeneralServices} = require('../services');
+const JobModel = require('../models/JobModel');
 
 module.exports = class JobController {
   static async createJob(req, res, next) {
@@ -17,11 +18,12 @@ module.exports = class JobController {
     if (!success) throw err;
 
     let data = req.body;
+
     const {
       success: response,
-      err: error,
-      job,
-    } = await JobServices.createPost({data});
+      error,
+      doc: job,
+    } = await GeneralServices.create({data, model: JobModel});
     if (response) {
       return next(JobResponsesFactory.jobCreatedSuccessfully({job}));
     }
@@ -43,7 +45,7 @@ module.exports = class JobController {
       success: response,
       result,
       err: error,
-    } = await JobServices.getJobList({
+    } = await JobsServices.getJobList({
       page,
       limit,
       title,
@@ -74,7 +76,7 @@ module.exports = class JobController {
       success: response,
       result,
       err: error,
-    } = await JobServices.getCompanyJobList({
+    } = await JobsServices.getCompanyJobList({
       page,
       limit,
       id: user.id,
@@ -100,10 +102,12 @@ module.exports = class JobController {
     const {id} = req.params;
     const {
       success: response,
-      data,
-      err: error,
-    } = await JobServices.getJobById({
+      doc: data,
+      error,
+    } = await GeneralServices.findById({
       id,
+      model: JobModel,
+      popOptions: 'companyId',
     });
     if (response)
       return next(
@@ -127,10 +131,11 @@ module.exports = class JobController {
     const data = req.body;
     const {
       success: response,
-      updatedData,
-      err: error,
-    } = await JobServices.updateJobById({
+      doc: updatedData,
+      error,
+    } = await GeneralServices.update({
       id,
+      model: JobModel,
       data,
     });
     if (response)
@@ -153,77 +158,14 @@ module.exports = class JobController {
     const {id} = req.params;
     const {
       success: response,
-      deletedData,
-      err: error,
-    } = await JobServices.deleteJobById({
+      doc: deletedData,
+      error,
+    } = await GeneralServices.delete({
       id,
+      model: JobModel,
     });
     if (response && deletedData)
       return next(JobResponsesFactory.jobDeletedSuccessfully());
     if (error) throw next(JobErrors.jobDeleteErr());
-  }
-  static async getDriverList(req, res, next) {
-    const {success, err, user} = await UsersServices.getUserById({
-      id: req.jwtToken.user.id,
-    });
-    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
-    if (!success) throw err;
-    let {page, limit, title, location} = req.query;
-    page = parseInt(page);
-    limit = parseInt(limit);
-    const {
-      success: response,
-      result,
-      err: error,
-    } = await JobServices.getDriverList({
-      page,
-      limit,
-      title,
-      location,
-    });
-    if (response)
-      return next(
-        JobResponsesFactory.driversRetrievedSuccessfully({
-          count: result.totalCount,
-          data: result.data,
-          page: page,
-          perPage: limit,
-        })
-      );
-    if (!result || result.data.length === 0)
-      return next(JobErrors.driverNotFoundErr());
-    if (error) throw error;
-  }
-  static async getCompanyList(req, res, next) {
-    const {success, err, user} = await UsersServices.getUserById({
-      id: req.jwtToken.user.id,
-    });
-    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
-    if (!success) throw err;
-    let {page, limit, title, location} = req.query;
-    page = parseInt(page);
-    limit = parseInt(limit);
-    const {
-      success: response,
-      result,
-      err: error,
-    } = await JobServices.getCompanyList({
-      page,
-      limit,
-      title,
-      location,
-    });
-    if (response)
-      return next(
-        JobResponsesFactory.companyRetrievedSuccessfully({
-          count: result.totalCount,
-          data: result.data,
-          page: page,
-          perPage: limit,
-        })
-      );
-    if (!result || result.data.length === 0)
-      return next(JobErrors.companyNotFoundErr());
-    if (error) throw error;
   }
 };

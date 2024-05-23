@@ -16,14 +16,6 @@ module.exports.validateJobReq = (data) => {
   return validatorUtils.validate(schema, data);
 };
 
-module.exports.validatePaginationParams = (data) => {
-  const schema = Yup.object().shape({
-    page: Yup.string().required('Page number is required'),
-    limit: Yup.string().required('Page limit is required'),
-  });
-  return validatorUtils.validate(schema, data);
-};
-
 module.exports.validateJobIdParams = (data) => {
   const schema = Yup.object().shape({
     id: Yup.string().required('Id is required'),

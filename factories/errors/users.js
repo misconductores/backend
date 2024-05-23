@@ -32,13 +32,6 @@ module.exports = class UsersErrorsFactory {
     });
   }
 
-  static cityFoundErr() {
-    return new AppError({
-      message: 'No city found',
-      statusCode: 404,
-    });
-  }
-
   static profileImgUpdateErr() {
     return new AppError({
       message: 'Profile image update failed',
@@ -118,6 +111,18 @@ module.exports = class UsersErrorsFactory {
   static userAlreadyVerifiedErr() {
     return new AppError({
       message: 'user already verified',
+      statusCode: 400,
+    });
+  }
+  static driverNotFoundErr() {
+    return new AppError({
+      message: 'Drivers not found',
+      statusCode: 400,
+    });
+  }
+  static companyNotFoundErr() {
+    return new AppError({
+      message: 'Company not found',
       statusCode: 400,
     });
   }

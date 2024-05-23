@@ -31,16 +31,4 @@ module.exports = class JobErrorsFactory {
       statusCode: 400,
     });
   }
-  static driverNotFoundErr() {
-    return new AppError({
-      message: 'Drivers not found',
-      statusCode: 400,
-    });
-  }
-  static companyNotFoundErr() {
-    return new AppError({
-      message: 'Company not found',
-      statusCode: 400,
-    });
-  }
 };

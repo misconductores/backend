@@ -1,11 +1,11 @@
 const UsersServices = require(`./usersServices`);
 const GeneralServices = require(`./generalServices`);
 const FilesServices = require('./fileServices');
-const JobServices = require('./jobServices');
+const JobsServices = require('./jobsServices');
 
 module.exports = {
   UsersServices,
   GeneralServices,
   FilesServices,
-  JobServices,
+  JobsServices,
 };

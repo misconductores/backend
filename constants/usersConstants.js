@@ -74,6 +74,10 @@ module.exports.companyDocumentNames = {
     value: 'sctPermit',
     label: 'SCT Permit',
   },
+  other: {
+    value: 'other',
+    label: 'Other',
+  },
 };
 
 module.exports.driverDocumentNames = {
@@ -136,6 +140,10 @@ module.exports.driverDocumentNames = {
   anamBadge: {
     value: 'anamBadge',
     label: 'ANAM Badge',
+  },
+  other: {
+    value: 'other',
+    label: 'Other',
   },
 };
 

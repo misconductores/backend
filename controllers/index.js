@@ -1,9 +1,11 @@
 const UsersController = require(`./usersController`);
 const GeneralController = require(`./generalController`);
-const JobController = require('./jobController');
+const JobsController = require('./jobsController');
+const OthersController = require('./othersController');
 
 module.exports = {
   UsersController,
   GeneralController,
-  JobController,
+  JobsController,
+  OthersController,
 };

@@ -36,18 +36,4 @@ module.exports = class JobResponsesFactory {
       body: {},
     });
   }
-  static driversRetrievedSuccessfully({count, data, page, perPage}) {
-    return new AppResponse({
-      message: 'Driver list retrieved successfully',
-      statusCode: 200,
-      body: {count, data, page, perPage},
-    });
-  }
-  static companyRetrievedSuccessfully({count, data, page, perPage}) {
-    return new AppResponse({
-      message: 'Company list retrieved successfully',
-      statusCode: 200,
-      body: {count, data, page, perPage},
-    });
-  }
 };

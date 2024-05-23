@@ -2,9 +2,9 @@ const {
   QUERY_PROPERTY,
   PARAMS_PROPERTY,
 } = require('../constants/usersConstants');
-const {JobController} = require('../controllers');
+const {JobsController} = require('../controllers');
 const {authMiddleware, validatorMiddleware} = require('../middleware');
-const {jobSchema} = require('../schemas');
+const {jobsSchema, othersSchema} = require('../schemas');
 const {catchAsync} = require('../utils');
 
 const router = require('express').Router();
@@ -12,52 +12,40 @@ const router = require('express').Router();
 router.get(
   '/list',
   authMiddleware,
-  validatorMiddleware(jobSchema.validatePaginationParams, QUERY_PROPERTY),
-  catchAsync(JobController.getJobList)
+  validatorMiddleware(othersSchema.validatePaginationParams, QUERY_PROPERTY),
+  catchAsync(JobsController.getJobList)
 );
 
 router.get(
   '/list/company-jobs',
   authMiddleware,
-  validatorMiddleware(jobSchema.validatePaginationParams, QUERY_PROPERTY),
-  catchAsync(JobController.getCompanyJobList)
+  validatorMiddleware(othersSchema.validatePaginationParams, QUERY_PROPERTY),
+  catchAsync(JobsController.getCompanyJobList)
 );
 
 router.get(
   '/:id',
   authMiddleware,
-  validatorMiddleware(jobSchema.validateJobIdParams, PARAMS_PROPERTY),
-  catchAsync(JobController.getJobById)
+  validatorMiddleware(jobsSchema.validateJobIdParams, PARAMS_PROPERTY),
+  catchAsync(JobsController.getJobById)
 );
 router.post(
   '/create',
   authMiddleware,
-  validatorMiddleware(jobSchema.validateJobReq),
-  catchAsync(JobController.createJob)
+  validatorMiddleware(jobsSchema.validateJobReq),
+  catchAsync(JobsController.createJob)
 );
 router.patch(
   '/:id',
   authMiddleware,
-  validatorMiddleware(jobSchema.validateJobReq),
-  catchAsync(JobController.updateJobById)
+  validatorMiddleware(jobsSchema.validateJobReq),
+  catchAsync(JobsController.updateJobById)
 );
 router.delete(
   '/:id',
   authMiddleware,
-  validatorMiddleware(jobSchema.validateJobIdParams, PARAMS_PROPERTY),
-  catchAsync(JobController.deleteJobById)
-);
-router.get(
-  '/user/drivers',
-  authMiddleware,
-  validatorMiddleware(jobSchema.validatePaginationParams, QUERY_PROPERTY),
-  catchAsync(JobController.getDriverList)
-);
-router.get(
-  '/user/companies',
-  authMiddleware,
-  validatorMiddleware(jobSchema.validatePaginationParams, QUERY_PROPERTY),
-  catchAsync(JobController.getCompanyList)
+  validatorMiddleware(jobsSchema.validateJobIdParams, PARAMS_PROPERTY),
+  catchAsync(JobsController.deleteJobById)
 );
 
 module.exports = router;

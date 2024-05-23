@@ -4,6 +4,8 @@ const {passwordsUtils} = require('../utils');
 const FilesServices = require('./fileServices');
 const DocumentsModel = require('../models/DocumentsModel');
 const PostalCodeModel = require('../models/PostalCodeModel');
+const JobModel = require('../models/JobModel');
+const {roles} = require('../constants/usersConstants');
 
 module.exports = class UsersServices {
   static async getUserByEmail({email}) {
@@ -279,13 +281,60 @@ module.exports = class UsersServices {
       return {success: false, err};
     }
   }
-  static async getCityList() {
+  static async getDriversList({page, limit, title, location}) {
+    const query = {
+      role: roles.driver.value,
+    };
+
+    if (title) {
+      query.$or = [
+        {firstName: {$regex: title, $options: 'i'}},
+        {lastName: {$regex: title, $options: 'i'}},
+      ];
+    }
+
+    if (location) {
+      query.city = {$regex: location, $options: 'i'};
+    }
     try {
-      let data = await PostalCodeModel.distinct('city');
-      data = data.map((x) => ({
-        label: x,
-      }));
-      return {success: true, data};
+      const totalCount = await UsersModel.find(query).countDocuments();
+      const skip = (page - 1) * limit;
+      const data = await UsersModel.find(query, null, {
+        skip,
+        limit,
+      });
+      return {success: true, result: {totalCount, data}};
+    } catch (err) {
+      return {success: false, err};
+    }
+  }
+  static async getCompaniesList({page, limit, title, location}) {
+    try {
+      const query = {
+        role: roles.company.value,
+      };
+
+      if (title) {
+        query.companyName = {$regex: title, $options: 'i'};
+      }
+
+      if (location) {
+        query.city = {$regex: location, $options: 'i'};
+      }
+
+      let finalList = [];
+      const totalCount = await UsersModel.find(query).countDocuments();
+      const skip = (page - 1) * limit;
+      const data = await UsersModel.find(query, null, {
+        skip,
+        limit,
+      });
+      for (const user of data) {
+        const jobs = await JobModel.find({companyId: user._id});
+        let finalObject = {company: user, jobs};
+        finalList.push(finalObject);
+      }
+      return {success: true, result: {totalCount, data: finalList}};
     } catch (err) {
       return {success: false, err};
     }

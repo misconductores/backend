@@ -1,7 +1,9 @@
 const usersSchema = require(`./usersSchema`);
-const jobSchema = require('./jobSchema');
+const jobsSchema = require('./jobsSchema');
+const othersSchema = require('./othersSchema');
 
 module.exports = {
   usersSchema,
-  jobSchema,
+  jobsSchema,
+  othersSchema,
 };

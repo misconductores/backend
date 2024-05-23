@@ -36,13 +36,6 @@ module.exports = class UsersResponsesFactory {
       body: {data},
     });
   }
-  static cityListResponse({data} = {}) {
-    return new AppResponse({
-      message: 'City list retrieved successfully',
-      statusCode: 200,
-      body: {data},
-    });
-  }
 
   static updateUserProfilePicRes({user} = {}) {
     return new AppResponse({
@@ -128,6 +121,20 @@ module.exports = class UsersResponsesFactory {
       statusCode: 200,
       message: 'Email Verification sent successfully',
       body: {},
+    });
+  }
+  static driversRetrievedSuccessfully({count, data, page, perPage}) {
+    return new AppResponse({
+      message: 'Driver list retrieved successfully',
+      statusCode: 200,
+      body: {count, data, page, perPage},
+    });
+  }
+  static companyRetrievedSuccessfully({count, data, page, perPage}) {
+    return new AppResponse({
+      message: 'Company list retrieved successfully',
+      statusCode: 200,
+      body: {count, data, page, perPage},
     });
   }
 };
