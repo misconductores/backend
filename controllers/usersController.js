@@ -329,9 +329,11 @@ module.exports = class UsersController {
     });
     if (!user) return next(UsersErrorsFactory.userNotFoundErr());
     if (!success) throw err;
-    let {page, limit, title, location} = req.query;
+    let {page, limit, title, location, licenseTypes, handleEquipment} =
+      req.query;
     page = parseInt(page);
     limit = parseInt(limit);
+    const formattedHandleEquipment = handleEquipment?.split(',') || [];
     const {
       success: response,
       result,
@@ -341,6 +343,8 @@ module.exports = class UsersController {
       limit,
       title,
       location,
+      licenseTypes,
+      equipment: formattedHandleEquipment,
     });
     if (response)
       return next(

@@ -281,7 +281,14 @@ module.exports = class UsersServices {
       return {success: false, err};
     }
   }
-  static async getDriversList({page, limit, title, location}) {
+  static async getDriversList({
+    page,
+    limit,
+    title,
+    location,
+    licenseTypes,
+    equipment,
+  }) {
     const query = {
       role: roles.driver.value,
     };
@@ -296,6 +303,18 @@ module.exports = class UsersServices {
     if (location) {
       query.city = {$regex: location, $options: 'i'};
     }
+
+    if (licenseTypes) {
+      query.$or = [
+        {'stateLicenses.stateLicenseType': licenseTypes},
+        {'federalLicenses.federalLicenseType': licenseTypes},
+      ];
+    }
+
+    if (equipment.length > 0) {
+      query.handleEquipment = {$in: equipment};
+    }
+
     try {
       const totalCount = await UsersModel.find(query).countDocuments();
       const skip = (page - 1) * limit;
