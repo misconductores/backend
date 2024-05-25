@@ -323,4 +323,72 @@ module.exports = class UsersController {
       })
     );
   }
+  static async getDriversList(req, res, next) {
+    const {success, err, user} = await UsersServices.getUserById({
+      id: req.jwtToken.user.id,
+    });
+    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
+    if (!success) throw err;
+    let {page, limit, title, location, licenseTypes, handleEquipment} =
+      req.query;
+    page = parseInt(page);
+    limit = parseInt(limit);
+    const formattedHandleEquipment = handleEquipment?.split(',') || [];
+    const {
+      success: response,
+      result,
+      err: error,
+    } = await UsersServices.getDriversList({
+      page,
+      limit,
+      title,
+      location,
+      licenseTypes,
+      equipment: formattedHandleEquipment,
+    });
+    if (response)
+      return next(
+        UsersResponsesFactory.driversRetrievedSuccessfully({
+          count: result.totalCount,
+          data: result.data,
+          page: page,
+          perPage: limit,
+        })
+      );
+    if (!result || result.data.length === 0)
+      return next(UsersErrorsFactory.driverNotFoundErr());
+    if (error) throw error;
+  }
+  static async getCompaniesList(req, res, next) {
+    const {success, err, user} = await UsersServices.getUserById({
+      id: req.jwtToken.user.id,
+    });
+    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
+    if (!success) throw err;
+    let {page, limit, title, location} = req.query;
+    page = parseInt(page);
+    limit = parseInt(limit);
+    const {
+      success: response,
+      result,
+      err: error,
+    } = await UsersServices.getCompaniesList({
+      page,
+      limit,
+      title,
+      location,
+    });
+    if (response)
+      return next(
+        UsersResponsesFactory.companyRetrievedSuccessfully({
+          count: result.totalCount,
+          data: result.data,
+          page: page,
+          perPage: limit,
+        })
+      );
+    if (!result || result.data.length === 0)
+      return next(UsersErrorsFactory.companyNotFoundErr());
+    if (error) throw error;
+  }
 };

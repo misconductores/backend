@@ -4,6 +4,8 @@ const {passwordsUtils} = require('../utils');
 const FilesServices = require('./fileServices');
 const DocumentsModel = require('../models/DocumentsModel');
 const PostalCodeModel = require('../models/PostalCodeModel');
+const JobModel = require('../models/JobModel');
+const {roles} = require('../constants/usersConstants');
 
 module.exports = class UsersServices {
   static async getUserByEmail({email}) {
@@ -275,6 +277,83 @@ module.exports = class UsersServices {
         postalCode: newPostalCode,
       });
       return {success: true, data};
+    } catch (err) {
+      return {success: false, err};
+    }
+  }
+  static async getDriversList({
+    page,
+    limit,
+    title,
+    location,
+    licenseTypes,
+    equipment,
+  }) {
+    const query = {
+      role: roles.driver.value,
+    };
+
+    if (title) {
+      query.$or = [
+        {firstName: {$regex: title, $options: 'i'}},
+        {lastName: {$regex: title, $options: 'i'}},
+      ];
+    }
+
+    if (location) {
+      query.city = {$regex: location, $options: 'i'};
+    }
+
+    if (licenseTypes) {
+      query.$or = [
+        {'stateLicenses.stateLicenseType': licenseTypes},
+        {'federalLicenses.federalLicenseType': licenseTypes},
+      ];
+    }
+
+    if (equipment.length > 0) {
+      query.handleEquipment = {$in: equipment};
+    }
+
+    try {
+      const totalCount = await UsersModel.find(query).countDocuments();
+      const skip = (page - 1) * limit;
+      const data = await UsersModel.find(query, null, {
+        skip,
+        limit,
+      });
+      return {success: true, result: {totalCount, data}};
+    } catch (err) {
+      return {success: false, err};
+    }
+  }
+  static async getCompaniesList({page, limit, title, location}) {
+    try {
+      const query = {
+        role: roles.company.value,
+      };
+
+      if (title) {
+        query.companyName = {$regex: title, $options: 'i'};
+      }
+
+      if (location) {
+        query.city = {$regex: location, $options: 'i'};
+      }
+
+      let finalList = [];
+      const totalCount = await UsersModel.find(query).countDocuments();
+      const skip = (page - 1) * limit;
+      const data = await UsersModel.find(query, null, {
+        skip,
+        limit,
+      });
+      for (const user of data) {
+        const jobs = await JobModel.find({companyId: user._id});
+        let finalObject = {company: user, jobs};
+        finalList.push(finalObject);
+      }
+      return {success: true, result: {totalCount, data: finalList}};
     } catch (err) {
       return {success: false, err};
     }

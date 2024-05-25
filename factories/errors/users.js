@@ -15,6 +15,15 @@ module.exports = class UsersErrorsFactory {
       statusCode: 404,
     });
   }
+  static forbiddenCompanyErr() {
+    return new AppError({
+      message: 'Only company profile allowed!',
+      statusCode: 403,
+      err: {
+        type: errorCodes.ONLY_COMPANY_ALLOWED,
+      },
+    });
+  }
 
   static postalCodesFoundErr() {
     return new AppError({
@@ -102,6 +111,18 @@ module.exports = class UsersErrorsFactory {
   static userAlreadyVerifiedErr() {
     return new AppError({
       message: 'user already verified',
+      statusCode: 400,
+    });
+  }
+  static driverNotFoundErr() {
+    return new AppError({
+      message: 'Drivers not found',
+      statusCode: 400,
+    });
+  }
+  static companyNotFoundErr() {
+    return new AppError({
+      message: 'Company not found',
       statusCode: 400,
     });
   }

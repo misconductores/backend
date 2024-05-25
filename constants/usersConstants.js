@@ -39,6 +39,7 @@ module.exports.driverStatuses = {
 module.exports.SENDGRID_EMAIL = 'mitodo.oficios@gmail.com';
 module.exports.SENDGRID_EMAIL_NAME = 'Desol Int.';
 module.exports.PARAMS_PROPERTY = 'params';
+module.exports.QUERY_PROPERTY = 'query';
 
 module.exports.companyDocumentNames = {
   taxCertificate: {
@@ -72,6 +73,10 @@ module.exports.companyDocumentNames = {
   sctPermit: {
     value: 'sctPermit',
     label: 'SCT Permit',
+  },
+  other: {
+    value: 'other',
+    label: 'Other',
   },
 };
 
@@ -136,6 +141,10 @@ module.exports.driverDocumentNames = {
     value: 'anamBadge',
     label: 'ANAM Badge',
   },
+  other: {
+    value: 'other',
+    label: 'Other',
+  },
 };
 
 module.exports.federalLicenseTypes = ['A', 'B', 'C', 'E'];
@@ -145,4 +154,5 @@ module.exports.genderOptions = ['male', 'female', 'other'];
 module.exports.errorCodes = {
   INVALID_TOKEN_ERR: 'INVALID_TOKEN_ERR',
   USER_NOT_VERIFIED: 'USER_NOT_VERIFIED',
+  ONLY_COMPANY_ALLOWED: 'ONLY_COMPANY_ALLOWED',
 };

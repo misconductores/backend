@@ -40,6 +40,16 @@ module.exports.UpdateById = async (model, query, data) => {
   return {success: true, doc};
 };
 
+module.exports.findById = async (model, id, popOptions) => {
+  let doc = popOptions
+    ? await model.findById(id).populate(popOptions)
+    : await model.findById(id);
+
+  if (doc) doc = GeneralEntityFactory.cleanMongooseData({data: doc});
+
+  return {success: true, doc};
+};
+
 module.exports.UpdateDocumentsById = async (model, query, data) => {
   const updatedDoc = await model.findByIdAndUpdate(
     query,

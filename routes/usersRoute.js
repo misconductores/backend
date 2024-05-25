@@ -2,11 +2,27 @@ const express = require('express');
 const {UsersController} = require('../controllers');
 const {validatorMiddleware, authMiddleware} = require('../middleware');
 const {catchAsync} = require('../utils');
-const {usersSchema} = require('../schemas');
+const {usersSchema, othersSchema} = require('../schemas');
 const {uploadImage} = require('../middleware/uploadImageMiddleware');
 const {uploadDocument} = require('../middleware/documentUploadMiddleware');
-const {PARAMS_PROPERTY} = require('../constants/usersConstants');
+const {
+  PARAMS_PROPERTY,
+  QUERY_PROPERTY,
+} = require('../constants/usersConstants');
 const router = express.Router();
+
+router.get(
+  '/drivers',
+  authMiddleware,
+  validatorMiddleware(othersSchema.validatePaginationParams, QUERY_PROPERTY),
+  catchAsync(UsersController.getDriversList)
+);
+router.get(
+  '/companies',
+  authMiddleware,
+  validatorMiddleware(othersSchema.validatePaginationParams, QUERY_PROPERTY),
+  catchAsync(UsersController.getCompaniesList)
+);
 
 router.get(
   '/me',
