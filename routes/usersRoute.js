@@ -30,6 +30,12 @@ router.get(
   catchAsync(UsersController.getLoggedInUserInformation)
 );
 
+router.get(
+  '/:id',
+  authMiddleware,
+  catchAsync(UsersController.getUserInformation)
+);
+
 router.patch(
   '/profile-image',
   uploadImage.single('image'),
