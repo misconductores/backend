@@ -1,5 +1,5 @@
 const config = require('config');
-const {UsersServices, FilesServices} = require('../services');
+const {UsersServices, FilesServices, GeneralServices} = require('../services');
 const actions = require('../utils/actions');
 const {
   UsersErrorsFactory,
@@ -7,9 +7,9 @@ const {
   UsersResponsesFactory,
   UsersEntityFactory,
 } = require('../factories');
-
 const {jwtUtils} = require('../utils');
 const {usersConstants} = require('../constants');
+const UsersModel = require('../models/UsersModel');
 
 module.exports = class UsersController {
   static async createUser(req, res, next) {
@@ -41,6 +41,28 @@ module.exports = class UsersController {
     if (!user) return next(UsersErrorsFactory.userNotFoundErr());
 
     if (!success) throw err;
+
+    return next(
+      UsersResponsesFactory.singleUserInfoRetrievedRes({
+        user,
+      })
+    );
+  }
+
+  static async getUserInformation(req, res, next) {
+    const {id} = req.params;
+    const {
+      success,
+      error,
+      doc: user,
+    } = await GeneralServices.findById({
+      id: id,
+      model: UsersModel,
+    });
+
+    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
+
+    if (!success) throw error;
 
     return next(
       UsersResponsesFactory.singleUserInfoRetrievedRes({
