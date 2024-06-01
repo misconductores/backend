@@ -318,7 +318,7 @@ module.exports = class UsersServices {
     }
 
     if (location) {
-      query.city = {$regex: location, $options: 'i'};
+      query.city = location;
     }
 
     if (equipment.length > 0) {
@@ -347,7 +347,7 @@ module.exports = class UsersServices {
       }
 
       if (location) {
-        query.city = {$regex: location, $options: 'i'};
+        query.city = location;
       }
 
       let finalList = [];
