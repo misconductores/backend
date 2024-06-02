@@ -293,28 +293,37 @@ module.exports = class UsersServices {
       role: roles.driver.value,
     };
 
-    if (title) {
-      query.$or = [
-        {firstName: {$regex: title, $options: 'i'}},
-        {lastName: {$regex: title, $options: 'i'}},
-      ];
-    }
+    const andConditions = [];
 
-    if (location) {
-      query.city = {$regex: location, $options: 'i'};
+    if (title) {
+      andConditions.push({
+        $or: [
+          {firstName: {$regex: title, $options: 'i'}},
+          {lastName: {$regex: title, $options: 'i'}},
+        ],
+      });
     }
 
     if (licenseTypes) {
-      query.$or = [
-        {'stateLicenses.stateLicenseType': licenseTypes},
-        {'federalLicenses.federalLicenseType': licenseTypes},
-      ];
+      andConditions.push({
+        $or: [
+          {'stateLicenses.stateLicenseType': licenseTypes},
+          {'federalLicenses.federalLicenseType': licenseTypes},
+        ],
+      });
+    }
+
+    if (andConditions.length > 0) {
+      query.$and = andConditions;
+    }
+
+    if (location) {
+      query.city = location;
     }
 
     if (equipment.length > 0) {
       query.handleEquipment = {$in: equipment};
     }
-
     try {
       const totalCount = await UsersModel.find(query).countDocuments();
       const skip = (page - 1) * limit;
@@ -338,7 +347,7 @@ module.exports = class UsersServices {
       }
 
       if (location) {
-        query.city = {$regex: location, $options: 'i'};
+        query.city = location;
       }
 
       let finalList = [];

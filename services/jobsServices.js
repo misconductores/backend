@@ -15,7 +15,7 @@ module.exports = class JobServices {
       }
 
       if (location) {
-        query.location = {$regex: location, $options: 'i'};
+        query.location = location;
       }
 
       const [totalCount, data] = await Promise.all([
