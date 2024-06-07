@@ -3,7 +3,7 @@ const {validatorUtils} = require('../utils');
 
 const commonFields = {
   title: Yup.string().required('Job title is required'),
-  experience: Yup.number().required('Experience is required'),
+  experience: Yup.string().required('Experience is required'),
   city: Yup.string().required('City is required'),
   postalCode: Yup.string().required('Postal code is required'),
   description: Yup.string().required('Description is required'),

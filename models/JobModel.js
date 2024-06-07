@@ -5,7 +5,7 @@ const Schema = mongoose.Schema;
 const jobSchema = new Schema(
   {
     title: {type: String},
-    experience: {type: Number},
+    experience: {type: String},
     city: {type: String},
     postalCode: {type: String},
     description: {type: String},
