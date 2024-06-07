@@ -1,4 +1,3 @@
-const {UpdateById} = require('../factories/MongoFactories');
 const JobModel = require('../models/JobModel');
 const {getJobsPipeline} = require('../utils/pipelines/jobs');
 
@@ -16,10 +15,15 @@ module.exports = class JobServices {
       }
 
       if (location) {
-        query.location = location;
+        query.city = location;
       }
 
-      const pipeline = getJobsPipeline({query, postalCode, skip, limit});
+      const pipeline = getJobsPipeline({
+        query,
+        postalCode,
+        skip,
+        limit,
+      });
 
       const [totalCount, data] = await Promise.all([
         JobModel.countDocuments(query),

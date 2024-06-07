@@ -351,8 +351,15 @@ module.exports = class UsersController {
     });
     if (!user) return next(UsersErrorsFactory.userNotFoundErr());
     if (!success) throw err;
-    let {page, limit, title, location, licenseTypes, handleEquipment} =
-      req.query;
+    let {
+      page,
+      limit,
+      title,
+      location,
+      licenseTypes,
+      handleEquipment,
+      experience,
+    } = req.query;
     page = parseInt(page);
     limit = parseInt(limit);
     const formattedHandleEquipment = handleEquipment?.split(',') || [];
@@ -367,6 +374,7 @@ module.exports = class UsersController {
       location,
       licenseTypes,
       equipment: formattedHandleEquipment,
+      experience,
     });
     if (response)
       return next(

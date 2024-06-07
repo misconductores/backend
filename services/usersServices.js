@@ -5,7 +5,7 @@ const FilesServices = require('./fileServices');
 const DocumentsModel = require('../models/DocumentsModel');
 const PostalCodeModel = require('../models/PostalCodeModel');
 const JobModel = require('../models/JobModel');
-const {roles} = require('../constants/usersConstants');
+const {roles, restrictedUserData} = require('../constants/usersConstants');
 
 module.exports = class UsersServices {
   static async getUserByEmail({email}) {
@@ -288,6 +288,7 @@ module.exports = class UsersServices {
     location,
     licenseTypes,
     equipment,
+    experience,
   }) {
     const query = {
       role: roles.driver.value,
@@ -296,12 +297,15 @@ module.exports = class UsersServices {
     const andConditions = [];
 
     if (title) {
-      andConditions.push({
+      title = title.trim();
+      const titleWords = title.split(' ').filter((word) => word.length > 0);
+      const titleConditions = titleWords.map((word) => ({
         $or: [
-          {firstName: {$regex: title, $options: 'i'}},
-          {lastName: {$regex: title, $options: 'i'}},
+          {firstName: {$regex: word, $options: 'i'}},
+          {lastName: {$regex: word, $options: 'i'}},
         ],
-      });
+      }));
+      andConditions.push(...titleConditions);
     }
 
     if (licenseTypes) {
@@ -311,6 +315,26 @@ module.exports = class UsersServices {
           {'federalLicenses.federalLicenseType': licenseTypes},
         ],
       });
+    }
+
+    if (experience !== undefined) {
+      if (experience <= 1) {
+        andConditions.push({
+          experience: {$lte: 1},
+        });
+      } else if (experience > 1 && experience <= 4) {
+        andConditions.push({
+          experience: {$gt: 1, $lte: 4},
+        });
+      } else if (experience > 5 && experience <= 9) {
+        andConditions.push({
+          experience: {$gt: 5, $lte: 9},
+        });
+      } else {
+        andConditions.push({
+          experience: {$gte: 10},
+        });
+      }
     }
 
     if (andConditions.length > 0) {
@@ -324,13 +348,16 @@ module.exports = class UsersServices {
     if (equipment.length > 0) {
       query.handleEquipment = {$in: equipment};
     }
+
     try {
-      const totalCount = await UsersModel.find(query).countDocuments();
       const skip = (page - 1) * limit;
-      const data = await UsersModel.find(query, null, {
-        skip,
-        limit,
-      });
+      const [totalCount, data] = await Promise.all([
+        UsersModel.find(query).countDocuments(),
+        UsersModel.find(query, null, {
+          skip,
+          limit,
+        }).select(restrictedUserData),
+      ]);
       return {success: true, result: {totalCount, data}};
     } catch (err) {
       return {success: false, err};

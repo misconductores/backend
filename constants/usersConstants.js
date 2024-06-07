@@ -156,3 +156,6 @@ module.exports.errorCodes = {
   USER_NOT_VERIFIED: 'USER_NOT_VERIFIED',
   ONLY_COMPANY_ALLOWED: 'ONLY_COMPANY_ALLOWED',
 };
+
+module.exports.restrictedUserData =
+  '-federalLicenses.federalLicenseNo -stateLicenses.stateLicenseNo -visaNumber -fastNumber -password';
