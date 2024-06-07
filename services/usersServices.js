@@ -5,7 +5,11 @@ const FilesServices = require('./fileServices');
 const DocumentsModel = require('../models/DocumentsModel');
 const PostalCodeModel = require('../models/PostalCodeModel');
 const JobModel = require('../models/JobModel');
-const {roles, restrictedUserData} = require('../constants/usersConstants');
+const {
+  roles,
+  restrictedUserData,
+  experienceTypes,
+} = require('../constants/usersConstants');
 
 module.exports = class UsersServices {
   static async getUserByEmail({email}) {
@@ -318,15 +322,15 @@ module.exports = class UsersServices {
     }
 
     if (experience !== undefined) {
-      if (experience <= 1) {
+      if (experience === experienceTypes.student.value) {
         andConditions.push({
           experience: {$lte: 1},
         });
-      } else if (experience > 1 && experience <= 4) {
+      } else if (experience === experienceTypes.beginner.value) {
         andConditions.push({
           experience: {$gt: 1, $lte: 4},
         });
-      } else if (experience > 5 && experience <= 9) {
+      } else if (experience === experienceTypes.intermediate.value) {
         andConditions.push({
           experience: {$gt: 5, $lte: 9},
         });

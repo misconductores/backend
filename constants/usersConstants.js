@@ -159,3 +159,18 @@ module.exports.errorCodes = {
 
 module.exports.restrictedUserData =
   '-federalLicenses.federalLicenseNo -stateLicenses.stateLicenseNo -visaNumber -fastNumber -password';
+
+module.exports.experienceTypes = {
+  student: {
+    value: 'student',
+  },
+  beginner: {
+    value: 'beginner',
+  },
+  intermediate: {
+    value: 'intermediate',
+  },
+  advance: {
+    value: 'advance',
+  },
+};
