@@ -370,7 +370,11 @@ module.exports = class UsersServices {
       };
 
       if (title) {
-        query.companyName = {$regex: title, $options: 'i'};
+        title = title.trim();
+        const titleWords = title.split(' ').filter((word) => word.length > 0);
+        query.$and = titleWords.map((word) => ({
+          companyName: {$regex: word, $options: 'i'},
+        }));
       }
 
       if (location) {

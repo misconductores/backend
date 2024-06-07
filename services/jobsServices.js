@@ -8,10 +8,15 @@ module.exports = class JobServices {
       const query = {};
 
       if (title) {
-        query.$or = [
-          {title: {$regex: title, $options: 'i'}},
-          {description: {$regex: title, $options: 'i'}},
-        ];
+        title = title.trim();
+        const titleWords = title.split(' ').filter((word) => word.length > 0);
+        const titleConditions = titleWords.map((word) => ({
+          $or: [
+            {title: {$regex: word, $options: 'i'}},
+            {description: {$regex: word, $options: 'i'}},
+          ],
+        }));
+        query.$and = titleConditions;
       }
 
       if (location) {
