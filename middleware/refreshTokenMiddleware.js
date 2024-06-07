@@ -12,9 +12,11 @@ module.exports = (data, req, res, next) => {
   // If there is no jwt token and is not login requested
   if (!jwtData && !data.body.isLoginRequest) return next(data);
 
+  const userObj = jwtData ? jwtData.user : data.body.user;
+
   // Prepare the jwt token
   const payload = {
-    user: jwtData ? jwtData.user : data.body.user,
+    user: {id: userObj.id},
   };
   const token = jwtUtils.generateToken({payload});
 
