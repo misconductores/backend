@@ -61,6 +61,7 @@ const usersSchema = new Schema(
     ],
     experience: {type: Number},
     handleEquipment: [{type: String}],
+    vehicleType: {type: String},
     visaNumber: {type: String},
     visaExpiry: {type: String},
     fastNumber: {type: String},
