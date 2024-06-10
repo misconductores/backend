@@ -359,6 +359,7 @@ module.exports = class UsersController {
       licenseTypes,
       handleEquipment,
       experience,
+      vehicleType
     } = req.query;
     page = parseInt(page);
     limit = parseInt(limit);
@@ -375,6 +376,7 @@ module.exports = class UsersController {
       licenseTypes,
       equipment: formattedHandleEquipment,
       experience,
+      vehicleType
     });
     if (response)
       return next(

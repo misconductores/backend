@@ -6,6 +6,7 @@ const jobSchema = new Schema(
   {
     title: {type: String},
     experience: {type: String},
+    vehicleType: {type: String},
     city: {type: String},
     postalCode: {type: String},
     description: {type: String},

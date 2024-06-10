@@ -293,6 +293,7 @@ module.exports = class UsersServices {
     licenseTypes,
     equipment,
     experience,
+    vehicleType,
   }) {
     const query = {
       role: roles.driver.value,
@@ -351,6 +352,10 @@ module.exports = class UsersServices {
 
     if (equipment.length > 0) {
       query.handleEquipment = {$in: equipment};
+    }
+
+    if (vehicleType) {
+      query.vehicleType = vehicleType;
     }
 
     try {

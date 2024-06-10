@@ -37,7 +37,7 @@ module.exports = class JobController {
     });
     if (!user) return next(UsersErrorsFactory.userNotFoundErr());
     if (!success) throw err;
-    let {page, limit, title, location, postalCode} = req.query;
+    let {page, limit, title, location, postalCode, vehicleType} = req.query;
     page = parseInt(page);
     limit = parseInt(limit);
 
@@ -51,6 +51,7 @@ module.exports = class JobController {
       title,
       location,
       postalCode,
+      vehicleType,
     });
     if (response)
       return next(

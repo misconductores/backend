@@ -2,7 +2,14 @@ const JobModel = require('../models/JobModel');
 const {getJobsPipeline} = require('../utils/pipelines/jobs');
 
 module.exports = class JobServices {
-  static async getJobList({page, limit, title, location, postalCode}) {
+  static async getJobList({
+    page,
+    limit,
+    title,
+    location,
+    postalCode,
+    vehicleType,
+  }) {
     try {
       const skip = (page - 1) * limit;
       const query = {};
@@ -21,6 +28,10 @@ module.exports = class JobServices {
 
       if (location) {
         query.city = location;
+      }
+
+      if (vehicleType) {
+        query.vehicleType = vehicleType;
       }
 
       const pipeline = getJobsPipeline({
