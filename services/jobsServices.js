@@ -1,4 +1,5 @@
 const JobModel = require('../models/JobModel');
+const {addGetJobsConditions} = require('../utils/helpers/jobs');
 const {getJobsPipeline} = require('../utils/pipelines/jobs');
 
 module.exports = class JobServices {
@@ -8,35 +9,30 @@ module.exports = class JobServices {
     title,
     location,
     postalCode,
+    userCity,
     vehicleType,
+    federalLicenseTypes,
+    stateLicenseTypes,
+    equipment,
+    experience,
   }) {
     try {
       const skip = (page - 1) * limit;
-      const query = {};
 
-      if (title) {
-        title = title.trim();
-        const titleWords = title.split(' ').filter((word) => word.length > 0);
-        const titleConditions = titleWords.map((word) => ({
-          $or: [
-            {title: {$regex: word, $options: 'i'}},
-            {description: {$regex: word, $options: 'i'}},
-          ],
-        }));
-        query.$and = titleConditions;
-      }
-
-      if (location) {
-        query.city = location;
-      }
-
-      if (vehicleType) {
-        query.vehicleType = vehicleType;
-      }
+      const query = addGetJobsConditions({
+        title,
+        location,
+        equipment,
+        experience,
+        federalLicenseTypes,
+        stateLicenseTypes,
+        vehicleType,
+      });
 
       const pipeline = getJobsPipeline({
         query,
         postalCode,
+        userCity,
         skip,
         limit,
       });

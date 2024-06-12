@@ -174,3 +174,45 @@ module.exports.experienceTypes = {
     value: 'advance',
   },
 };
+
+module.exports.vehicleTypes = {
+  fifthWheeler: {
+    label: 'Fifth Wheeler',
+    value: 'fifthWheeler',
+  },
+  boxTruck: {
+    label: 'Box Truck',
+    value: 'BoxTruck',
+  },
+  car: {
+    label: 'Car',
+    value: 'car',
+  },
+  motorcycle: {
+    label: 'Motorcycle',
+    value: 'motorcycle',
+  },
+};
+
+module.exports.equipmentTypes = {
+  dryBox: {
+    label: 'Dry Box',
+    value: 'dryBox',
+  },
+  specialized: {
+    label: 'Specialized (Hazmat, Tank, among others)',
+    value: 'specialized',
+  },
+  refrigerated: {
+    label: 'Refrigerated',
+    value: 'refrigerated',
+  },
+  platform: {
+    label: 'Platform',
+    value: 'platform',
+  },
+  others: {
+    label: 'Others',
+    value: 'others',
+  },
+};
