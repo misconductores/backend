@@ -1,6 +1,6 @@
 const {experienceTypes} = require('../../constants/usersConstants');
 
-exports.addConditions = ({
+exports.addDriverConditions = ({
   query,
   title,
   location,

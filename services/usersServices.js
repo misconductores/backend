@@ -5,12 +5,8 @@ const FilesServices = require('./fileServices');
 const DocumentsModel = require('../models/DocumentsModel');
 const PostalCodeModel = require('../models/PostalCodeModel');
 const JobModel = require('../models/JobModel');
-const {
-  roles,
-  restrictedUserData,
-  experienceTypes,
-} = require('../constants/usersConstants');
-const {addConditions} = require('../utils/helpers/users');
+const {roles, restrictedUserData} = require('../constants/usersConstants');
+const {addDriverConditions} = require('../utils/helpers/users');
 
 module.exports = class UsersServices {
   static async getUserByEmail({email}) {
@@ -301,7 +297,7 @@ module.exports = class UsersServices {
       role: roles.driver.value,
     };
 
-    const andConditions = addConditions({
+    const andConditions = addDriverConditions({
       query,
       title,
       location,
