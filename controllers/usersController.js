@@ -356,14 +356,17 @@ module.exports = class UsersController {
       limit,
       title,
       location,
-      licenseTypes,
       handleEquipment,
       experience,
-      vehicleType
+      federalLicenseTypes,
+      stateLicenseTypes,
+      vehicleType,
     } = req.query;
     page = parseInt(page);
     limit = parseInt(limit);
     const formattedHandleEquipment = handleEquipment?.split(',') || [];
+    const formattedFederalLicenseTypes = federalLicenseTypes?.split(',') || [];
+    const formattedStateLicenseTypes = stateLicenseTypes?.split(',') || [];
     const {
       success: response,
       result,
@@ -373,10 +376,11 @@ module.exports = class UsersController {
       limit,
       title,
       location,
-      licenseTypes,
+      federalLicenseTypes: formattedFederalLicenseTypes,
+      stateLicenseTypes: formattedStateLicenseTypes,
       equipment: formattedHandleEquipment,
       experience,
-      vehicleType
+      vehicleType,
     });
     if (response)
       return next(

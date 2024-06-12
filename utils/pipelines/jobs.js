@@ -1,4 +1,4 @@
-exports.getJobsPipeline = ({query, postalCode, skip, limit}) => {
+exports.getJobsPipeline = ({query, postalCode, userCity, skip, limit}) => {
   if (postalCode && !query.city) {
     return [
       {$match: query},
@@ -7,9 +7,12 @@ exports.getJobsPipeline = ({query, postalCode, skip, limit}) => {
           postalCodeMatch: postalCode
             ? {$cond: [{$eq: ['$postalCode', postalCode]}, 1, 0]}
             : 0,
+          userCityMatch: userCity
+            ? {$cond: [{$eq: ['$city', userCity]}, 1, 0]}
+            : 0,
         },
       },
-      {$sort: {postalCodeMatch: -1, createdAt: -1}},
+      {$sort: {postalCodeMatch: -1, userCityMatch: -1, createdAt: -1}},
       {$skip: skip},
       {$limit: limit},
       {

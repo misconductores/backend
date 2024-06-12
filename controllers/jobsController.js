@@ -37,9 +37,25 @@ module.exports = class JobController {
     });
     if (!user) return next(UsersErrorsFactory.userNotFoundErr());
     if (!success) throw err;
-    let {page, limit, title, location, postalCode, vehicleType} = req.query;
+    let {
+      page,
+      limit,
+      title,
+      location,
+      postalCode,
+      userCity,
+      federalLicenseTypes,
+      stateLicenseTypes,
+      handleEquipment,
+      vehicleType,
+      experience,
+    } = req.query;
     page = parseInt(page);
     limit = parseInt(limit);
+
+    const formattedHandleEquipment = handleEquipment?.split(',') || [];
+    const formattedFederalLicenseTypes = federalLicenseTypes?.split(',') || [];
+    const formattedStateLicenseTypes = stateLicenseTypes?.split(',') || [];
 
     const {
       success: response,
@@ -51,7 +67,12 @@ module.exports = class JobController {
       title,
       location,
       postalCode,
+      userCity,
       vehicleType,
+      federalLicenseTypes: formattedFederalLicenseTypes,
+      stateLicenseTypes: formattedStateLicenseTypes,
+      equipment: formattedHandleEquipment,
+      experience,
     });
     if (response)
       return next(
