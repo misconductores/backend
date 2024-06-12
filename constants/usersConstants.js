@@ -163,15 +163,22 @@ module.exports.restrictedUserData =
 module.exports.experienceTypes = {
   student: {
     value: 'student',
+    maxValue: 1,
+    minValue: 0,
   },
   beginner: {
     value: 'beginner',
+    maxValue: 4,
+    minValue: 2,
   },
   intermediate: {
     value: 'intermediate',
+    maxValue: 9,
+    minValue: 5,
   },
   advance: {
     value: 'advance',
+    maxValue: 10,
   },
 };
 

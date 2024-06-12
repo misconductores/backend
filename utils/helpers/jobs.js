@@ -1,5 +1,3 @@
-const {experienceTypes} = require('../../constants/usersConstants');
-
 exports.addGetJobsConditions = ({
   title,
   location,
@@ -42,24 +40,8 @@ exports.addGetJobsConditions = ({
     query.handledEquipment = {$in: equipment};
   }
 
-  if (experience !== undefined) {
-    if (experience === experienceTypes.student.value) {
-      andConditions.push({
-        experience: {$lte: 1},
-      });
-    } else if (experience === experienceTypes.intermediate.value) {
-      andConditions.push({
-        experience: {$gt: 5, $lte: 9},
-      });
-    } else if (experience === experienceTypes.beginner.value) {
-      andConditions.push({
-        experience: {$gt: 1, $lte: 4},
-      });
-    } else {
-      andConditions.push({
-        experience: {$gte: 10},
-      });
-    }
+  if (experience) {
+    query.experience = experience;
   }
 
   return query;

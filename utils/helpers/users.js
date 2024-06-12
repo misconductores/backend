@@ -27,19 +27,25 @@ exports.addDriverConditions = ({
   if (experience !== undefined) {
     if (experience === experienceTypes.student.value) {
       andConditions.push({
-        experience: {$lte: 1},
+        experience: {$lte: experienceTypes.student.maxValue},
       });
     } else if (experience === experienceTypes.beginner.value) {
       andConditions.push({
-        experience: {$gt: 1, $lte: 4},
+        experience: {
+          $gte: experienceTypes.beginner.minValue,
+          $lte: experienceTypes.beginner.maxValue,
+        },
       });
     } else if (experience === experienceTypes.intermediate.value) {
       andConditions.push({
-        experience: {$gt: 5, $lte: 9},
+        experience: {
+          $gte: experienceTypes.intermediate.minValue,
+          $lte: experienceTypes.intermediate.maxValue,
+        },
       });
     } else {
       andConditions.push({
-        experience: {$gte: 10},
+        experience: {$gte: experienceTypes.advance.maxValue},
       });
     }
   }
