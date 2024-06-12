@@ -10,6 +10,7 @@ const {
   restrictedUserData,
   experienceTypes,
 } = require('../constants/usersConstants');
+const {addConditions} = require('../utils/helpers/users');
 
 module.exports = class UsersServices {
   static async getUserByEmail({email}) {
@@ -290,72 +291,29 @@ module.exports = class UsersServices {
     limit,
     title,
     location,
-    licenseTypes,
     equipment,
     experience,
+    federalLicenseTypes,
+    stateLicenseTypes,
     vehicleType,
   }) {
     const query = {
       role: roles.driver.value,
     };
 
-    const andConditions = [];
-
-    if (title) {
-      title = title.trim();
-      const titleWords = title.split(' ').filter((word) => word.length > 0);
-      const titleConditions = titleWords.map((word) => ({
-        $or: [
-          {firstName: {$regex: word, $options: 'i'}},
-          {lastName: {$regex: word, $options: 'i'}},
-        ],
-      }));
-      andConditions.push(...titleConditions);
-    }
-
-    if (licenseTypes) {
-      andConditions.push({
-        $or: [
-          {'stateLicenses.stateLicenseType': licenseTypes},
-          {'federalLicenses.federalLicenseType': licenseTypes},
-        ],
-      });
-    }
-
-    if (experience !== undefined) {
-      if (experience === experienceTypes.student.value) {
-        andConditions.push({
-          experience: {$lte: 1},
-        });
-      } else if (experience === experienceTypes.beginner.value) {
-        andConditions.push({
-          experience: {$gt: 1, $lte: 4},
-        });
-      } else if (experience === experienceTypes.intermediate.value) {
-        andConditions.push({
-          experience: {$gt: 5, $lte: 9},
-        });
-      } else {
-        andConditions.push({
-          experience: {$gte: 10},
-        });
-      }
-    }
+    const andConditions = addConditions({
+      query,
+      title,
+      location,
+      equipment,
+      experience,
+      federalLicenseTypes,
+      stateLicenseTypes,
+      vehicleType,
+    });
 
     if (andConditions.length > 0) {
       query.$and = andConditions;
-    }
-
-    if (location) {
-      query.city = location;
-    }
-
-    if (equipment.length > 0) {
-      query.handleEquipment = {$in: equipment};
-    }
-
-    if (vehicleType) {
-      query.vehicleType = vehicleType;
     }
 
     try {
@@ -372,6 +330,7 @@ module.exports = class UsersServices {
       return {success: false, err};
     }
   }
+
   static async getCompaniesList({page, limit, title, location}) {
     try {
       const query = {
