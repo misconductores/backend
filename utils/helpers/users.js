@@ -1,3 +1,5 @@
+const {experienceTypes} = require('../../constants/usersConstants');
+
 exports.addConditions = ({
   query,
   title,
