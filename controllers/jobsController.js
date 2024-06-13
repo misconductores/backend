@@ -56,6 +56,7 @@ module.exports = class JobController {
     const formattedHandleEquipment = handleEquipment?.split(',') || [];
     const formattedFederalLicenseTypes = federalLicenseTypes?.split(',') || [];
     const formattedStateLicenseTypes = stateLicenseTypes?.split(',') || [];
+    const formattedExperience = experience?.split(',') || [];
 
     const {
       success: response,
@@ -72,7 +73,7 @@ module.exports = class JobController {
       federalLicenseTypes: formattedFederalLicenseTypes,
       stateLicenseTypes: formattedStateLicenseTypes,
       equipment: formattedHandleEquipment,
-      experience,
+      experience: formattedExperience,
     });
     if (response)
       return next(

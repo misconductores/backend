@@ -40,8 +40,8 @@ exports.addGetJobsConditions = ({
     query.handledEquipment = {$in: equipment};
   }
 
-  if (experience) {
-    query.experience = experience;
+  if (experience && experience.length > 0) {
+    query.experience = {$in: experience};
   }
 
   return query;

@@ -5,13 +5,19 @@ const {
   stateLicenseTypes,
   federalLicenseTypes,
   equipmentTypes,
+  experienceTypes,
 } = require('../constants/usersConstants');
 
 const equipments = Object.values(equipmentTypes).map((option) => option.value);
+const experiences = Object.values(experienceTypes).map(
+  (option) => option.value
+);
 
 const commonFields = {
   title: Yup.string().required('Job title is required'),
-  experience: Yup.string().required('Experience is required'),
+  experience: Yup.array()
+    .of(Yup.string().oneOf(experiences))
+    .min(1, 'Please select at least 1 experience type'),
   vehicleType: Yup.string().required('Vehicle type is required'),
   handledEquipment: Yup.array().when('vehicleType', {
     is: (val) => val === vehicleTypes.fifthWheeler.value,
