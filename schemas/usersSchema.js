@@ -19,7 +19,6 @@ const allowedRoles = Object.keys(usersConstants.roles).filter(
 
 const commonAuthSchema = {
   email: Yup.string()
-    .email('Invalid Email')
     .required('Email is required')
     .test('email', 'Invalid Email', (val) => {
       return /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(val);
@@ -156,4 +155,11 @@ const updateProfileRoleSwiperSchema = (user) => {
     });
   }
   return schema;
+};
+
+module.exports.validateCheckEmailRequest = (data) => {
+  const schema = Yup.object().shape({
+    email: commonAuthSchema.email,
+  });
+  return validatorUtils.validate(schema, data);
 };

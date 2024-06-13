@@ -126,4 +126,10 @@ module.exports = class UsersErrorsFactory {
       statusCode: 400,
     });
   }
+  static emailAlreadyExistErr() {
+    return new AppError({
+      message: 'Email is already exist',
+      statusCode: 400,
+    });
+  }
 };
