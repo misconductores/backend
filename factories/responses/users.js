@@ -137,4 +137,11 @@ module.exports = class UsersResponsesFactory {
       body: {count, data, page, perPage},
     });
   }
+  static emailAvailable() {
+    return new AppResponse({
+      statusCode: 200,
+      message: 'Email is available',
+      body: {},
+    });
+  }
 };

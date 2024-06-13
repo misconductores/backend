@@ -427,4 +427,13 @@ module.exports = class UsersController {
       return next(UsersErrorsFactory.companyNotFoundErr());
     if (error) throw error;
   }
+  static async checkRegisteredEmail(req, res, next) {
+    const {email} = req.body;
+    const {doc} = await GeneralServices.findOne({
+      query: {email: email},
+      model: UsersModel,
+    });
+    if (doc) return next(UsersErrorsFactory.emailAlreadyExistErr());
+    if (!doc) return next(UsersResponsesFactory.emailAvailable());
+  }
 };

@@ -124,4 +124,10 @@ router.get(
   catchAsync(UsersController.getPostalCodes)
 );
 
+router.post(
+  '/check-email',
+  validatorMiddleware(usersSchema.validateCheckEmailRequest),
+  catchAsync(UsersController.checkRegisteredEmail)
+);
+
 module.exports = router;
