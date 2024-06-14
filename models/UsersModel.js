@@ -59,7 +59,7 @@ const usersSchema = new Schema(
         stateLicenseType: {type: String, enum: stateLicenseTypes},
       },
     ],
-    experience: {type: Number},
+    experience: {type: String},
     handleEquipment: [{type: String}],
     vehicleType: {type: String},
     visaNumber: {type: String},

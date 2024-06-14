@@ -367,6 +367,8 @@ module.exports = class UsersController {
     const formattedHandleEquipment = handleEquipment?.split(',') || [];
     const formattedFederalLicenseTypes = federalLicenseTypes?.split(',') || [];
     const formattedStateLicenseTypes = stateLicenseTypes?.split(',') || [];
+    const formattedExperience = experience?.split(',') || [];
+
     const {
       success: response,
       result,
@@ -379,7 +381,7 @@ module.exports = class UsersController {
       federalLicenseTypes: formattedFederalLicenseTypes,
       stateLicenseTypes: formattedStateLicenseTypes,
       equipment: formattedHandleEquipment,
-      experience,
+      experience: formattedExperience,
       vehicleType,
     });
     if (response)

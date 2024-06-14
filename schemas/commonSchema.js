@@ -29,7 +29,7 @@ const commonDriverFields = {
 };
 
 const commonExpDocSchema = {
-  experience: Yup.number(),
+  experience: Yup.string(),
   handleEquipment: Yup.array(),
   vehicleType: Yup.string(),
   visaNumber: Yup.string(),

@@ -24,30 +24,8 @@ exports.addDriverConditions = ({
     andConditions.push(...titleConditions);
   }
 
-  if (experience !== undefined) {
-    if (experience === experienceTypes.student.value) {
-      andConditions.push({
-        experience: {$lte: experienceTypes.student.maxValue},
-      });
-    } else if (experience === experienceTypes.beginner.value) {
-      andConditions.push({
-        experience: {
-          $gte: experienceTypes.beginner.minValue,
-          $lte: experienceTypes.beginner.maxValue,
-        },
-      });
-    } else if (experience === experienceTypes.intermediate.value) {
-      andConditions.push({
-        experience: {
-          $gte: experienceTypes.intermediate.minValue,
-          $lte: experienceTypes.intermediate.maxValue,
-        },
-      });
-    } else {
-      andConditions.push({
-        experience: {$gte: experienceTypes.advance.maxValue},
-      });
-    }
+  if (experience && experience.length > 0) {
+    query.experience = {$in: experience};
   }
 
   if (location) {
