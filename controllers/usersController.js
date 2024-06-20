@@ -430,7 +430,8 @@ module.exports = class UsersController {
     if (error) throw error;
   }
   static async checkRegisteredEmail(req, res, next) {
-    const {email} = req.body;
+    let {email} = req.body;
+    email = email.toLowerCase();
     const {doc} = await GeneralServices.findOne({
       query: {email: email},
       model: UsersModel,
