@@ -27,12 +27,8 @@ const commonFields = {
         .min(1, 'Please select at least 1 equipment type'),
     otherwise: () => Yup.array(),
   }),
-  stateLicenseTypes: Yup.array()
-    .of(Yup.string().oneOf(stateLicenseTypes))
-    .min(1, 'Please select at least 1 state license type'),
-  federalLicenseTypes: Yup.array()
-    .of(Yup.string().oneOf(federalLicenseTypes))
-    .min(1, 'Please select at least 1 state license type'),
+  stateLicenseTypes: Yup.array(),
+  federalLicenseTypes: Yup.array(),
   city: Yup.string().required('City is required'),
   postalCode: Yup.string().required('Postal code is required'),
   description: Yup.string().required('Description is required'),
