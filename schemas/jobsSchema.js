@@ -27,8 +27,8 @@ const commonFields = {
         .min(1, 'Please select at least 1 equipment type'),
     otherwise: () => Yup.array(),
   }),
-  stateLicenseTypes: Yup.array(),
-  federalLicenseTypes: Yup.array(),
+  stateLicenseTypes: Yup.array().of(Yup.string().oneOf(stateLicenseTypes)),
+  federalLicenseTypes: Yup.array().of(Yup.string().oneOf(federalLicenseTypes)),
   city: Yup.string().required('City is required'),
   postalCode: Yup.string().required('Postal code is required'),
   description: Yup.string().required('Description is required'),
@@ -36,9 +36,23 @@ const commonFields = {
 };
 
 module.exports.validateJobReq = (data) => {
-  const schema = Yup.object().shape({
-    ...commonFields,
-  });
+  const schema = Yup.object()
+    .shape({
+      ...commonFields,
+    })
+    .test('at-least-one-license-type', function (value) {
+      const {stateLicenseTypes, federalLicenseTypes} = value;
+      if (
+        (!stateLicenseTypes || stateLicenseTypes.length === 0) &&
+        (!federalLicenseTypes || federalLicenseTypes.length === 0)
+      ) {
+        return this.createError({
+          path: 'stateLicenseTypes',
+          message: 'Please select at least one license type (state or federal)',
+        });
+      }
+      return true;
+    });
   return validatorUtils.validate(schema, data);
 };
 
