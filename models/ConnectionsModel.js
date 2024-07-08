@@ -5,12 +5,12 @@ const Schema = mongoose.Schema;
 const connectionsModel = new Schema(
   {
     companyId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'Users',
       required: true,
     },
     driverId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'Users',
       required: true,
     },
@@ -31,12 +31,12 @@ const connectionsModel = new Schema(
       default: null,
     },
     companyReviewId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'reviews',
       default: null,
     },
     driverReviewId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'reviews',
       default: null,
     },

@@ -6,17 +6,17 @@ const Schema = mongoose.Schema;
 const offersSchema = new Schema(
   {
     companyId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'Users',
       required: true,
     },
     driverId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'Users',
       required: true,
     },
     jobId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'jobs',
       required: true,
     },
