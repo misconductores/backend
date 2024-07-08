@@ -4,15 +4,14 @@ const Schema = mongoose.Schema;
 
 const notificationSchema = new Schema(
   {
-    senderId: {
+    userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Users',
       required: true,
     },
-    receiverId: {
+    relatedUserId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Users',
-      required: true,
     },
     type: {
       type: String,
