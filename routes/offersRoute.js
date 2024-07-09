@@ -1,7 +1,15 @@
-const {authMiddleware} = require('../middleware');
+const {OffersController} = require('../controllers');
+const {authMiddleware, validatorMiddleware} = require('../middleware');
+const {offersSchema} = require('../schemas');
+const {catchAsync} = require('../utils');
 const router = require('express').Router();
 
-router.post('/', authMiddleware);
+router.post(
+  '/',
+  authMiddleware,
+  validatorMiddleware(offersSchema.validateCreateOfferReq),
+  catchAsync(OffersController.sendOffer)
+);
 
 router.patch('/:id/accept', authMiddleware);
 

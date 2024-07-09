@@ -5,6 +5,7 @@ const AuthErrors = require('./AuthErrors');
 const JobErrors = require('./jobs');
 const OthersErrors = require('./others');
 const OffersErrors = require('./offers');
+const ConnectionErrors = require('./connections');
 
 module.exports = {
   AppError,
@@ -14,4 +15,5 @@ module.exports = {
   JobErrors,
   OthersErrors,
   OffersErrors,
+  ConnectionErrors,
 };
