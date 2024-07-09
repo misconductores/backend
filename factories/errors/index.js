@@ -4,6 +4,7 @@ const UsersErrorsFactory = require('../errors/users');
 const AuthErrors = require('./AuthErrors');
 const JobErrors = require('./jobs');
 const OthersErrors = require('./others');
+const OffersErrors = require('./offers');
 
 module.exports = {
   AppError,
@@ -12,4 +13,5 @@ module.exports = {
   AuthErrors,
   JobErrors,
   OthersErrors,
+  OffersErrors,
 };

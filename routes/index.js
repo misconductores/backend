@@ -3,6 +3,7 @@ const publicRoute = require(`./publicRoute`);
 const privateRoute = require(`./privateRoute.js`);
 const jobsRoute = require('./jobsRoute.js');
 const othersRoute = require('./othersRoute.js');
+const offersRoute = require('./offersRoute.js');
 
 module.exports = {
   usersRoute,
@@ -10,4 +11,5 @@ module.exports = {
   privateRoute,
   jobsRoute,
   othersRoute,
+  offersRoute,
 };
