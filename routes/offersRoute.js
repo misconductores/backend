@@ -3,8 +3,8 @@ const router = require('express').Router();
 
 router.post('/', authMiddleware);
 
-router.patch('/:id/accept-offer', authMiddleware);
+router.patch('/:id/accept', authMiddleware);
 
-router.patch('/:id/reject-offer', authMiddleware);
+router.patch('/:id/reject', authMiddleware);
 
 module.exports = router;
