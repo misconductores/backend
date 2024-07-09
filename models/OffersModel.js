@@ -3,6 +3,10 @@ const {statusTypes} = require('../constants/usersConstants');
 
 const Schema = mongoose.Schema;
 
+const statusTypeEnums = Object.values(statusTypes).map(
+  (status) => status.value
+);
+
 const offersSchema = new Schema(
   {
     companyId: {
@@ -23,6 +27,7 @@ const offersSchema = new Schema(
     status: {
       type: String,
       default: statusTypes.pending.value,
+      enum: statusTypeEnums,
     },
   },
   {
