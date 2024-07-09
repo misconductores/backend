@@ -223,3 +223,40 @@ module.exports.equipmentTypes = {
     value: 'others',
   },
 };
+
+module.exports.statusTypes = {
+  pending: {
+    value: 'pending',
+    label: 'Pending',
+  },
+  accepted: {
+    value: 'accepted',
+    label: 'Accepted',
+  },
+  rejected: {
+    value: 'rejected',
+    label: 'Rejected',
+  },
+  expired: {
+    value: 'expired',
+    label: 'Expired',
+  },
+};
+
+module.exports.notificationTypes = {
+  send_offer: {
+    value: 'send_offer',
+  },
+  accept_offer: {
+    value: 'accept_offer',
+  },
+  reject_offer: {
+    value: 'reject_offer',
+  },
+  company_disconnect: {
+    value: 'company_disconnect',
+  },
+  driver_disconnect: {
+    value: 'driver_disconnect',
+  },
+};
