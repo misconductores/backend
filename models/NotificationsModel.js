@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
+const {notificationTypes} = require('../constants/usersConstants');
 
 const Schema = mongoose.Schema;
+
+const notificationTypeEnums = Object.values(notificationTypes).map(
+  (type) => type.value
+);
 
 const notificationSchema = new Schema(
   {
@@ -16,6 +21,7 @@ const notificationSchema = new Schema(
     type: {
       type: String,
       required: true,
+      enum: notificationTypeEnums,
     },
     isRead: {
       type: Boolean,
