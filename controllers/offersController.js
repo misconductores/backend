@@ -123,4 +123,39 @@ module.exports = class OffersController {
 
     if (err) throw err;
   }
+
+  static async rejectOffer(req, res, next) {
+    const {user} = await UsersServices.getUserById({
+      id: req.jwtToken.user.id,
+    });
+
+    const {id} = req.params;
+
+    const {offer} = await OffersServices.findOfferById({id});
+
+    if (!offer) return next(OffersErrors.noOfferErr());
+
+    if (
+      offer.status === statusTypes.rejected.value ||
+      offer.status === statusTypes.accepted.value
+    )
+      return next(OffersErrors.requestResolvedErr());
+
+    const {success, err} = await OffersServices.updateOfferStatus({
+      id,
+      status: statusTypes.rejected.value,
+    });
+
+    if (success) {
+      await NotificationsServices.createNotification({
+        userId: offer.companyId,
+        relatedUserId: user.id,
+        type: notificationTypes.reject_offer.value,
+      });
+
+      return next(OfferResponsesFactory.offerRejectedSuccessfully());
+    }
+
+    if (err) throw err;
+  }
 };

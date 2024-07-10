@@ -19,6 +19,11 @@ router.patch(
   catchAsync(OffersController.acceptOffer)
 );
 
-router.patch('/:id/reject', authMiddleware);
+router.patch(
+  '/:id/reject',
+  authMiddleware,
+  validatorMiddleware(offersSchema.validateUpdateOfferParams, PARAMS_PROPERTY),
+  catchAsync(OffersController.rejectOffer)
+);
 
 module.exports = router;
