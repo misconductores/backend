@@ -2,6 +2,7 @@ const {
   roles,
   notificationTypes,
   statusTypes,
+  driverStatuses,
 } = require('../constants/usersConstants');
 const {
   UsersErrorsFactory,
@@ -10,14 +11,13 @@ const {
   OffersResponsesFactory,
 } = require('../factories');
 const OfferResponsesFactory = require('../factories/responses/offers');
-const {OffersModel} = require('../models');
+const {OffersModel, UsersModel} = require('../models');
 const {
   UsersServices,
   ConnectionsServices,
   NotificationsServices,
   GeneralServices,
 } = require('../services');
-const OffersServices = require('../services/offersServices');
 
 module.exports = class OffersController {
   static async sendOffer(req, res, next) {
@@ -82,7 +82,10 @@ module.exports = class OffersController {
 
     const {id} = req.params;
 
-    const {offer} = await OffersServices.findOfferById({id});
+    const {doc: offer} = await GeneralServices.findById({
+      id,
+      model: OffersModel,
+    });
 
     if (!offer) return next(OffersErrors.noOfferErr());
 
@@ -99,9 +102,10 @@ module.exports = class OffersController {
 
     if (findConnection) return next(ConnectionErrors.alreadyConnectedErr());
 
-    const {success, err} = await OffersServices.updateOfferStatus({
+    const {success, error} = await GeneralServices.update({
       id,
-      status: statusTypes.accepted.value,
+      model: OffersModel,
+      data: {status: statusTypes.accepted.value},
     });
 
     if (success) {
@@ -116,12 +120,18 @@ module.exports = class OffersController {
         driverId: user.id,
       });
 
+      await GeneralServices.update({
+        id: user.id,
+        model: UsersModel,
+        data: {driverStatus: driverStatuses.connected.value},
+      });
+
       return next(
         OfferResponsesFactory.offerAcceptedSuccessfully({connection})
       );
     }
 
-    if (err) throw err;
+    if (error) throw error;
   }
 
   static async rejectOffer(req, res, next) {
@@ -131,7 +141,10 @@ module.exports = class OffersController {
 
     const {id} = req.params;
 
-    const {offer} = await OffersServices.findOfferById({id});
+    const {doc: offer} = await GeneralServices.findById({
+      id,
+      model: OffersModel,
+    });
 
     if (!offer) return next(OffersErrors.noOfferErr());
 
@@ -141,9 +154,10 @@ module.exports = class OffersController {
     )
       return next(OffersErrors.requestResolvedErr());
 
-    const {success, err} = await OffersServices.updateOfferStatus({
+    const {success, error} = await GeneralServices.update({
       id,
-      status: statusTypes.rejected.value,
+      model: OffersModel,
+      data: {status: statusTypes.rejected.value},
     });
 
     if (success) {
@@ -156,6 +170,6 @@ module.exports = class OffersController {
       return next(OfferResponsesFactory.offerRejectedSuccessfully());
     }
 
-    if (err) throw err;
+    if (error) throw error;
   }
 };
