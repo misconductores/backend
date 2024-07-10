@@ -2,10 +2,7 @@ module.exports.defaultEmailAddress = 'noreply@desolint.com';
 module.exports.defaultEmailName = 'Desol Int.';
 
 module.exports.sendGridResetLoginTemplateId =
-  'd-5b909e46f6534b92abd6bd2d21397c22';
+  'd-5492a12466a24a44b1d5e3fe3918b857';
 
 module.exports.sendGridVerifyUserTemplateId =
-  'd-a703468d158844edw3b01e8e8a5b6c8a';
-
-module.exports.sendGridDummyTemplateId = 'd-f0dd856f3bda44468299e3f3ae38228c';
-module.exports.sendGridResetDummyId = 'd-5492a12466a24a44b1d5e3fe3918b857';
+  'd-f0dd856f3bda44468299e3f3ae38228c';
