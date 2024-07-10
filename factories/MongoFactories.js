@@ -29,6 +29,57 @@ module.exports.updateOne = async (model, query, data, session) => {
   return {success: true, doc};
 };
 
+module.exports.UpdateById = async (model, query, data) => {
+  const updatedDoc = await model.findByIdAndUpdate(query, data, {new: true});
+  let doc = null;
+  if (data) {
+    const args = {data: updatedDoc};
+    doc = GeneralEntityFactory.cleanMongooseData(args);
+  }
+
+  return {success: true, doc};
+};
+
+module.exports.findById = async (model, id, popOptions) => {
+  let doc = popOptions
+    ? await model.findById(id).populate(popOptions)
+    : await model.findById(id);
+
+  if (doc) doc = GeneralEntityFactory.cleanMongooseData({data: doc});
+
+  return {success: true, doc};
+};
+
+module.exports.UpdateDocumentsById = async (model, query, data) => {
+  const updatedDoc = await model.findByIdAndUpdate(
+    query,
+    {$push: {documents: data}},
+    {new: true}
+  );
+  let doc = null;
+  if (data) {
+    const args = {data: updatedDoc};
+    doc = GeneralEntityFactory.cleanMongooseData(args);
+  }
+
+  return {success: true, doc};
+};
+
+module.exports.deleteDocumentsById = async (model, query, data) => {
+  const updatedDoc = await model.findByIdAndUpdate(
+    query,
+    {$pull: {documents: {label: data}}},
+    {new: true}
+  );
+  let doc = null;
+  if (data) {
+    const args = {data: updatedDoc};
+    doc = GeneralEntityFactory.cleanMongooseData(args);
+  }
+
+  return {success: true, doc};
+};
+
 module.exports.updateMany = async (model, query, data, session) => {
   const updateArgs = {new: true, session};
   const updatedDocs = await model.updateMany(query, data, updateArgs);

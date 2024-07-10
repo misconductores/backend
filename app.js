@@ -12,6 +12,7 @@ const {
   errorMiddleware,
 } = require('./middleware');
 const {corsOrigin} = require('./utils');
+const {documentDeleteCronJob} = require('./utils/cron-jobs/documents');
 
 const app = express();
 
@@ -52,6 +53,8 @@ app.use(Sentry.Handlers.errorHandler());
 
 app.use(errorMiddleware);
 app.use(finalResponseMiddleware);
+
+documentDeleteCronJob.start();
 
 if (config.get('env') !== config.get('envVariables.test')) {
   const PORT = config.get('port') || 3001;

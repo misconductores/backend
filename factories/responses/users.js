@@ -5,11 +5,11 @@ const AppResponse = require('./AppResponse');
 module.exports = class UsersResponsesFactory {
   constructor() {}
 
-  static userRegisteredSuccessfully() {
+  static userRegisteredSuccessfully({user}) {
     return new AppResponse({
       message: 'User registered successfully',
       statusCode: 201,
-      body: {},
+      body: {user},
     });
   }
 
@@ -25,7 +25,62 @@ module.exports = class UsersResponsesFactory {
     return new AppResponse({
       message: 'User info retrieved successfully',
       statusCode: 200,
-      body: user,
+      body: {user},
+    });
+  }
+
+  static postalCodeInfoRes({data} = {}) {
+    return new AppResponse({
+      message: 'Postal codes retrieved successfully',
+      statusCode: 200,
+      body: {data},
+    });
+  }
+
+  static updateUserProfilePicRes({user} = {}) {
+    return new AppResponse({
+      message: 'User profile image updated successfully',
+      statusCode: 200,
+      body: {user},
+    });
+  }
+
+  static updateDocumentRes({user} = {}) {
+    return new AppResponse({
+      message: 'Document uploaded successfully',
+      statusCode: 200,
+      body: {user},
+    });
+  }
+
+  static uploadPreRegisterDocumentRes({document} = {}) {
+    return new AppResponse({
+      message: 'Document uploaded successfully',
+      statusCode: 200,
+      body: {document},
+    });
+  }
+
+  static deleteDocumentRes({user} = {}) {
+    return new AppResponse({
+      message: 'Document deleted successfully',
+      statusCode: 200,
+      body: {user},
+    });
+  }
+
+  static deletePreRegisterDocumentRes({user} = {}) {
+    return new AppResponse({
+      message: 'Document deleted successfully',
+      statusCode: 200,
+    });
+  }
+
+  static profileUpdateRes({user} = {}) {
+    return new AppResponse({
+      message: 'Profile updated successfully',
+      statusCode: 200,
+      body: {user},
     });
   }
 
@@ -65,6 +120,27 @@ module.exports = class UsersResponsesFactory {
     return new AppResponse({
       statusCode: 200,
       message: 'Email Verification sent successfully',
+      body: {},
+    });
+  }
+  static driversRetrievedSuccessfully({count, data, page, perPage}) {
+    return new AppResponse({
+      message: 'Driver list retrieved successfully',
+      statusCode: 200,
+      body: {count, data, page, perPage},
+    });
+  }
+  static companyRetrievedSuccessfully({count, data, page, perPage}) {
+    return new AppResponse({
+      message: 'Company list retrieved successfully',
+      statusCode: 200,
+      body: {count, data, page, perPage},
+    });
+  }
+  static emailAvailable() {
+    return new AppResponse({
+      statusCode: 200,
+      message: 'Email is available',
       body: {},
     });
   }

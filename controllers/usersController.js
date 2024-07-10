@@ -1,5 +1,5 @@
 const config = require('config');
-const {UsersServices} = require('../services');
+const {UsersServices, FilesServices, GeneralServices} = require('../services');
 const actions = require('../utils/actions');
 const {
   UsersErrorsFactory,
@@ -7,21 +7,29 @@ const {
   UsersResponsesFactory,
   UsersEntityFactory,
 } = require('../factories');
-
 const {jwtUtils} = require('../utils');
+const {usersConstants} = require('../constants');
+const UsersModel = require('../models/UsersModel');
 
 module.exports = class UsersController {
   static async createUser(req, res, next) {
-    const data = req.body;
+    let data = req.body;
 
     let isUserFound = await UsersServices.getUserByEmail({email: data.email});
     if (isUserFound) return next(UsersErrorsFactory.userAlreadyRegisteredErr());
+
+    if (data.role === usersConstants.roles.driver.value) {
+      data = {
+        ...data,
+        driverStatus: usersConstants.driverStatuses.available.value,
+      };
+    }
 
     const {success, err, user} = await UsersServices.createUser({data});
 
     if (success) {
       await actions.users.verifyUser({user});
-      return next(UsersResponsesFactory.userRegisteredSuccessfully());
+      return next(UsersResponsesFactory.userRegisteredSuccessfully({user}));
     } else throw err;
   }
 
@@ -33,6 +41,28 @@ module.exports = class UsersController {
     if (!user) return next(UsersErrorsFactory.userNotFoundErr());
 
     if (!success) throw err;
+
+    return next(
+      UsersResponsesFactory.singleUserInfoRetrievedRes({
+        user,
+      })
+    );
+  }
+
+  static async getUserInformation(req, res, next) {
+    const {id} = req.params;
+    const {
+      success,
+      error,
+      doc: user,
+    } = await GeneralServices.findById({
+      id: id,
+      model: UsersModel,
+    });
+
+    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
+
+    if (!success) throw error;
 
     return next(
       UsersResponsesFactory.singleUserInfoRetrievedRes({
@@ -147,5 +177,266 @@ module.exports = class UsersController {
     await actions.users.verifyUser({user});
 
     next(UsersResponsesFactory.resendVerificationEmail());
+  }
+
+  static async updateProfileImage(req, res, next) {
+    const {success, err, user} = await UsersServices.getUserById({
+      id: req.jwtToken.user.id,
+    });
+
+    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
+
+    if (!success) throw err;
+
+    const {
+      success: response,
+      user: updatedUser,
+      err: error,
+    } = await UsersServices.updateProfileImage({user, file: req.file});
+
+    if (response) {
+      return next(
+        UsersResponsesFactory.updateUserProfilePicRes({
+          user: updatedUser,
+        })
+      );
+    }
+    if (error) {
+      return next(UsersErrorsFactory.profileImgUpdateErr());
+    }
+  }
+
+  static async uploadDocuments(req, res, next) {
+    const {label} = req.body;
+    const {success, err, user} = await UsersServices.getUserById({
+      id: req.jwtToken.user.id,
+    });
+    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
+    if (!success) throw err;
+    const {
+      success: response,
+      user: updatedUser,
+      err: error,
+    } = await UsersServices.updateDocuments({user, file: req.file, label});
+    if (response) {
+      return next(
+        UsersResponsesFactory.updateDocumentRes({
+          user: updatedUser,
+        })
+      );
+    }
+    if (!response) return next(UsersErrorsFactory.documentLabelErr());
+
+    if (error) {
+      return next(UsersErrorsFactory.documentUpdateErr());
+    }
+  }
+
+  static async uploadPreRegisterDocuments(req, res, next) {
+    const {label} = req.body;
+    const file = req.file;
+    const filesUrl = await FilesServices.uploadSingleFile({
+      file,
+      fileDir: 'documents',
+    });
+    if (filesUrl.url) {
+      let modifiedKey = filesUrl.key.replace(/^documents\//, '');
+      const updatedData = {
+        url: filesUrl.url,
+        key: modifiedKey,
+        label: label,
+      };
+      const {success} = await UsersServices.createDocuments({
+        data: updatedData,
+      });
+      if (success) {
+        return next(
+          UsersResponsesFactory.uploadPreRegisterDocumentRes({
+            document: updatedData,
+          })
+        );
+      } else {
+        return next(UsersErrorsFactory.documentUploadErr());
+      }
+    }
+    if (!filesUrl.url) return next(UsersErrorsFactory.documentUploadErr());
+  }
+
+  static async deleteDocuments(req, res, next) {
+    const {label} = req.params;
+    const {success, err, user} = await UsersServices.getUserById({
+      id: req.jwtToken.user.id,
+    });
+    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
+    if (!success) throw err;
+    const {
+      success: response,
+      user: updatedUser,
+      err: error,
+    } = await UsersServices.deleteDocument({user, label});
+
+    if (!response) return next(UsersErrorsFactory.documentDeleteErr());
+    if (response) {
+      return next(
+        UsersResponsesFactory.deleteDocumentRes({
+          user: updatedUser,
+        })
+      );
+    }
+    if (error) {
+      return next(UsersErrorsFactory.documentDeleteErr());
+    }
+  }
+
+  static async deletePreRegisterDocuments(req, res, next) {
+    const {key} = req.params;
+    await FilesServices.deleteSingleFile({file: key});
+    const {success} = await UsersServices.deletePreRegisterDocument({key: key});
+    if (success) {
+      return next(
+        UsersResponsesFactory.deleteDocumentRes({
+          user: {},
+        })
+      );
+    } else {
+      return next(UsersErrorsFactory.documentDeleteErr());
+    }
+  }
+
+  static async updateProfile(req, res, next) {
+    const data = req.body;
+    const {success, err, user} = await UsersServices.getUserById({
+      id: req.jwtToken.user.id,
+    });
+    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
+    if (!success) throw err;
+    const {
+      success: response,
+      user: updatedUser,
+      err: error,
+    } = await UsersServices.updateProfile({user, data});
+
+    if (!response) return next(UsersErrorsFactory.profileUpdateErr());
+    if (response) {
+      return next(
+        UsersResponsesFactory.profileUpdateRes({
+          user: updatedUser,
+        })
+      );
+    }
+    if (error) {
+      return next(UsersErrorsFactory.profileUpdateErr());
+    }
+  }
+
+  static async getPostalCodes(req, res, next) {
+    const {postalCode} = req.params;
+    const {success, data, err} = await UsersServices.getPostalCodes({
+      postalCode,
+    });
+
+    if (!data) return next(UsersErrorsFactory.postalCodesFoundErr());
+
+    if (!success) throw err;
+
+    return next(
+      UsersResponsesFactory.postalCodeInfoRes({
+        data,
+      })
+    );
+  }
+  static async getDriversList(req, res, next) {
+    const {success, err, user} = await UsersServices.getUserById({
+      id: req.jwtToken.user.id,
+    });
+    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
+    if (!success) throw err;
+    let {
+      page,
+      limit,
+      title,
+      location,
+      handleEquipment,
+      experience,
+      federalLicenseTypes,
+      stateLicenseTypes,
+      vehicleType,
+    } = req.query;
+    page = parseInt(page);
+    limit = parseInt(limit);
+    const formattedHandleEquipment = handleEquipment?.split(',') || [];
+    const formattedFederalLicenseTypes = federalLicenseTypes?.split(',') || [];
+    const formattedStateLicenseTypes = stateLicenseTypes?.split(',') || [];
+    const formattedExperience = experience?.split(',') || [];
+
+    const {
+      success: response,
+      result,
+      err: error,
+    } = await UsersServices.getDriversList({
+      page,
+      limit,
+      title,
+      location,
+      federalLicenseTypes: formattedFederalLicenseTypes,
+      stateLicenseTypes: formattedStateLicenseTypes,
+      equipment: formattedHandleEquipment,
+      experience: formattedExperience,
+      vehicleType,
+    });
+    if (response)
+      return next(
+        UsersResponsesFactory.driversRetrievedSuccessfully({
+          count: result.totalCount,
+          data: result.data,
+          page: page,
+          perPage: limit,
+        })
+      );
+    if (!result || result.data.length === 0)
+      return next(UsersErrorsFactory.driverNotFoundErr());
+    if (error) throw error;
+  }
+  static async getCompaniesList(req, res, next) {
+    const {success, err, user} = await UsersServices.getUserById({
+      id: req.jwtToken.user.id,
+    });
+    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
+    if (!success) throw err;
+    let {page, limit, title, location} = req.query;
+    page = parseInt(page);
+    limit = parseInt(limit);
+    const {
+      success: response,
+      result,
+      err: error,
+    } = await UsersServices.getCompaniesList({
+      page,
+      limit,
+      title,
+      location,
+    });
+    if (response)
+      return next(
+        UsersResponsesFactory.companyRetrievedSuccessfully({
+          count: result.totalCount,
+          data: result.data,
+          page: page,
+          perPage: limit,
+        })
+      );
+    if (!result || result.data.length === 0)
+      return next(UsersErrorsFactory.companyNotFoundErr());
+    if (error) throw error;
+  }
+  static async checkRegisteredEmail(req, res, next) {
+    let {email} = req.body;
+    email = email.toLowerCase();
+    const {doc} = await GeneralServices.findOne({
+      query: {email: email},
+      model: UsersModel,
+    });
+    if (doc) return next(UsersErrorsFactory.emailAlreadyExistErr());
+    if (!doc) return next(UsersResponsesFactory.emailAvailable());
   }
 };

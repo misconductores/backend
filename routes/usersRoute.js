@@ -2,14 +2,86 @@ const express = require('express');
 const {UsersController} = require('../controllers');
 const {validatorMiddleware, authMiddleware} = require('../middleware');
 const {catchAsync} = require('../utils');
-const {usersSchema} = require('../schemas');
-
+const {usersSchema, othersSchema} = require('../schemas');
+const {uploadImage} = require('../middleware/uploadImageMiddleware');
+const {uploadDocument} = require('../middleware/documentUploadMiddleware');
+const {
+  PARAMS_PROPERTY,
+  QUERY_PROPERTY,
+} = require('../constants/usersConstants');
 const router = express.Router();
+
+router.get(
+  '/drivers',
+  authMiddleware,
+  validatorMiddleware(othersSchema.validatePaginationParams, QUERY_PROPERTY),
+  catchAsync(UsersController.getDriversList)
+);
+router.get(
+  '/companies',
+  authMiddleware,
+  validatorMiddleware(othersSchema.validatePaginationParams, QUERY_PROPERTY),
+  catchAsync(UsersController.getCompaniesList)
+);
 
 router.get(
   '/me',
   authMiddleware,
   catchAsync(UsersController.getLoggedInUserInformation)
+);
+
+router.get(
+  '/:id',
+  authMiddleware,
+  catchAsync(UsersController.getUserInformation)
+);
+
+router.patch(
+  '/profile-image',
+  uploadImage.single('image'),
+  authMiddleware,
+  catchAsync(UsersController.updateProfileImage)
+);
+
+router.patch(
+  '/documents',
+  uploadDocument.single('image'),
+  authMiddleware,
+  validatorMiddleware(usersSchema.validateUploadDocumentRequest),
+  catchAsync(UsersController.uploadDocuments)
+);
+
+router.post(
+  '/pre-register-documents',
+  uploadDocument.single('image'),
+  validatorMiddleware(usersSchema.validateUploadDocumentRequest),
+  catchAsync(UsersController.uploadPreRegisterDocuments)
+);
+
+router.delete(
+  '/document/:label',
+  authMiddleware,
+  validatorMiddleware(
+    usersSchema.validateDeleteDocumentParams,
+    PARAMS_PROPERTY
+  ),
+  catchAsync(UsersController.deleteDocuments)
+);
+
+router.delete(
+  '/pre-register-document/:key',
+  validatorMiddleware(
+    usersSchema.validatePreRegisterDeleteDocumentParams,
+    PARAMS_PROPERTY
+  ),
+  catchAsync(UsersController.deletePreRegisterDocuments)
+);
+
+router.patch(
+  '/profile',
+  authMiddleware,
+  validatorMiddleware(usersSchema.validateUpdateProfileRequest),
+  catchAsync(UsersController.updateProfile)
 );
 
 router.post(
@@ -44,6 +116,18 @@ router.post(
   '/verify/refresh',
   validatorMiddleware(usersSchema.validateEmail),
   catchAsync(UsersController.regenerateVerifyToken)
+);
+
+router.get(
+  '/postal-codes/:postalCode',
+  validatorMiddleware(usersSchema.validatePostalCodeParams, PARAMS_PROPERTY),
+  catchAsync(UsersController.getPostalCodes)
+);
+
+router.post(
+  '/check-email',
+  validatorMiddleware(usersSchema.validateCheckEmailRequest),
+  catchAsync(UsersController.checkRegisteredEmail)
 );
 
 module.exports = router;

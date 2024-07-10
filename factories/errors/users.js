@@ -1,3 +1,4 @@
+const {errorCodes} = require('../../constants/usersConstants');
 const AppError = require('./AppError');
 
 module.exports = class UsersErrorsFactory {
@@ -14,6 +15,62 @@ module.exports = class UsersErrorsFactory {
       statusCode: 404,
     });
   }
+  static forbiddenCompanyErr() {
+    return new AppError({
+      message: 'Only company profile allowed!',
+      statusCode: 403,
+      err: {
+        type: errorCodes.ONLY_COMPANY_ALLOWED,
+      },
+    });
+  }
+
+  static postalCodesFoundErr() {
+    return new AppError({
+      message: 'No address found against this postal code',
+      statusCode: 404,
+    });
+  }
+
+  static profileImgUpdateErr() {
+    return new AppError({
+      message: 'Profile image update failed',
+      statusCode: 400,
+    });
+  }
+
+  static documentUpdateErr() {
+    return new AppError({
+      message: 'Document update failed',
+      statusCode: 400,
+    });
+  }
+  static documentLabelErr() {
+    return new AppError({
+      message: 'Document with given label already exist',
+      statusCode: 404,
+    });
+  }
+  static documentUploadErr() {
+    return new AppError({
+      message: 'Document upload failed',
+      statusCode: 400,
+    });
+  }
+
+  static documentDeleteErr() {
+    return new AppError({
+      message: 'Document delete failed',
+      statusCode: 400,
+    });
+  }
+
+  static profileUpdateErr() {
+    return new AppError({
+      message: 'Profile updating failed',
+      statusCode: 400,
+    });
+  }
 
   static wrongEmailOrPasswordErr() {
     return new AppError({
@@ -27,6 +84,9 @@ module.exports = class UsersErrorsFactory {
       message:
         'Token is either expired or is invalid. Please create a new token and try again',
       statusCode: 400,
+      err: {
+        type: errorCodes.INVALID_TOKEN_ERR,
+      },
     });
   }
 
@@ -43,7 +103,7 @@ module.exports = class UsersErrorsFactory {
       message: 'User Not Verified',
       statusCode: 403,
       err: {
-        type: 'USER_NOT_VERIFIED',
+        type: errorCodes.USER_NOT_VERIFIED,
       },
     });
   }
@@ -51,6 +111,24 @@ module.exports = class UsersErrorsFactory {
   static userAlreadyVerifiedErr() {
     return new AppError({
       message: 'user already verified',
+      statusCode: 400,
+    });
+  }
+  static driverNotFoundErr() {
+    return new AppError({
+      message: 'Drivers not found',
+      statusCode: 400,
+    });
+  }
+  static companyNotFoundErr() {
+    return new AppError({
+      message: 'Company not found',
+      statusCode: 400,
+    });
+  }
+  static emailAlreadyExistErr() {
+    return new AppError({
+      message: 'Email is already exist',
       statusCode: 400,
     });
   }

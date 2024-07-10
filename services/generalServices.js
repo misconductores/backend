@@ -50,12 +50,34 @@ module.exports = class GeneralServices {
     }
   }
 
+  static async findById({id, model, popOptions}) {
+    try {
+      const {doc, success} = await MongosFactory.findById(
+        model,
+        id,
+        popOptions
+      );
+      return {success, doc};
+    } catch (error) {
+      return {success: false, error};
+    }
+  }
+
   static async delete({id, model}) {
     try {
       const {doc, success} = await MongosFactory.delete(model, id);
       return {success, doc};
     } catch (error) {
       return {success: false, error};
+    }
+  }
+
+  static async findAllDistinct({query, model}) {
+    try {
+      let data = await model.distinct(query);
+      return {success: true, data};
+    } catch (err) {
+      return {success: false, err};
     }
   }
 };
