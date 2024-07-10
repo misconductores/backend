@@ -22,7 +22,7 @@ module.exports = class ConnectionsServices {
         data: {driverId, companyId, startDate: DateTime.now()},
       });
 
-      const {connection} = await this.findConnection({
+      const {connection} = await ConnectionsServices.findConnection({
         query: {_id: newConnection.id},
       });
       return {success: true, connection};
