@@ -1,10 +1,15 @@
-const {roles, notificationTypes} = require('../constants/usersConstants');
+const {
+  roles,
+  notificationTypes,
+  statusTypes,
+} = require('../constants/usersConstants');
 const {
   UsersErrorsFactory,
   ConnectionErrors,
   OffersErrors,
   OffersResponsesFactory,
 } = require('../factories');
+const OfferResponsesFactory = require('../factories/responses/offers');
 const {OffersModel} = require('../models');
 const {
   UsersServices,
@@ -12,6 +17,7 @@ const {
   NotificationsServices,
   GeneralServices,
 } = require('../services');
+const OffersServices = require('../services/offersServices');
 
 module.exports = class OffersController {
   static async sendOffer(req, res, next) {
@@ -58,8 +64,8 @@ module.exports = class OffersController {
 
     if (response) {
       await NotificationsServices.createNotification({
-        userId: user.id,
-        relatedUserId: driverId,
+        userId: driverId,
+        relatedUserId: user.id,
         type: notificationTypes.send_offer.value,
       });
 
@@ -67,5 +73,54 @@ module.exports = class OffersController {
     }
 
     if (error) throw error;
+  }
+
+  static async acceptOffer(req, res, next) {
+    const {user} = await UsersServices.getUserById({
+      id: req.jwtToken.user.id,
+    });
+
+    const {id} = req.params;
+
+    const {offer} = await OffersServices.findOfferById({id});
+
+    if (!offer) return next(OffersErrors.noOfferErr());
+
+    const findConnectionQuery = {
+      driverId: user.id,
+      companyId: offer.companyId,
+      isActive: true,
+    };
+
+    const {connection: findConnection} =
+      await ConnectionsServices.findConnection({
+        query: findConnectionQuery,
+      });
+
+    if (findConnection) return next(ConnectionErrors.alreadyConnectedErr());
+
+    const {success, err} = await OffersServices.updateOfferStatus({
+      id,
+      status: statusTypes.accepted.value,
+    });
+
+    if (success) {
+      await NotificationsServices.createNotification({
+        userId: offer.companyId,
+        relatedUserId: user.id,
+        type: notificationTypes.accept_offer.value,
+      });
+
+      const {connection} = await ConnectionsServices.createConnection({
+        companyId: offer.companyId,
+        driverId: user.id,
+      });
+
+      return next(
+        OfferResponsesFactory.offerAcceptedSuccessfully({connection})
+      );
+    }
+
+    if (err) throw err;
   }
 };

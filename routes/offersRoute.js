@@ -1,3 +1,4 @@
+const {PARAMS_PROPERTY} = require('../constants/usersConstants');
 const {OffersController} = require('../controllers');
 const {authMiddleware, validatorMiddleware} = require('../middleware');
 const {offersSchema} = require('../schemas');
@@ -11,7 +12,12 @@ router.post(
   catchAsync(OffersController.sendOffer)
 );
 
-router.patch('/:id/accept', authMiddleware);
+router.patch(
+  '/:id/accept',
+  authMiddleware,
+  validatorMiddleware(offersSchema.validateUpdateOfferParams, PARAMS_PROPERTY),
+  catchAsync(OffersController.acceptOffer)
+);
 
 router.patch('/:id/reject', authMiddleware);
 

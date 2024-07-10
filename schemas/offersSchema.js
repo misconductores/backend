@@ -8,3 +8,10 @@ module.exports.validateCreateOfferReq = (data) => {
   });
   return validatorUtils.validate(schema, data);
 };
+
+module.exports.validateUpdateOfferParams = (data) => {
+  const schema = Yup.object().shape({
+    id: Yup.string().required('Offer Id is required'),
+  });
+  return validatorUtils.validate(schema, data);
+};

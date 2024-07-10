@@ -13,4 +13,10 @@ module.exports = class OfferErrorsFactory {
       statusCode: 400,
     });
   }
+  static noOfferErr() {
+    return new AppError({
+      message: 'No offer found against this id',
+      statusCode: 400,
+    });
+  }
 };
