@@ -2,7 +2,6 @@ const UsersServices = require(`./usersServices`);
 const GeneralServices = require(`./generalServices`);
 const FilesServices = require('./fileServices');
 const JobsServices = require('./jobsServices');
-const ConnectionsServices = require('./connectionsServices');
 const NotificationsServices = require('./notificationsServices');
 
 module.exports = {
@@ -10,6 +9,5 @@ module.exports = {
   GeneralServices,
   FilesServices,
   JobsServices,
-  ConnectionsServices,
   NotificationsServices,
 };

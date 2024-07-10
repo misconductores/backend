@@ -5,10 +5,9 @@ const {
   OffersErrors,
   OffersResponsesFactory,
 } = require('../factories');
-const {OffersModel} = require('../models');
+const {OffersModel, ConnectionsModel} = require('../models');
 const {
   UsersServices,
-  ConnectionsServices,
   NotificationsServices,
   GeneralServices,
 } = require('../services');
@@ -30,8 +29,9 @@ module.exports = class OffersController {
       isActive: true,
     };
 
-    const {connection} = await ConnectionsServices.findConnection({
+    const {doc: connection} = await GeneralServices.findOne({
       query: findConnectionQuery,
+      model: ConnectionsModel,
     });
 
     if (connection) return next(ConnectionErrors.alreadyConnectedErr());
