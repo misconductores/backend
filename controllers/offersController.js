@@ -18,9 +18,6 @@ module.exports = class OffersController {
       id: req.jwtToken.user.id,
     });
 
-    if (user?.role !== roles.company.value)
-      return next(UsersErrorsFactory.forbiddenCompanyErr());
-
     const {driverId, jobId} = req.body;
 
     const findConnectionQuery = {

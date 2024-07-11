@@ -49,4 +49,11 @@ module.exports = class GeneralErrorsFactory {
       statusCode: 400,
     });
   }
+
+  static forbiddenRoleErr() {
+    return new AppError({
+      message: "You don't have the necessary permissions",
+      statusCode: 400,
+    });
+  }
 };
