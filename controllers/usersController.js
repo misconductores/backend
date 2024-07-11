@@ -237,13 +237,12 @@ module.exports = class UsersController {
     const file = req.file;
     const filesUrl = await FilesServices.uploadSingleFile({
       file,
-      fileDir: 'documents',
+      fileDir: 'pre-register-documents',
     });
     if (filesUrl.url) {
-      let modifiedKey = filesUrl.key.replace(/^documents\//, '');
       const updatedData = {
         url: filesUrl.url,
-        key: modifiedKey,
+        key: filesUrl.key,
         label: label,
       };
       const {success} = await UsersServices.createDocuments({
