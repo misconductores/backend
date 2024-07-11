@@ -66,9 +66,6 @@ module.exports = class UsersServices {
           const modifiedKey = key.replace(/^pre-register-documents\//, '');
           const destinationKey = `documents/${user.id}/${modifiedKey}`;
 
-          const getObjectCommand = new GetObjectCommand(sourceParams);
-          await s3Client.send(getObjectCommand);
-
           const copyObjectCommand = new CopyObjectCommand({
             Bucket,
             CopySource: `${Bucket}/${sourceParams.Key}`,
