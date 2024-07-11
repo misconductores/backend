@@ -1,3 +1,4 @@
+const config = require('config');
 const {MongosFactory} = require('../factories');
 const UsersModel = require('../models/UsersModel');
 const {passwordsUtils} = require('../utils');
@@ -7,6 +8,24 @@ const PostalCodeModel = require('../models/PostalCodeModel');
 const JobModel = require('../models/JobModel');
 const {roles, restrictedUserData} = require('../constants/usersConstants');
 const {addDriverConditions} = require('../utils/helpers/users');
+const {
+  S3Client,
+  GetObjectCommand,
+  CopyObjectCommand,
+  DeleteObjectCommand,
+} = require('@aws-sdk/client-s3');
+const accessKeyId = config.get('awsAccessKey');
+const secretAccessKey = config.get('awsSecretAccessKey');
+const Bucket = config.get('awsBucket');
+const region = config.get('awsBucketRegion');
+
+const s3Client = new S3Client({
+  region: region,
+  credentials: {
+    accessKeyId: accessKeyId,
+    secretAccessKey: secretAccessKey,
+  },
+});
 
 module.exports = class UsersServices {
   static async getUserByEmail({email}) {
@@ -40,6 +59,45 @@ module.exports = class UsersServices {
       if (data.documents) {
         const keysToDelete = data.documents.map((document) => document.key);
         await DocumentsModel.deleteMany({key: {$in: keysToDelete}});
+
+        for (const document of data.documents) {
+          const {url, key} = document;
+          const sourceParams = {Bucket, Key: key};
+          const modifiedKey = key.replace(/^pre-register-documents\//, '');
+          const destinationKey = `documents/${user.id}/${modifiedKey}`;
+
+          const getObjectCommand = new GetObjectCommand(sourceParams);
+          await s3Client.send(getObjectCommand);
+
+          const copyObjectCommand = new CopyObjectCommand({
+            Bucket,
+            CopySource: `${Bucket}/${sourceParams.Key}`,
+            Key: destinationKey,
+          });
+          await s3Client.send(copyObjectCommand);
+
+          const newKey = key.replace(
+            'pre-register-documents',
+            `documents/${user.id}`
+          );
+          const newUrl = url.replace(
+            'pre-register-documents',
+            `documents/${user.id}`
+          );
+
+          const deleteObjectCommand = new DeleteObjectCommand(sourceParams);
+          await s3Client.send(deleteObjectCommand);
+
+          await UsersModel.updateOne(
+            {_id: user.id, 'documents.key': key},
+            {
+              $set: {
+                'documents.$.url': newUrl,
+                'documents.$.key': newKey,
+              },
+            }
+          );
+        }
       }
 
       return {success: true, user};
@@ -144,10 +202,10 @@ module.exports = class UsersServices {
       }
       const filesUrl = await FilesServices.uploadSingleFile({
         file,
-        fileDir: 'profile-images',
+        fileDir: `profile-images/${user.id}`,
       });
 
-      let modifiedKey = filesUrl.key.replace(/^profile-images\//, '');
+      let modifiedKey = filesUrl.key.replace(`^profile-images/${user.id}/`, '');
 
       const updatedData = {
         url: filesUrl.url,
@@ -177,14 +235,12 @@ module.exports = class UsersServices {
       }
       const filesUrl = await FilesServices.uploadSingleFile({
         file,
-        fileDir: 'documents',
+        fileDir: `documents/${user.id}`,
       });
-
-      let modifiedKey = filesUrl.key.replace(/^documents\//, '');
 
       const updatedData = {
         url: filesUrl.url,
-        key: modifiedKey,
+        key: filesUrl.key,
         label: label,
       };
       const query = user.id;
