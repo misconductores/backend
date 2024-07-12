@@ -1,28 +1,21 @@
-const {roles, notificationTypes} = require('../constants/usersConstants');
+const {notificationTypes} = require('../constants/usersConstants');
 const {
-  UsersErrorsFactory,
   ConnectionErrors,
   OffersErrors,
   OffersResponsesFactory,
 } = require('../factories');
 const {OffersModel, ConnectionsModel} = require('../models');
-const {
-  UsersServices,
-  NotificationsServices,
-  GeneralServices,
-} = require('../services');
+const {NotificationsServices, GeneralServices} = require('../services');
 
 module.exports = class OffersController {
   static async sendOffer(req, res, next) {
-    const {user} = await UsersServices.getUserById({
-      id: req.jwtToken.user.id,
-    });
+    const userId = req.jwtToken.user.id;
 
     const {driverId, jobId} = req.body;
 
     const findConnectionQuery = {
       driverId: driverId,
-      companyId: user.id,
+      companyId: userId,
       isActive: true,
     };
 
@@ -37,7 +30,7 @@ module.exports = class OffersController {
       query: {
         jobId: jobId,
         driverId: driverId,
-        companyId: user.id,
+        companyId: userId,
       },
       model: OffersModel,
     });
@@ -49,13 +42,13 @@ module.exports = class OffersController {
       error,
       doc: offer,
     } = await GeneralServices.create({
-      data: {companyId: user.id, driverId, jobId},
+      data: {companyId: userId, driverId, jobId},
       model: OffersModel,
     });
 
     if (response) {
       await NotificationsServices.createNotification({
-        userId: user.id,
+        userId: userId,
         relatedUserId: driverId,
         type: notificationTypes.send_offer.value,
       });
