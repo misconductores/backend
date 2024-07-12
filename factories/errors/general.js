@@ -49,4 +49,18 @@ module.exports = class GeneralErrorsFactory {
       statusCode: 400,
     });
   }
+
+  static forbiddenRoleErr() {
+    return new AppError({
+      message: "You don't have the necessary permissions",
+      statusCode: 403,
+    });
+  }
+
+  static forbiddenDriverStatusErr() {
+    return new AppError({
+      message: 'You are not eligible to connect with company',
+      statusCode: 403,
+    });
+  }
 };

@@ -1,6 +1,5 @@
-const {DateTime} = require('luxon');
 const {ConnectionsModel} = require('../models');
-const GeneralServices = require('./generalServices');
+const {getCurrentDate} = require('../utils/DateCalculations');
 
 module.exports = class ConnectionsServices {
   static async findConnection({query}) {
@@ -15,17 +14,13 @@ module.exports = class ConnectionsServices {
     }
   }
 
-  static async createConnection({driverId, companyId}) {
+  static async createConnection({driverId, companyId, offerId, session}) {
     try {
-      const {doc: newConnection} = await GeneralServices.create({
-        model: ConnectionsModel,
-        data: {driverId, companyId, startDate: DateTime.now()},
-      });
-
-      const {connection} = await ConnectionsServices.findConnection({
-        query: {_id: newConnection.id},
-      });
-      return {success: true, connection};
+      const newConnection = await ConnectionsModel.create(
+        [{driverId, companyId, offerId, startDate: getCurrentDate()}],
+        {session}
+      );
+      return {success: true, newConnection: newConnection[0]};
     } catch (err) {
       return {success: false, err};
     }

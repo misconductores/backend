@@ -17,6 +17,7 @@ const {
   ConnectionsServices,
   NotificationsServices,
   GeneralServices,
+  OffersServices,
 } = require('../services');
 
 module.exports = class OffersController {
@@ -76,21 +77,17 @@ module.exports = class OffersController {
   }
 
   static async acceptOffer(req, res, next) {
-    const {user} = await UsersServices.getUserById({
-      id: req.jwtToken.user.id,
-    });
+    const userId = req.jwtToken.user.id;
 
-    const {id} = req.params;
+    const {id: offerId} = req.params;
 
     const {doc: offer} = await GeneralServices.findById({
-      id,
+      id: offerId,
       model: OffersModel,
     });
 
-    if (!offer) return next(OffersErrors.noOfferErr());
-
     const findConnectionQuery = {
-      driverId: user.id,
+      driverId: userId,
       companyId: offer.companyId,
       isActive: true,
     };
@@ -102,42 +99,22 @@ module.exports = class OffersController {
 
     if (findConnection) return next(ConnectionErrors.alreadyConnectedErr());
 
-    const {success, error} = await GeneralServices.update({
-      id,
-      model: OffersModel,
-      data: {status: statusTypes.accepted.value},
+    const {success, connection, err} = await OffersServices.acceptOffer({
+      offer,
+      userId,
     });
 
     if (success) {
-      await NotificationsServices.createNotification({
-        userId: offer.companyId,
-        relatedUserId: user.id,
-        type: notificationTypes.accept_offer.value,
-      });
-
-      const {connection} = await ConnectionsServices.createConnection({
-        companyId: offer.companyId,
-        driverId: user.id,
-      });
-
-      await GeneralServices.update({
-        id: user.id,
-        model: UsersModel,
-        data: {driverStatus: driverStatuses.connected.value},
-      });
-
       return next(
         OfferResponsesFactory.offerAcceptedSuccessfully({connection})
       );
     }
 
-    if (error) throw error;
+    if (err) throw err;
   }
 
   static async rejectOffer(req, res, next) {
-    const {user} = await UsersServices.getUserById({
-      id: req.jwtToken.user.id,
-    });
+    const userId = req.jwtToken.user.id;
 
     const {id} = req.params;
 
@@ -163,7 +140,7 @@ module.exports = class OffersController {
     if (success) {
       await NotificationsServices.createNotification({
         userId: offer.companyId,
-        relatedUserId: user.id,
+        relatedUserId: userId,
         type: notificationTypes.reject_offer.value,
       });
 

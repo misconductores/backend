@@ -1,6 +1,15 @@
-const {PARAMS_PROPERTY} = require('../constants/usersConstants');
+const {
+  PARAMS_PROPERTY,
+  roles,
+  driverStatuses,
+} = require('../constants/usersConstants');
 const {OffersController} = require('../controllers');
-const {authMiddleware, validatorMiddleware} = require('../middleware');
+const {
+  authMiddleware,
+  validatorMiddleware,
+  roleValidatorMiddleware,
+  checkDriverStatusMiddleware,
+} = require('../middleware');
 const {offersSchema} = require('../schemas');
 const {catchAsync} = require('../utils');
 const router = require('express').Router();
@@ -16,6 +25,11 @@ router.patch(
   '/:id/accept',
   authMiddleware,
   validatorMiddleware(offersSchema.validateUpdateOfferParams, PARAMS_PROPERTY),
+  roleValidatorMiddleware([roles.driver.value]),
+  checkDriverStatusMiddleware([
+    driverStatuses.connected.value,
+    driverStatuses.availableSoon.value,
+  ]),
   catchAsync(OffersController.acceptOffer)
 );
 
@@ -23,6 +37,7 @@ router.patch(
   '/:id/reject',
   authMiddleware,
   validatorMiddleware(offersSchema.validateUpdateOfferParams, PARAMS_PROPERTY),
+  roleValidatorMiddleware([roles.driver.value]),
   catchAsync(OffersController.rejectOffer)
 );
 

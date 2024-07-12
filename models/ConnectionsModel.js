@@ -14,6 +14,11 @@ const connectionsModel = new Schema(
       ref: 'Users',
       required: true,
     },
+    offerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'offers',
+      required: true,
+    },
     isActive: {
       type: Boolean,
       default: true,
