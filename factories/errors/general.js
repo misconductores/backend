@@ -59,7 +59,7 @@ module.exports = class GeneralErrorsFactory {
 
   static forbiddenDriverStatusErr() {
     return new AppError({
-      message: 'You are not eligible to connect with company',
+      message: 'You are not eligible to proceed this request',
       statusCode: 403,
     });
   }
