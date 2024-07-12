@@ -12,6 +12,6 @@ module.exports = (allowedRoles) => async (req, res, next) => {
 
     next();
   } catch (error) {
-    res.status(500).send(err);
+    res.status(500).send(error);
   }
 };
