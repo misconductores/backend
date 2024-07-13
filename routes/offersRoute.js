@@ -2,6 +2,7 @@ const {
   PARAMS_PROPERTY,
   roles,
   driverStatuses,
+  QUERY_PROPERTY,
 } = require('../constants/usersConstants');
 const {OffersController} = require('../controllers');
 const {
@@ -10,9 +11,17 @@ const {
   roleValidatorMiddleware,
   checkDriverStatusMiddleware,
 } = require('../middleware');
-const {offersSchema} = require('../schemas');
+const {offersSchema, othersSchema} = require('../schemas');
 const {catchAsync} = require('../utils');
 const router = require('express').Router();
+
+router.get(
+  '/driver',
+  authMiddleware,
+  validatorMiddleware(othersSchema.validatePaginationParams, QUERY_PROPERTY),
+  roleValidatorMiddleware({allowedRoles: [roles.driver.value]}),
+  catchAsync(OffersController.getOffersByDriverId)
+);
 
 router.post(
   '/',
@@ -41,6 +50,14 @@ router.patch(
   validatorMiddleware(offersSchema.validateUpdateOfferParams, PARAMS_PROPERTY),
   roleValidatorMiddleware({allowedRoles: [roles.driver.value]}),
   catchAsync(OffersController.rejectOffer)
+);
+
+router.get(
+  '/:jobId',
+  authMiddleware,
+  validatorMiddleware(othersSchema.validatePaginationParams, QUERY_PROPERTY),
+  roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
+  catchAsync(OffersController.getOffersByJobId)
 );
 
 module.exports = router;

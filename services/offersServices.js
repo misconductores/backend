@@ -2,6 +2,7 @@ const {
   statusTypes,
   notificationTypes,
   driverStatuses,
+  restrictedUserData,
 } = require('../constants/usersConstants');
 const {OffersModel, NotificationsModel, UsersModel} = require('../models');
 const mongoose = require('mongoose');
@@ -56,6 +57,50 @@ module.exports = class OffersServices {
       await session.abortTransaction();
       session.endSession();
 
+      return {success: false, err};
+    }
+  }
+
+  static async getOffersByJobId({page, limit, jobId}) {
+    try {
+      const skip = (page - 1) * limit;
+      const [totalCount, data] = await Promise.all([
+        OffersModel.countDocuments({jobId: jobId}),
+        OffersModel.find({jobId: jobId}, null, {skip, limit})
+          .populate({
+            path: 'companyId',
+            select: 'companyName profilePic contact',
+          })
+          .populate({
+            path: 'driverId',
+            select: restrictedUserData,
+          }),
+      ]);
+      return {success: true, offers: {totalCount, data}};
+    } catch (err) {
+      return {success: false, err};
+    }
+  }
+
+  static async getOffersByDriverId({page, limit, driverId}) {
+    try {
+      const skip = (page - 1) * limit;
+      const query = {
+        $and: [{driverId: driverId}, {status: statusTypes.pending.value}],
+      };
+      const [totalCount, data] = await Promise.all([
+        OffersModel.countDocuments(query),
+        OffersModel.find(query, null, {skip, limit})
+          .populate({
+            path: 'companyId',
+            select: 'companyName profilePic contact',
+          })
+          .populate({
+            path: 'jobId',
+          }),
+      ]);
+      return {success: true, offers: {totalCount, data}};
+    } catch (err) {
       return {success: false, err};
     }
   }
