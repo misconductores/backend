@@ -12,7 +12,7 @@ const router = require('express').Router();
 router.post(
   '/',
   authMiddleware,
-  roleValidatorMiddleware([roles.company.value]),
+  roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
   validatorMiddleware(offersSchema.validateCreateOfferReq),
   catchAsync(OffersController.sendOffer)
 );
