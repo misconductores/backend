@@ -64,9 +64,15 @@ module.exports = class OffersServices {
   static async getOffersByJobId({page, limit, jobId}) {
     try {
       const skip = (page - 1) * limit;
+
+      const query = {
+        jobId: jobId,
+        status: {$ne: statusTypes.expired.value},
+      };
+
       const [totalCount, data] = await Promise.all([
-        OffersModel.countDocuments({jobId: jobId}),
-        OffersModel.find({jobId: jobId}, null, {skip, limit})
+        OffersModel.countDocuments(query),
+        OffersModel.find(query, null, {skip, limit})
           .populate({
             path: 'companyId',
             select: 'companyName profilePic contact',
