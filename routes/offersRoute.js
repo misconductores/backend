@@ -25,11 +25,13 @@ router.patch(
   '/:id/accept',
   authMiddleware,
   validatorMiddleware(offersSchema.validateUpdateOfferParams, PARAMS_PROPERTY),
-  roleValidatorMiddleware([roles.driver.value]),
-  checkDriverStatusMiddleware([
-    driverStatuses.connected.value,
-    driverStatuses.availableSoon.value,
-  ]),
+  roleValidatorMiddleware({allowedRoles: [roles.driver.value]}),
+  checkDriverStatusMiddleware({
+    driverStatuses: [
+      driverStatuses.connected.value,
+      driverStatuses.availableSoon.value,
+    ],
+  }),
   catchAsync(OffersController.acceptOffer)
 );
 
@@ -37,7 +39,7 @@ router.patch(
   '/:id/reject',
   authMiddleware,
   validatorMiddleware(offersSchema.validateUpdateOfferParams, PARAMS_PROPERTY),
-  roleValidatorMiddleware([roles.driver.value]),
+  roleValidatorMiddleware({allowedRoles: [roles.driver.value]}),
   catchAsync(OffersController.rejectOffer)
 );
 
