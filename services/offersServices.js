@@ -6,6 +6,8 @@ const {
 const {OffersModel, NotificationsModel, UsersModel} = require('../models');
 const mongoose = require('mongoose');
 const ConnectionsServices = require('./connectionsServices');
+const GeneralServices = require('./generalServices');
+const NotificationsServices = require('./notificationsServices');
 
 module.exports = class OffersServices {
   static async acceptOffer({userId, offer}) {
@@ -56,6 +58,26 @@ module.exports = class OffersServices {
       await session.abortTransaction();
       session.endSession();
 
+      return {success: false, err};
+    }
+  }
+
+  static async rejectOffer({userId, offer}) {
+    try {
+      const {doc: updatedOffer} = await GeneralServices.update({
+        id: offer.id,
+        model: OffersModel,
+        data: {status: statusTypes.rejected.value},
+      });
+      if (updatedOffer) {
+        await NotificationsServices.createNotification({
+          userId: offer.companyId,
+          relatedUserId: userId,
+          type: notificationTypes.reject_offer.value,
+        });
+      }
+      return {success: true};
+    } catch (error) {
       return {success: false, err};
     }
   }

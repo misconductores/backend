@@ -27,10 +27,7 @@ router.patch(
   validatorMiddleware(offersSchema.validateUpdateOfferParams, PARAMS_PROPERTY),
   roleValidatorMiddleware({allowedRoles: [roles.driver.value]}),
   checkDriverStatusMiddleware({
-    driverStatuses: [
-      driverStatuses.connected.value,
-      driverStatuses.availableSoon.value,
-    ],
+    allowedDriverStatuses: [driverStatuses.available.value],
   }),
   catchAsync(OffersController.acceptOffer)
 );

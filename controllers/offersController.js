@@ -86,6 +86,11 @@ module.exports = class OffersController {
       model: OffersModel,
     });
 
+    if (!offer) return next(OffersErrors.noOfferErr());
+
+    if (offer.status === statusTypes.expired.value)
+      return next(OffersErrors.offerExpiredErr());
+
     const findConnectionQuery = {
       driverId: userId,
       companyId: offer.companyId,
@@ -125,25 +130,18 @@ module.exports = class OffersController {
 
     if (!offer) return next(OffersErrors.noOfferErr());
 
+    if (offer.status === statusTypes.expired.value)
+      return next(OffersErrors.offerExpiredErr());
+
     if (
       offer.status === statusTypes.rejected.value ||
       offer.status === statusTypes.accepted.value
     )
       return next(OffersErrors.requestResolvedErr());
 
-    const {success, error} = await GeneralServices.update({
-      id,
-      model: OffersModel,
-      data: {status: statusTypes.rejected.value},
-    });
+    const {success, error} = await OffersServices.rejectOffer({offer, userId});
 
     if (success) {
-      await NotificationsServices.createNotification({
-        userId: offer.companyId,
-        relatedUserId: userId,
-        type: notificationTypes.reject_offer.value,
-      });
-
       return next(OfferResponsesFactory.offerRejectedSuccessfully());
     }
 
