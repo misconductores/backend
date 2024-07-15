@@ -5,6 +5,7 @@ const refreshTokenMiddleware = require('./refreshTokenMiddleware');
 const finalResponseMiddleware = require('./finalResponseMiddleware');
 const loggerMiddleware = require('./loggerMiddleware');
 const accessMiddleware = require('./accessMiddleware');
+const roleValidatorMiddleware = require('./roleValidatorMiddleware');
 
 module.exports = {
   authMiddleware,
@@ -14,4 +15,5 @@ module.exports = {
   finalResponseMiddleware,
   logger: loggerMiddleware, // logger.error() sounds more appropriate than loggerMiddleware.error() IMO.
   accessMiddleware,
+  roleValidatorMiddleware,
 };
