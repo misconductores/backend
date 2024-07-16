@@ -10,6 +10,7 @@ const {
   validatorMiddleware,
   roleValidatorMiddleware,
   checkDriverStatusMiddleware,
+  isCompanyJobCheckMiddleware,
 } = require('../middleware');
 const {offersSchema, othersSchema} = require('../schemas');
 const {catchAsync} = require('../utils');
@@ -57,6 +58,7 @@ router.get(
   authMiddleware,
   validatorMiddleware(othersSchema.validatePaginationParams, QUERY_PROPERTY),
   roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
+  isCompanyJobCheckMiddleware,
   catchAsync(OffersController.getOffersByJobId)
 );
 

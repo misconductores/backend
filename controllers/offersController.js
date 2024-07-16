@@ -8,11 +8,9 @@ const {
   ConnectionErrors,
   OffersErrors,
   OffersResponsesFactory,
-  JobErrors,
 } = require('../factories');
 const OfferResponsesFactory = require('../factories/responses/offers');
 const {OffersModel} = require('../models');
-const JobModel = require('../models/JobModel');
 const {
   UsersServices,
   ConnectionsServices,
@@ -153,13 +151,6 @@ module.exports = class OffersController {
 
   static async getOffersByJobId(req, res, next) {
     const {jobId} = req.params;
-
-    const {doc: job} = await GeneralServices.findOne({
-      query: {_id: jobId},
-      model: JobModel,
-    });
-
-    if (!job) return next(JobErrors.jobByIdNotFoundErr());
 
     let {page, limit} = req.query;
     page = parseInt(page);

@@ -7,6 +7,7 @@ const loggerMiddleware = require('./loggerMiddleware');
 const accessMiddleware = require('./accessMiddleware');
 const roleValidatorMiddleware = require('./roleValidatorMiddleware');
 const checkDriverStatusMiddleware = require('./checkDriverStatusMiddleware');
+const isCompanyJobCheckMiddleware = require('./isCompanyJobCheckMiddleware');
 
 module.exports = {
   authMiddleware,
@@ -18,4 +19,5 @@ module.exports = {
   accessMiddleware,
   roleValidatorMiddleware,
   checkDriverStatusMiddleware,
+  isCompanyJobCheckMiddleware,
 };
