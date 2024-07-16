@@ -10,7 +10,12 @@ const GeneralServices = require('./generalServices');
 const NotificationsServices = require('./notificationsServices');
 
 module.exports = class OffersServices {
-  static async acceptOffer({userId, offer}) {
+  static async acceptOffer({userId, offerId}) {
+    const {doc: offer} = await GeneralServices.findById({
+      id: offerId,
+      model: OffersModel,
+    });
+
     const session = await mongoose.startSession();
     session.startTransaction();
 
@@ -62,8 +67,13 @@ module.exports = class OffersServices {
     }
   }
 
-  static async rejectOffer({userId, offer}) {
+  static async rejectOffer({userId, offerId}) {
     try {
+      const {doc: offer} = await GeneralServices.findById({
+        id: offerId,
+        model: OffersModel,
+      });
+
       const {doc: updatedOffer} = await GeneralServices.update({
         id: offer.id,
         model: OffersModel,
@@ -78,7 +88,7 @@ module.exports = class OffersServices {
       }
       return {success: true};
     } catch (error) {
-      return {success: false, err};
+      return {success: false, error};
     }
   }
 };

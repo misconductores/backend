@@ -1,15 +1,12 @@
 const {GeneralErrorsFactory} = require('../factories');
-const {UsersServices} = require('../services');
 
 module.exports =
   ({allowedRoles}) =>
   async (req, res, next) => {
     try {
-      const {user} = await UsersServices.getUserById({
-        id: req.jwtToken.user.id,
-      });
+      const role = req.jwtToken.user.role;
 
-      if (!user || !allowedRoles.includes(user.role))
+      if (!role || !allowedRoles.includes(role))
         return next(GeneralErrorsFactory.forbiddenRoleErr());
 
       next();
