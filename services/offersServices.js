@@ -21,7 +21,7 @@ module.exports = class OffersServices {
 
     try {
       await OffersModel.updateOne(
-        {_id: offer.id},
+        {_id: offerId},
         {status: statusTypes.accepted.value},
         {session}
       );
@@ -40,7 +40,7 @@ module.exports = class OffersServices {
       const {newConnection} = await ConnectionsServices.createConnection({
         companyId: offer.companyId,
         driverId: userId,
-        offerId: offer.id,
+        offerId: offerId,
         session,
       });
 
@@ -75,7 +75,7 @@ module.exports = class OffersServices {
       });
 
       const {doc: updatedOffer} = await GeneralServices.update({
-        id: offer.id,
+        id: offerId,
         model: OffersModel,
         data: {status: statusTypes.rejected.value},
       });
