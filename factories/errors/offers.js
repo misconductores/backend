@@ -13,4 +13,10 @@ module.exports = class OfferErrorsFactory {
       statusCode: 400,
     });
   }
+  static offerExpiredErr() {
+    return new AppError({
+      message: 'Offer has been expired',
+      statusCode: 400,
+    });
+  }
 };
