@@ -2,6 +2,7 @@ const {
   statusTypes,
   notificationTypes,
   driverStatuses,
+  restrictedUserData,
 } = require('../constants/usersConstants');
 const {OffersModel, NotificationsModel, UsersModel} = require('../models');
 const mongoose = require('mongoose');
@@ -66,7 +67,6 @@ module.exports = class OffersServices {
       return {success: false, err};
     }
   }
-
   static async rejectOffer({userId, offerId}) {
     try {
       const {doc: offer} = await GeneralServices.findById({
@@ -89,6 +89,56 @@ module.exports = class OffersServices {
       return {success: true};
     } catch (error) {
       return {success: false, error};
+    }
+  }
+
+  static async getOffersByJobId({page, limit, jobId}) {
+    try {
+      const skip = (page - 1) * limit;
+
+      const query = {
+        jobId: jobId,
+        status: {$ne: statusTypes.expired.value},
+      };
+
+      const [totalCount, data] = await Promise.all([
+        OffersModel.countDocuments(query),
+        OffersModel.find(query, null, {skip, limit})
+          .populate({
+            path: 'companyId',
+            select: 'companyName profilePic contact',
+          })
+          .populate({
+            path: 'driverId',
+            select: restrictedUserData,
+          }),
+      ]);
+      return {success: true, offers: {totalCount, data}};
+    } catch (err) {
+      return {success: false, err};
+    }
+  }
+
+  static async getOffersByDriverId({page, limit, driverId}) {
+    try {
+      const skip = (page - 1) * limit;
+      const query = {
+        $and: [{driverId: driverId}, {status: statusTypes.pending.value}],
+      };
+      const [totalCount, data] = await Promise.all([
+        OffersModel.countDocuments(query),
+        OffersModel.find(query, null, {skip, limit})
+          .populate({
+            path: 'companyId',
+            select: 'companyName profilePic contact',
+          })
+          .populate({
+            path: 'jobId',
+          }),
+      ]);
+      return {success: true, offers: {totalCount, data}};
+    } catch (err) {
+      return {success: false, err};
     }
   }
 };

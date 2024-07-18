@@ -2,7 +2,6 @@ const {
   roles,
   notificationTypes,
   statusTypes,
-  driverStatuses,
 } = require('../constants/usersConstants');
 const {
   UsersErrorsFactory,
@@ -11,7 +10,7 @@ const {
   OffersResponsesFactory,
 } = require('../factories');
 const OfferResponsesFactory = require('../factories/responses/offers');
-const {OffersModel, UsersModel} = require('../models');
+const {OffersModel} = require('../models');
 const {
   UsersServices,
   ConnectionsServices,
@@ -110,5 +109,57 @@ module.exports = class OffersController {
     }
 
     if (error) throw error;
+  }
+
+  static async getOffersByJobId(req, res, next) {
+    const {jobId} = req.params;
+
+    let {page, limit} = req.query;
+    page = parseInt(page);
+    limit = parseInt(limit);
+
+    const {success, err, offers} = await OffersServices.getOffersByJobId({
+      page,
+      limit,
+      jobId,
+    });
+
+    if (success)
+      return next(
+        OffersResponsesFactory.offerRetrievedSuccessfully({
+          count: offers.totalCount,
+          data: offers.data,
+          page: page,
+          perPage: limit,
+        })
+      );
+
+    if (err) throw err;
+  }
+
+  static async getOffersByDriverId(req, res, next) {
+    const userId = req.jwtToken.user.id;
+
+    let {page, limit} = req.query;
+    page = parseInt(page);
+    limit = parseInt(limit);
+
+    const {success, err, offers} = await OffersServices.getOffersByDriverId({
+      page,
+      limit,
+      driverId: userId,
+    });
+
+    if (success)
+      return next(
+        OffersResponsesFactory.offerRetrievedSuccessfully({
+          count: offers.totalCount,
+          data: offers.data,
+          page: page,
+          perPage: limit,
+        })
+      );
+
+    if (err) throw err;
   }
 };
