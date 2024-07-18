@@ -13,6 +13,7 @@ const {
 } = require('./middleware');
 const {corsOrigin} = require('./utils');
 const {documentDeleteCronJob} = require('./utils/cron-jobs/documents');
+const {expirePendingOffers} = require('./utils/cron-jobs/offers');
 
 const app = express();
 
@@ -55,6 +56,8 @@ app.use(errorMiddleware);
 app.use(finalResponseMiddleware);
 
 documentDeleteCronJob.start();
+
+expirePendingOffers();
 
 if (config.get('env') !== config.get('envVariables.test')) {
   const PORT = config.get('port') || 3001;

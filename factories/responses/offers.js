@@ -29,4 +29,11 @@ module.exports = class OfferResponsesFactory {
       body: {count, data, page, perPage},
     });
   }
+  static offerWithdrawnSuccessfully() {
+    return new AppResponse({
+      message: 'Offer withdrawn successfully',
+      statusCode: 200,
+      body: {},
+    });
+  }
 };

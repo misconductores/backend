@@ -239,6 +239,10 @@ module.exports.statusTypes = {
     value: 'expired',
     label: 'Expired',
   },
+  withdrawn: {
+    value: 'withdrawn',
+    label: 'Withdrawn',
+  },
 };
 
 module.exports.notificationTypes = {
@@ -256,5 +260,11 @@ module.exports.notificationTypes = {
   },
   driver_disconnect: {
     value: 'driver_disconnect',
+  },
+};
+
+module.exports.TIMEZONES = {
+  'Central Time': {
+    value: 'America/Mexico_City',
   },
 };

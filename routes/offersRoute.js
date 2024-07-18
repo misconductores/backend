@@ -13,6 +13,7 @@ const {
   isCompanyJobCheckMiddleware,
   forbidResolvedOffers,
   forbidConnectedDrivers,
+  isCompanyDriverCheckMiddleware,
 } = require('../middleware');
 const {offersSchema, othersSchema} = require('../schemas');
 const {catchAsync} = require('../utils');
@@ -31,13 +32,14 @@ router.post(
   authMiddleware,
   roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
   validatorMiddleware(offersSchema.validateCreateOfferReq),
+  isCompanyDriverCheckMiddleware,
   catchAsync(OffersController.sendOffer)
 );
 
 router.patch(
   '/:id/accept',
   authMiddleware,
-  validatorMiddleware(offersSchema.validateUpdateOfferParams, PARAMS_PROPERTY),
+  validatorMiddleware(offersSchema.validateOfferParams, PARAMS_PROPERTY),
   roleValidatorMiddleware({allowedRoles: [roles.driver.value]}),
   checkDriverStatusMiddleware({
     allowedDriverStatuses: [driverStatuses.available.value],
@@ -50,7 +52,7 @@ router.patch(
 router.patch(
   '/:id/reject',
   authMiddleware,
-  validatorMiddleware(offersSchema.validateUpdateOfferParams, PARAMS_PROPERTY),
+  validatorMiddleware(offersSchema.validateOfferParams, PARAMS_PROPERTY),
   roleValidatorMiddleware({allowedRoles: [roles.driver.value]}),
   forbidResolvedOffers,
   catchAsync(OffersController.rejectOffer)
@@ -63,6 +65,15 @@ router.get(
   roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
   isCompanyJobCheckMiddleware,
   catchAsync(OffersController.getOffersByJobId)
+);
+
+router.patch(
+  '/:id/withdraw',
+  authMiddleware,
+  validatorMiddleware(offersSchema.validateOfferParams, PARAMS_PROPERTY),
+  roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
+  forbidResolvedOffers,
+  catchAsync(OffersController.withdrawOfferById)
 );
 
 module.exports = router;
