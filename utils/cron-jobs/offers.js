@@ -1,13 +1,13 @@
 const {TIMEZONES, statusTypes} = require('../../constants/usersConstants');
 const {OffersModel} = require('../../models');
 const {CronJob} = require('cron');
-const {getExpiryDateAfter7Days} = require('../DateCalculations');
+const {getDate7DaysAgo} = require('../DateCalculations');
 
 exports.expirePendingOffers = async () => {
   const schedule = '0 0 1 * * *'; // at 01:00:00 every day
   const cb = () => async () => {
     try {
-      const expiryDate = getExpiryDateAfter7Days();
+      const expiryDate = getDate7DaysAgo();
       const pendingOffers = await OffersModel.find({
         status: statusTypes.pending.value,
         createdAt: {$lte: expiryDate},
