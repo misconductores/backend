@@ -1,16 +1,9 @@
-const {notificationTypes} = require('../constants/usersConstants');
-const {
-  ConnectionErrors,
-  OffersErrors,
-  OffersResponsesFactory,
-} = require('../factories');
+const {statusTypes} = require('../constants/usersConstants');
+const {OffersResponsesFactory, OffersErrors} = require('../factories');
 const OfferResponsesFactory = require('../factories/responses/offers');
-const {OffersModel, ConnectionsModel} = require('../models');
-const {
-  NotificationsServices,
-  GeneralServices,
-  OffersServices,
-} = require('../services');
+const {OffersModel} = require('../models');
+const {OffersServices} = require('../services');
+const {getRemainingDays} = require('../utils/DateCalculations');
 
 module.exports = class OffersController {
   static async sendOffer(req, res, next) {
@@ -18,46 +11,35 @@ module.exports = class OffersController {
 
     const {driverId, jobId} = req.body;
 
-    const findConnectionQuery = {
+    const findOffer = await OffersModel.findOne({
+      jobId: jobId,
       driverId: driverId,
       companyId: userId,
-      isActive: true,
-    };
-
-    const {doc: connection} = await GeneralServices.findOne({
-      query: findConnectionQuery,
-      model: ConnectionsModel,
     });
 
-    if (connection) return next(ConnectionErrors.alreadyConnectedErr());
+    if (findOffer?.status === statusTypes.pending.value)
+      return next(OffersErrors.alreadySendOfferErr());
 
-    const {doc: findOffer} = await GeneralServices.findOne({
-      query: {
-        jobId: jobId,
-        driverId: driverId,
-        companyId: userId,
-      },
-      model: OffersModel,
+    const findOfferForDriver = await OffersModel.findOne({
+      driverId: driverId,
+      companyId: userId,
     });
 
-    if (findOffer) return next(OffersErrors.alreadySendOfferErr());
+    if (findOfferForDriver?.status === statusTypes.rejected.value) {
+      const remainingDays = getRemainingDays({
+        createdAt: findOfferForDriver.createdAt,
+      });
+
+      return next(OffersErrors.offerAfterDaysErr({day: remainingDays}));
+    }
 
     const {
       success: response,
       error,
-      doc: offer,
-    } = await GeneralServices.create({
-      data: {companyId: userId, driverId, jobId},
-      model: OffersModel,
-    });
+      offer,
+    } = await OffersServices.sendOffer({userId, driverId, jobId});
 
     if (response) {
-      await NotificationsServices.createNotification({
-        userId: driverId,
-        relatedUserId: user.id,
-        type: notificationTypes.send_offer.value,
-      });
-
       return next(OffersResponsesFactory.offerSendSuccessfully({offer}));
     }
 

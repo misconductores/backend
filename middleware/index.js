@@ -10,6 +10,7 @@ const checkDriverStatusMiddleware = require('./checkDriverStatusMiddleware');
 const isCompanyJobCheckMiddleware = require('./isCompanyJobCheckMiddleware');
 const forbidConnectedDrivers = require('./forbidConnectedDrivers');
 const forbidResolvedOffers = require('./forbidResolvedOffers');
+const isCompanyDriverCheckMiddleware = require('./isCompanyDriverCheckMiddleware');
 
 module.exports = {
   authMiddleware,
@@ -24,4 +25,5 @@ module.exports = {
   isCompanyJobCheckMiddleware,
   forbidConnectedDrivers,
   forbidResolvedOffers,
+  isCompanyDriverCheckMiddleware,
 };

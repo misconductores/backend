@@ -11,6 +11,27 @@ const GeneralServices = require('./generalServices');
 const NotificationsServices = require('./notificationsServices');
 
 module.exports = class OffersServices {
+  static async sendOffer({userId, driverId, jobId}) {
+    try {
+      const {success: response, doc: offer} = await GeneralServices.create({
+        data: {companyId: userId, driverId, jobId},
+        model: OffersModel,
+      });
+
+      if (response) {
+        await NotificationsServices.createNotification({
+          userId: driverId,
+          relatedUserId: userId,
+          type: notificationTypes.send_offer.value,
+        });
+
+        return {success: true, offer};
+      }
+    } catch (error) {
+      return {success: false, error};
+    }
+  }
+
   static async acceptOffer({userId, offerId}) {
     const {doc: offer} = await GeneralServices.findById({
       id: offerId,

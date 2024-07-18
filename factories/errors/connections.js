@@ -7,4 +7,10 @@ module.exports = class ConnectionErrorsFactory {
       statusCode: 400,
     });
   }
+  static alreadyConnectedWithYouErr() {
+    return new AppError({
+      message: 'This driver is already connected to you',
+      statusCode: 400,
+    });
+  }
 };

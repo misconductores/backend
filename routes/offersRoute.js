@@ -13,6 +13,7 @@ const {
   isCompanyJobCheckMiddleware,
   forbidResolvedOffers,
   forbidConnectedDrivers,
+  isCompanyDriverCheckMiddleware,
 } = require('../middleware');
 const {offersSchema, othersSchema} = require('../schemas');
 const {catchAsync} = require('../utils');
@@ -31,6 +32,7 @@ router.post(
   authMiddleware,
   roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
   validatorMiddleware(offersSchema.validateCreateOfferReq),
+  isCompanyDriverCheckMiddleware,
   catchAsync(OffersController.sendOffer)
 );
 
