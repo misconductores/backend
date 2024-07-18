@@ -81,31 +81,8 @@ module.exports = class OffersController {
 
     const {id: offerId} = req.params;
 
-    const {doc: offer} = await GeneralServices.findById({
-      id: offerId,
-      model: OffersModel,
-    });
-
-    if (!offer) return next(OffersErrors.noOfferErr());
-
-    if (offer.status === statusTypes.expired.value)
-      return next(OffersErrors.offerExpiredErr());
-
-    const findConnectionQuery = {
-      driverId: userId,
-      companyId: offer.companyId,
-      isActive: true,
-    };
-
-    const {connection: findConnection} =
-      await ConnectionsServices.findConnection({
-        query: findConnectionQuery,
-      });
-
-    if (findConnection) return next(ConnectionErrors.alreadyConnectedErr());
-
     const {success, connection, err} = await OffersServices.acceptOffer({
-      offer,
+      offerId,
       userId,
     });
 
@@ -121,25 +98,12 @@ module.exports = class OffersController {
   static async rejectOffer(req, res, next) {
     const userId = req.jwtToken.user.id;
 
-    const {id} = req.params;
+    const {id: offerId} = req.params;
 
-    const {doc: offer} = await GeneralServices.findById({
-      id,
-      model: OffersModel,
+    const {success, error} = await OffersServices.rejectOffer({
+      offerId,
+      userId,
     });
-
-    if (!offer) return next(OffersErrors.noOfferErr());
-
-    if (offer.status === statusTypes.expired.value)
-      return next(OffersErrors.offerExpiredErr());
-
-    if (
-      offer.status === statusTypes.rejected.value ||
-      offer.status === statusTypes.accepted.value
-    )
-      return next(OffersErrors.requestResolvedErr());
-
-    const {success, error} = await OffersServices.rejectOffer({offer, userId});
 
     if (success) {
       return next(OfferResponsesFactory.offerRejectedSuccessfully());
