@@ -11,6 +11,8 @@ const {
   roleValidatorMiddleware,
   checkDriverStatusMiddleware,
   isCompanyJobCheckMiddleware,
+  forbidResolvedOffers,
+  forbidConnectedDrivers,
 } = require('../middleware');
 const {offersSchema, othersSchema} = require('../schemas');
 const {catchAsync} = require('../utils');
@@ -39,6 +41,8 @@ router.patch(
   checkDriverStatusMiddleware({
     allowedDriverStatuses: [driverStatuses.available.value],
   }),
+  forbidResolvedOffers,
+  forbidConnectedDrivers,
   catchAsync(OffersController.acceptOffer)
 );
 
@@ -47,6 +51,7 @@ router.patch(
   authMiddleware,
   validatorMiddleware(offersSchema.validateUpdateOfferParams, PARAMS_PROPERTY),
   roleValidatorMiddleware({allowedRoles: [roles.driver.value]}),
+  forbidResolvedOffers,
   catchAsync(OffersController.rejectOffer)
 );
 

@@ -16,7 +16,7 @@ module.exports = (data, req, res, next) => {
 
   // Prepare the jwt token
   const payload = {
-    user: {id: userObj.id},
+    user: {id: userObj.id, role: userObj.role},
   };
   const token = jwtUtils.generateToken({payload});
 

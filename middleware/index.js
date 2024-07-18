@@ -8,6 +8,9 @@ const accessMiddleware = require('./accessMiddleware');
 const roleValidatorMiddleware = require('./roleValidatorMiddleware');
 const checkDriverStatusMiddleware = require('./checkDriverStatusMiddleware');
 const isCompanyJobCheckMiddleware = require('./isCompanyJobCheckMiddleware');
+const forbidConnectedDrivers = require('./forbidConnectedDrivers');
+const forbidResolvedOffers = require('./forbidResolvedOffers');
+
 
 module.exports = {
   authMiddleware,
@@ -20,4 +23,6 @@ module.exports = {
   roleValidatorMiddleware,
   checkDriverStatusMiddleware,
   isCompanyJobCheckMiddleware,
+  forbidConnectedDrivers,
+  forbidResolvedOffers,
 };
