@@ -151,4 +151,15 @@ module.exports = class OffersController {
 
     if (err) throw err;
   }
+
+  static async withdrawOfferById(req, res, next) {
+    const {id: offerId} = req.params;
+
+    const {success, error} = await OffersServices.withdrawOfferById({offerId});
+
+    if (success)
+      return next(OffersResponsesFactory.offerWithdrawnSuccessfully());
+
+    if (error) throw error;
+  }
 };

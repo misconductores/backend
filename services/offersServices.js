@@ -141,4 +141,17 @@ module.exports = class OffersServices {
       return {success: false, err};
     }
   }
+
+  static async withdrawOfferById({offerId}) {
+    try {
+      await GeneralServices.update({
+        id: offerId,
+        model: OffersModel,
+        data: {status: statusTypes.withdrawn.value},
+      });
+      return {success: true};
+    } catch (error) {
+      return {success: false, error};
+    }
+  }
 };
