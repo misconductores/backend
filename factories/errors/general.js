@@ -56,4 +56,11 @@ module.exports = class GeneralErrorsFactory {
       statusCode: 403,
     });
   }
+
+  static forbiddenDriverStatusErr() {
+    return new AppError({
+      message: 'You are not eligible to proceed this request',
+      statusCode: 403,
+    });
+  }
 };

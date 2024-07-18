@@ -6,6 +6,10 @@ const finalResponseMiddleware = require('./finalResponseMiddleware');
 const loggerMiddleware = require('./loggerMiddleware');
 const accessMiddleware = require('./accessMiddleware');
 const roleValidatorMiddleware = require('./roleValidatorMiddleware');
+const checkDriverStatusMiddleware = require('./checkDriverStatusMiddleware');
+const isCompanyJobCheckMiddleware = require('./isCompanyJobCheckMiddleware');
+const forbidConnectedDrivers = require('./forbidConnectedDrivers');
+const forbidResolvedOffers = require('./forbidResolvedOffers');
 
 module.exports = {
   authMiddleware,
@@ -16,4 +20,8 @@ module.exports = {
   logger: loggerMiddleware, // logger.error() sounds more appropriate than loggerMiddleware.error() IMO.
   accessMiddleware,
   roleValidatorMiddleware,
+  checkDriverStatusMiddleware,
+  isCompanyJobCheckMiddleware,
+  forbidConnectedDrivers,
+  forbidResolvedOffers,
 };

@@ -156,7 +156,7 @@ module.exports.errorCodes = {
 };
 
 module.exports.restrictedUserData =
-  '-federalLicenses.federalLicenseNo -stateLicenses.stateLicenseNo -visaNumber -fastNumber -password';
+  '-federalLicenses.federalLicenseNo -stateLicenses.stateLicenseNo -visaNumber -fastNumber -password -verificationToken';
 
 module.exports.experienceTypes = {
   student: {

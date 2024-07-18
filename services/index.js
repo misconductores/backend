@@ -3,6 +3,7 @@ const GeneralServices = require(`./generalServices`);
 const FilesServices = require('./fileServices');
 const JobsServices = require('./jobsServices');
 const NotificationsServices = require('./notificationsServices');
+const OffersServices = require('./offersServices');
 
 module.exports = {
   UsersServices,
@@ -10,4 +11,5 @@ module.exports = {
   FilesServices,
   JobsServices,
   NotificationsServices,
+  OffersServices,
 };
