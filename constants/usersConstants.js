@@ -268,3 +268,12 @@ module.exports.TIMEZONES = {
     value: 'America/Mexico_City',
   },
 };
+
+module.exports.reviewTypes = {
+  company_review: {
+    value: 'company_review',
+  },
+  driver_review: {
+    value: 'driver_review',
+  },
+};

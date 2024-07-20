@@ -3,6 +3,7 @@ const GeneralController = require(`./generalController`);
 const JobsController = require('./jobsController');
 const OthersController = require('./othersController');
 const OffersController = require('./offersController');
+const ConnectionsController = require('./connectionsController');
 
 module.exports = {
   UsersController,
@@ -10,4 +11,5 @@ module.exports = {
   JobsController,
   OthersController,
   OffersController,
+  ConnectionsController,
 };

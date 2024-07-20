@@ -5,6 +5,7 @@ const PostalCodeModel = require('./PostalCodeModel');
 const NotificationsModel = require('./NotificationsModel');
 const ConnectionsModel = require('./ConnectionsModel');
 const OffersModel = require('./OffersModel');
+const ReviewsModel = require('./ReviewsModel');
 
 module.exports = {
   mongoose,
@@ -14,4 +15,5 @@ module.exports = {
   NotificationsModel,
   ConnectionsModel,
   OffersModel,
+  ReviewsModel,
 };
