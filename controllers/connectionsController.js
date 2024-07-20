@@ -1,5 +1,20 @@
+const {ConnectionsResponsesFactory} = require('../factories');
+const {ConnectionsServices} = require('../services');
+
 module.exports = class ConnectionsController {
-  static async disconnectionByDriver() {
-    console.log('This is will remove in next branches');
+  static async disconnectionByDriver(req, res, next) {
+    const userId = req.jwtToken.user.id;
+    const data = req.body;
+    const connection = req.connection;
+
+    const {success, error} = await ConnectionsServices.disconnectionByDriver({
+      data,
+      userId,
+      connection,
+    });
+
+    if (success) next(ConnectionsResponsesFactory.disconnectSuccessfully());
+
+    if (error) throw error;
   }
 };
