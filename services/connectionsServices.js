@@ -76,6 +76,7 @@ module.exports = class ConnectionsServices {
         updateConnectionData,
         {session}
       );
+      return {success: true};
     } catch (error) {
       return {success: false, err};
     }
@@ -155,6 +156,9 @@ module.exports = class ConnectionsServices {
         return {success: false};
       }
     } catch (error) {
+      await session.abortTransaction();
+      session.endSession();
+
       return {success: false, error};
     }
   }
