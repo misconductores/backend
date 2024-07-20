@@ -78,7 +78,7 @@ module.exports = class ConnectionsServices {
       );
       return {success: true};
     } catch (error) {
-      return {success: false, err};
+      return {success: false, error};
     }
   }
 
