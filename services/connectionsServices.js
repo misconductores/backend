@@ -255,6 +255,10 @@ module.exports = class ConnectionsServices {
         session.endSession();
 
         return {success: true};
+      } else {
+        await session.abortTransaction();
+        session.endSession();
+        return {success: false};
       }
     } catch (error) {
       await session.abortTransaction();

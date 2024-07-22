@@ -5,7 +5,9 @@ const {
   roleValidatorMiddleware,
   findConnectionMiddleware,
   isReviewExistMiddleware,
+  validatorMiddleware,
 } = require('../middleware');
+const {reviewsSchema} = require('../schemas');
 const {catchAsync} = require('../utils');
 
 const router = require('express').Router();
@@ -23,6 +25,7 @@ router.post(
   '/company-disconnect',
   authMiddleware,
   roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
+  validatorMiddleware(reviewsSchema.validateCompanyDisconnectReq),
   isReviewExistMiddleware,
   findConnectionMiddleware,
   catchAsync(ConnectionsController.disconnectionByCompany)
