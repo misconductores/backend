@@ -19,4 +19,13 @@ router.post(
   catchAsync(ConnectionsController.disconnectionByDriver)
 );
 
+router.post(
+  '/company-disconnect',
+  authMiddleware,
+  roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
+  isReviewExistMiddleware,
+  findConnectionMiddleware,
+  catchAsync(ConnectionsController.disconnectionByCompany)
+);
+
 module.exports = router;
