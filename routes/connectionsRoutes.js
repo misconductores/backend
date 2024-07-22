@@ -16,6 +16,7 @@ router.post(
   '/driver-disconnect',
   authMiddleware,
   roleValidatorMiddleware({allowedRoles: [roles.driver.value]}),
+  validatorMiddleware(reviewsSchema.validateDriverDisconnectReq),
   isReviewExistMiddleware,
   findConnectionMiddleware,
   catchAsync(ConnectionsController.disconnectionByDriver)
