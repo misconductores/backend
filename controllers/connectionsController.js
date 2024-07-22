@@ -1,4 +1,4 @@
-const {ConnectionsResponsesFactory} = require('../factories');
+const {ConnectionsResponsesFactory, ConnectionErrors} = require('../factories');
 const {ConnectionsServices} = require('../services');
 
 module.exports = class ConnectionsController {
@@ -30,6 +30,24 @@ module.exports = class ConnectionsController {
     });
 
     if (success) next(ConnectionsResponsesFactory.disconnectSuccessfully());
+
+    if (error) throw error;
+  }
+
+  static async getConnectedCompany(req, res, next) {
+    const userId = req.jwtToken.user.id;
+
+    const {success, connection, error} =
+      await ConnectionsServices.getConnectedCompany({userId});
+
+    if (success && connection)
+      return next(
+        ConnectionsResponsesFactory.connectionRetrievedSuccessfully({
+          connection,
+        })
+      );
+
+    if (!success) return next(ConnectionErrors.noConnectionErr());
 
     if (error) throw error;
   }

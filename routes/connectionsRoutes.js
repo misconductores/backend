@@ -32,4 +32,11 @@ router.post(
   catchAsync(ConnectionsController.disconnectionByCompany)
 );
 
+router.get(
+  '/connected-company',
+  authMiddleware,
+  roleValidatorMiddleware({allowedRoles: [roles.driver.value]}),
+  catchAsync(ConnectionsController.getConnectedCompany)
+);
+
 module.exports = router;

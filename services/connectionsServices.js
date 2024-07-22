@@ -267,4 +267,23 @@ module.exports = class ConnectionsServices {
       return {success: false, error};
     }
   }
+
+  static async getConnectedCompany({userId}) {
+    try {
+      const connection = await ConnectionsModel.findOne({
+        driverId: userId,
+      }).populate({
+        path: 'companyId',
+        select: 'contact profilePic companyName',
+      });
+
+      if (connection) {
+        return {success: true, connection};
+      } else {
+        return {success: false};
+      }
+    } catch (error) {
+      return {success: false, error};
+    }
+  }
 };

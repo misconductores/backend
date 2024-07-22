@@ -8,4 +8,11 @@ module.exports = class ConnectionResponsesFactory {
       body: {},
     });
   }
+  static connectionRetrievedSuccessfully({connection}) {
+    return new AppResponse({
+      message: 'Connection retrieved successfully',
+      statusCode: 200,
+      body: {connection},
+    });
+  }
 };
