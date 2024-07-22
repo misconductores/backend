@@ -13,7 +13,8 @@ module.exports = class ConnectionsController {
       connection,
     });
 
-    if (success) next(ConnectionsResponsesFactory.disconnectSuccessfully());
+    if (success)
+      return next(ConnectionsResponsesFactory.disconnectSuccessfully());
 
     if (error) throw error;
   }
