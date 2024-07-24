@@ -34,8 +34,6 @@ module.exports = async (req, res, next) => {
       model: ConnectionsModel,
     });
 
-    console.log(connection);
-
     if (!connection) return next(ConnectionErrors.noConnectionErr());
 
     req.connection = connection;

@@ -3,6 +3,7 @@ const {
   driverStatuses,
   notificationTypes,
   statusTypes,
+  restrictedUserData,
 } = require('../constants/usersConstants');
 const {
   ConnectionsModel,
@@ -67,6 +68,19 @@ module.exports = class ConnectionsServices {
             driverReviewId: reviewId,
           };
         }
+      } else if (reviewType === reviewTypes.company_review.value) {
+        if (!connection.driverReviewId) {
+          updateConnectionData = {
+            endDate: new Date(),
+            companyReviewId: reviewId,
+            reviewEndDate: dateAfterSevenDays(),
+          };
+        } else {
+          updateConnectionData = {
+            isActive: false,
+            companyReviewId: reviewId,
+          };
+        }
       }
 
       await ConnectionsModel.updateOne(
@@ -97,6 +111,7 @@ module.exports = class ConnectionsServices {
 
       finalData.averageRating = averageRating;
 
+      // if average rating is less than 2 then review will be pending for admin otherwise accepted
       finalData.status =
         averageRating < 2
           ? statusTypes.pending.value
@@ -159,6 +174,151 @@ module.exports = class ConnectionsServices {
       await session.abortTransaction();
       session.endSession();
 
+      return {success: false, error};
+    }
+  }
+
+  static async disconnectionByCompany({data, userId, connection}) {
+    try {
+      let finalData = {
+        ...data,
+        careUnit: parseFloat(data.careUnit),
+        cleaningUnit: parseFloat(data.cleaningUnit),
+        punctualityUnit: parseFloat(data.punctualityUnit),
+        performance: parseFloat(data.performance),
+      };
+
+      const session = await mongoose.startSession();
+      session.startTransaction();
+
+      let averageRating =
+        (finalData.careUnit +
+          finalData.cleaningUnit +
+          finalData.punctualityUnit +
+          finalData.performance) /
+        4;
+
+      finalData.averageRating = averageRating;
+
+      // if average rating is less than 2 then review will be pending for admin otherwise accepted
+      finalData.status =
+        averageRating < 2
+          ? statusTypes.pending.value
+          : statusTypes.accepted.value;
+
+      // create review when company disconnect from driver
+      const newReview = await ReviewsModel.create([finalData], {session});
+
+      if (newReview.length > 0) {
+        // update connection on the base of company review
+        await ConnectionsServices.UpdateConnectionWithSession({
+          companyId: userId,
+          driverId: finalData.driverId,
+          reviewId: newReview[0].id,
+          reviewType: reviewTypes.company_review.value,
+          connection,
+          session,
+        });
+
+        let updateDriverStatusData = {};
+
+        // if driverReviewId is already present then make driver to available otherwise make it to available soon
+        if (connection.driverReviewId) {
+          updateDriverStatusData = {
+            driverStatus: driverStatuses.available.value,
+          };
+        } else {
+          updateDriverStatusData = {
+            driverStatus: driverStatuses.availableSoon.value,
+          };
+        }
+
+        await UsersModel.updateOne(
+          {
+            _id: finalData.driverId,
+          },
+          updateDriverStatusData,
+          {session}
+        );
+
+        await NotificationsModel.create(
+          [
+            {
+              userId: finalData.companyId,
+              relatedUserId: userId,
+              type: notificationTypes.company_disconnect.value,
+            },
+          ],
+          {session}
+        );
+
+        await session.commitTransaction();
+        session.endSession();
+
+        return {success: true};
+      } else {
+        await session.abortTransaction();
+        session.endSession();
+        return {success: false};
+      }
+    } catch (error) {
+      await session.abortTransaction();
+      session.endSession();
+
+      return {success: false, error};
+    }
+  }
+
+  static async getConnectedCompany({userId}) {
+    try {
+      const connection = await ConnectionsModel.findOne({
+        driverId: userId,
+      }).populate({
+        path: 'companyId',
+        select: 'contact profilePic companyName',
+      });
+
+      if (connection) {
+        return {success: true, connection};
+      } else {
+        return {success: false};
+      }
+    } catch (error) {
+      return {success: false, error};
+    }
+  }
+
+  static async getCompanyDrivers({page, limit, userId, status}) {
+    try {
+      const skip = (page - 1) * limit;
+      const query = {companyId: userId, isActive: status};
+      const [totalCount, data] = await Promise.all([
+        ConnectionsModel.countDocuments(query),
+        ConnectionsModel.find(query, null, {skip, limit}).populate({
+          path: 'driverId',
+          select: restrictedUserData,
+        }),
+      ]);
+      return {success: true, drivers: {totalCount, data}};
+    } catch (error) {
+      return {success: false, error};
+    }
+  }
+
+  static async getDriverJobHistory({userId}) {
+    try {
+      const history = await ConnectionsModel.find({
+        driverId: userId,
+        isActive: false,
+      })
+        .populate({
+          path: 'companyId',
+          select: 'companyName contact profilePic',
+        })
+        .populate('companyReviewId');
+
+      return {success: true, history};
+    } catch (error) {
       return {success: false, error};
     }
   }
