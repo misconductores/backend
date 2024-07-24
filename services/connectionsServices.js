@@ -3,6 +3,7 @@ const {
   driverStatuses,
   notificationTypes,
   statusTypes,
+  restrictedUserData,
 } = require('../constants/usersConstants');
 const {
   ConnectionsModel,
@@ -264,6 +265,60 @@ module.exports = class ConnectionsServices {
       await session.abortTransaction();
       session.endSession();
 
+      return {success: false, error};
+    }
+  }
+
+  static async getConnectedCompany({userId}) {
+    try {
+      const connection = await ConnectionsModel.findOne({
+        driverId: userId,
+      }).populate({
+        path: 'companyId',
+        select: 'contact profilePic companyName',
+      });
+
+      if (connection) {
+        return {success: true, connection};
+      } else {
+        return {success: false};
+      }
+    } catch (error) {
+      return {success: false, error};
+    }
+  }
+
+  static async getCompanyDrivers({page, limit, userId, status}) {
+    try {
+      const skip = (page - 1) * limit;
+      const query = {companyId: userId, isActive: status};
+      const [totalCount, data] = await Promise.all([
+        ConnectionsModel.countDocuments(query),
+        ConnectionsModel.find(query, null, {skip, limit}).populate({
+          path: 'driverId',
+          select: restrictedUserData,
+        }),
+      ]);
+      return {success: true, drivers: {totalCount, data}};
+    } catch (error) {
+      return {success: false, error};
+    }
+  }
+
+  static async getDriverJobHistory({userId}) {
+    try {
+      const history = await ConnectionsModel.find({
+        driverId: userId,
+        isActive: false,
+      })
+        .populate({
+          path: 'companyId',
+          select: 'companyName contact profilePic',
+        })
+        .populate('companyReviewId');
+
+      return {success: true, history};
+    } catch (error) {
       return {success: false, error};
     }
   }
