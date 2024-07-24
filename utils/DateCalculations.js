@@ -18,3 +18,9 @@ exports.getRemainingDays = ({createdAt}) => {
   const remainingDays = futureDate.diff(now, 'days').days;
   return Math.max(0, Math.ceil(remainingDays));
 };
+
+module.exports.dateAfterSevenDays = () => {
+  const date = DateTime.now();
+  const after7Days = date.plus({days: 7});
+  return after7Days;
+};
