@@ -20,7 +20,6 @@ module.exports = class ConnectionsController {
   static async disconnectionByCompany(req, res, next) {
     const userId = req.jwtToken.user.id;
     const data = req.body;
-    const connection = req.connection;
 
     const {success, error} = await ConnectionsServices.disconnectionByCompany({
       data,
