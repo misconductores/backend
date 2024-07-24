@@ -1,4 +1,4 @@
-const {roles} = require('../constants/usersConstants');
+const {roles, QUERY_PROPERTY} = require('../constants/usersConstants');
 const {ConnectionsController} = require('../controllers');
 const {
   authMiddleware,
@@ -7,7 +7,7 @@ const {
   isReviewExistMiddleware,
   validatorMiddleware,
 } = require('../middleware');
-const {reviewsSchema} = require('../schemas');
+const {reviewsSchema, connectionsSchema} = require('../schemas');
 const {catchAsync} = require('../utils');
 
 const router = require('express').Router();
@@ -37,6 +37,24 @@ router.get(
   authMiddleware,
   roleValidatorMiddleware({allowedRoles: [roles.driver.value]}),
   catchAsync(ConnectionsController.getConnectedCompany)
+);
+
+router.get(
+  '/company-drivers',
+  authMiddleware,
+  roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
+  validatorMiddleware(
+    connectionsSchema.validateGetCompanyDriversReq,
+    QUERY_PROPERTY
+  ),
+  catchAsync(ConnectionsController.getCompanyDrivers)
+);
+
+router.get(
+  '/job-history',
+  authMiddleware,
+  roleValidatorMiddleware({allowedRoles: [roles.driver.value]}),
+  catchAsync(ConnectionsController.getDriverJobHistory)
 );
 
 module.exports = router;
