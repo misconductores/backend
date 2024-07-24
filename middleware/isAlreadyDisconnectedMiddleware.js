@@ -11,7 +11,7 @@ module.exports = async (req, res, next) => {
     const {driverId, companyId} = req.body;
 
     let query = {};
-
+    // this will act as a signal, it will check the review if review is present then it means user has been disconnected
     if (role === roles.driver.value) {
       query = {
         driverId: userId,

@@ -19,9 +19,9 @@ const connectionsModel = new Schema(
       ref: 'offers',
       required: true,
     },
-    isActive: {
-      type: Boolean,
-      default: true,
+    status: {
+      type: String,
+      required: true,
     },
     startDate: {
       type: Date,

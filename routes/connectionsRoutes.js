@@ -3,8 +3,7 @@ const {ConnectionsController} = require('../controllers');
 const {
   authMiddleware,
   roleValidatorMiddleware,
-  findConnectionMiddleware,
-  isReviewExistMiddleware,
+  isAlreadyDisconnectedMiddleware,
   validatorMiddleware,
 } = require('../middleware');
 const {reviewsSchema, connectionsSchema} = require('../schemas');
@@ -17,8 +16,7 @@ router.post(
   authMiddleware,
   roleValidatorMiddleware({allowedRoles: [roles.driver.value]}),
   validatorMiddleware(reviewsSchema.validateDriverDisconnectReq),
-  isReviewExistMiddleware,
-  findConnectionMiddleware,
+  isAlreadyDisconnectedMiddleware,
   catchAsync(ConnectionsController.disconnectionByDriver)
 );
 
@@ -27,8 +25,7 @@ router.post(
   authMiddleware,
   roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
   validatorMiddleware(reviewsSchema.validateCompanyDisconnectReq),
-  isReviewExistMiddleware,
-  findConnectionMiddleware,
+  isAlreadyDisconnectedMiddleware,
   catchAsync(ConnectionsController.disconnectionByCompany)
 );
 

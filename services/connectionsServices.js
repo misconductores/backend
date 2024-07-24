@@ -4,6 +4,7 @@ const {
   notificationTypes,
   statusTypes,
   restrictedUserData,
+  connectionStatuses,
 } = require('../constants/usersConstants');
 const {
   ConnectionsModel,
@@ -33,7 +34,15 @@ module.exports = class ConnectionsServices {
   static async createConnection({driverId, companyId, offerId, session}) {
     try {
       const newConnection = await ConnectionsModel.create(
-        [{driverId, companyId, offerId, startDate: getCurrentDate()}],
+        [
+          {
+            driverId,
+            companyId,
+            offerId,
+            status: connectionStatuses.active.value,
+            startDate: getCurrentDate(),
+          },
+        ],
         {session}
       );
       return {success: true, newConnection: newConnection[0]};
@@ -47,24 +56,50 @@ module.exports = class ConnectionsServices {
     driverId,
     reviewId,
     reviewType,
-    connection,
     session,
   }) {
     try {
+      let connectionQuery = {};
+
+      // if it is disconnected by driver then check the connection of driver with active status
+      // otherwise if it disconnection by company then check the connection using driver id, company id with active status as company has many drivers
+      if (reviewType === reviewTypes.driver_review.value) {
+        connectionQuery = {
+          $and: [
+            {driverId: driverId},
+            {status: connectionStatuses.active.value},
+          ],
+        };
+      } else {
+        connectionQuery = {
+          $and: [
+            {driverId: driverId},
+            {companyId: companyId},
+            {status: connectionStatuses.active.value},
+          ],
+        };
+      }
+
+      const {doc: connection} = await GeneralServices.findOne({
+        query: connectionQuery,
+        model: ConnectionsModel,
+      });
+
       let updateConnectionData;
 
-      // check if company Review id is not present then simply add end date , review end date and driver reviewId
-      // otherwise if company review id is present then make connection in-active and add driver review id
+      // check if company Review id is not present then simply add end date , review end date and driver reviewId, make the connection pending until company reviewed it back
+      // otherwise if company review id is present then make connection in-active and add driver review id, make the connection pending until driver reviewed it back
       if (reviewType === reviewTypes.driver_review.value) {
         if (!connection.companyReviewId) {
           updateConnectionData = {
             endDate: new Date(),
             driverReviewId: reviewId,
             reviewEndDate: dateAfterSevenDays(),
+            status: connectionStatuses.pending.value,
           };
         } else {
           updateConnectionData = {
-            isActive: false,
+            status: connectionStatuses.inactive.value,
             driverReviewId: reviewId,
           };
         }
@@ -74,10 +109,11 @@ module.exports = class ConnectionsServices {
             endDate: new Date(),
             companyReviewId: reviewId,
             reviewEndDate: dateAfterSevenDays(),
+            status: connectionStatuses.pending.value,
           };
         } else {
           updateConnectionData = {
-            isActive: false,
+            status: connectionStatuses.inactive.value,
             companyReviewId: reviewId,
           };
         }
@@ -96,7 +132,7 @@ module.exports = class ConnectionsServices {
     }
   }
 
-  static async disconnectionByDriver({data, userId, connection}) {
+  static async disconnectionByDriver({data, userId}) {
     try {
       let finalData = {
         ...data,
@@ -127,7 +163,6 @@ module.exports = class ConnectionsServices {
           driverId: userId,
           reviewId: newReview[0].id,
           reviewType: reviewTypes.driver_review.value,
-          connection,
           session,
         });
 
@@ -291,7 +326,7 @@ module.exports = class ConnectionsServices {
   static async getCompanyDrivers({page, limit, userId, status}) {
     try {
       const skip = (page - 1) * limit;
-      const query = {companyId: userId, isActive: status};
+      const query = {companyId: userId, status: status};
       const [totalCount, data] = await Promise.all([
         ConnectionsModel.countDocuments(query),
         ConnectionsModel.find(query, null, {skip, limit}).populate({
@@ -309,7 +344,7 @@ module.exports = class ConnectionsServices {
     try {
       const history = await ConnectionsModel.find({
         driverId: userId,
-        isActive: false,
+        status: connectionStatuses.inactive.value,
       })
         .populate({
           path: 'companyId',
