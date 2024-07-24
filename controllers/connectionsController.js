@@ -24,7 +24,6 @@ module.exports = class ConnectionsController {
     const {success, error} = await ConnectionsServices.disconnectionByCompany({
       data,
       userId,
-      connection,
     });
 
     if (success)

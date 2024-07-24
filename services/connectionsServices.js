@@ -17,6 +17,7 @@ const {
   dateAfterSevenDays,
 } = require('../utils/DateCalculations');
 const mongoose = require('mongoose');
+const GeneralServices = require('./generalServices');
 
 module.exports = class ConnectionsServices {
   static async findConnection({query}) {
@@ -56,35 +57,10 @@ module.exports = class ConnectionsServices {
     driverId,
     reviewId,
     reviewType,
+    connection,
     session,
   }) {
     try {
-      let connectionQuery = {};
-
-      // if it is disconnected by driver then check the connection of driver with active status
-      // otherwise if it disconnection by company then check the connection using driver id, company id with active status as company has many drivers
-      if (reviewType === reviewTypes.driver_review.value) {
-        connectionQuery = {
-          $and: [
-            {driverId: driverId},
-            {status: connectionStatuses.active.value},
-          ],
-        };
-      } else {
-        connectionQuery = {
-          $and: [
-            {driverId: driverId},
-            {companyId: companyId},
-            {status: connectionStatuses.active.value},
-          ],
-        };
-      }
-
-      const {doc: connection} = await GeneralServices.findOne({
-        query: connectionQuery,
-        model: ConnectionsModel,
-      });
-
       let updateConnectionData;
 
       // check if company Review id is not present then simply add end date , review end date and driver reviewId, make the connection pending until company reviewed it back
@@ -133,14 +109,25 @@ module.exports = class ConnectionsServices {
   }
 
   static async disconnectionByDriver({data, userId}) {
+    const session = await mongoose.startSession();
+
     try {
+      let connectionQuery = {
+        driverId: userId,
+        status: connectionStatuses.active.value,
+      };
+
+      const {doc: connection} = await GeneralServices.findOne({
+        query: connectionQuery,
+        model: ConnectionsModel,
+      });
+
       let finalData = {
         ...data,
         personalRelations: parseFloat(data.personalRelations),
         trucks: parseFloat(data.trucks),
       };
 
-      const session = await mongoose.startSession();
       session.startTransaction();
 
       let averageRating = (finalData.personalRelations + finalData.trucks) / 2;
@@ -163,6 +150,7 @@ module.exports = class ConnectionsServices {
           driverId: userId,
           reviewId: newReview[0].id,
           reviewType: reviewTypes.driver_review.value,
+          connection,
           session,
         });
 
@@ -203,6 +191,8 @@ module.exports = class ConnectionsServices {
 
         return {success: true};
       } else {
+        await session.abortTransaction();
+        session.endSession();
         return {success: false};
       }
     } catch (error) {
@@ -213,8 +203,21 @@ module.exports = class ConnectionsServices {
     }
   }
 
-  static async disconnectionByCompany({data, userId, connection}) {
+  static async disconnectionByCompany({data, userId}) {
+    const session = await mongoose.startSession();
+
     try {
+      let connectionQuery = {
+        driverId: data.driverId,
+        companyId: userId,
+        status: connectionStatuses.active.value,
+      };
+
+      const {doc: connection} = await GeneralServices.findOne({
+        query: connectionQuery,
+        model: ConnectionsModel,
+      });
+
       let finalData = {
         ...data,
         careUnit: parseFloat(data.careUnit),
@@ -223,7 +226,6 @@ module.exports = class ConnectionsServices {
         performance: parseFloat(data.performance),
       };
 
-      const session = await mongoose.startSession();
       session.startTransaction();
 
       let averageRating =
@@ -308,6 +310,7 @@ module.exports = class ConnectionsServices {
     try {
       const connection = await ConnectionsModel.findOne({
         driverId: userId,
+        status: {$ne: connectionStatuses.inactive.value},
       }).populate({
         path: 'companyId',
         select: 'contact profilePic companyName',
