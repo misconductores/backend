@@ -2,11 +2,11 @@ const {ConnectionsResponsesFactory, ConnectionErrors} = require('../factories');
 const {ConnectionsServices} = require('../services');
 
 module.exports = class ConnectionsController {
-  static async disconnectionByDriver(req, res, next) {
+  static async disconnectByDriver(req, res, next) {
     const userId = req.jwtToken.user.id;
     const data = req.body;
 
-    const {success, error} = await ConnectionsServices.disconnectionByDriver({
+    const {success, error} = await ConnectionsServices.disconnectByDriver({
       data,
       userId,
     });
@@ -17,11 +17,11 @@ module.exports = class ConnectionsController {
     if (error) throw error;
   }
 
-  static async disconnectionByCompany(req, res, next) {
+  static async disconnectByCompany(req, res, next) {
     const userId = req.jwtToken.user.id;
     const data = req.body;
 
-    const {success, error} = await ConnectionsServices.disconnectionByCompany({
+    const {success, error} = await ConnectionsServices.disconnectByCompany({
       data,
       userId,
     });

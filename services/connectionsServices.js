@@ -12,12 +12,10 @@ const {
   UsersModel,
   NotificationsModel,
 } = require('../models');
-const {
-  getCurrentDate,
-  dateAfterSevenDays,
-} = require('../utils/DateCalculations');
+const {getCurrentDate} = require('../utils/DateCalculations');
 const mongoose = require('mongoose');
 const GeneralServices = require('./generalServices');
+const {generateConnectionQuery} = require('../utils/helpers/connections');
 
 module.exports = class ConnectionsServices {
   static async findConnection({query}) {
@@ -52,63 +50,29 @@ module.exports = class ConnectionsServices {
     }
   }
 
-  static async UpdateConnectionWithSession({
-    companyId,
-    driverId,
-    reviewId,
-    reviewType,
-    connection,
-    session,
-  }) {
+  static async UpdateConnection({reviewId, reviewType, connection, session}) {
     try {
-      let updateConnectionData;
-
-      // check if company Review id is not present then simply add end date , review end date and driver reviewId, make the connection pending until company reviewed it back
-      // otherwise if company review id is present then make connection in-active and add driver review id, make the connection pending until driver reviewed it back
-      if (reviewType === reviewTypes.driver_review.value) {
-        if (!connection.companyReviewId) {
-          updateConnectionData = {
-            endDate: new Date(),
-            driverReviewId: reviewId,
-            reviewEndDate: dateAfterSevenDays(),
-            status: connectionStatuses.pending.value,
-          };
-        } else {
-          updateConnectionData = {
-            status: connectionStatuses.inactive.value,
-            driverReviewId: reviewId,
-          };
-        }
-      } else if (reviewType === reviewTypes.company_review.value) {
-        if (!connection.driverReviewId) {
-          updateConnectionData = {
-            endDate: new Date(),
-            companyReviewId: reviewId,
-            reviewEndDate: dateAfterSevenDays(),
-            status: connectionStatuses.pending.value,
-          };
-        } else {
-          updateConnectionData = {
-            status: connectionStatuses.inactive.value,
-            companyReviewId: reviewId,
-          };
-        }
-      }
+      const updateConnectionData = generateConnectionQuery({
+        connection,
+        reviewId,
+        reviewType,
+      });
 
       await ConnectionsModel.updateOne(
         {
-          $and: [{driverId: driverId}, {companyId: companyId}],
+          _id: connection.id,
         },
         updateConnectionData,
         {session}
       );
+
       return {success: true};
     } catch (error) {
       return {success: false, error};
     }
   }
 
-  static async disconnectionByDriver({data, userId}) {
+  static async disconnectByDriver({data, userId}) {
     const session = await mongoose.startSession();
 
     try {
@@ -145,9 +109,7 @@ module.exports = class ConnectionsServices {
 
       if (newReview.length > 0) {
         // update connection on the base of driver review
-        await ConnectionsServices.UpdateConnectionWithSession({
-          companyId: finalData.companyId,
-          driverId: userId,
+        await ConnectionsServices.UpdateConnection({
           reviewId: newReview[0].id,
           reviewType: reviewTypes.driver_review.value,
           connection,
@@ -203,7 +165,7 @@ module.exports = class ConnectionsServices {
     }
   }
 
-  static async disconnectionByCompany({data, userId}) {
+  static async disconnectByCompany({data, userId}) {
     const session = await mongoose.startSession();
 
     try {
@@ -248,9 +210,7 @@ module.exports = class ConnectionsServices {
 
       if (newReview.length > 0) {
         // update connection on the base of company review
-        await ConnectionsServices.UpdateConnectionWithSession({
-          companyId: userId,
-          driverId: finalData.driverId,
+        await ConnectionsServices.UpdateConnection({
           reviewId: newReview[0].id,
           reviewType: reviewTypes.company_review.value,
           connection,
@@ -310,7 +270,12 @@ module.exports = class ConnectionsServices {
     try {
       const connection = await ConnectionsModel.findOne({
         driverId: userId,
-        status: {$ne: connectionStatuses.inactive.value},
+        status: {
+          $in: [
+            connectionStatuses.pending.value,
+            connectionStatuses.active.value,
+          ],
+        },
       }).populate({
         path: 'companyId',
         select: 'contact profilePic companyName',
