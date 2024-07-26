@@ -4,6 +4,7 @@ const JobsController = require('./jobsController');
 const OthersController = require('./othersController');
 const OffersController = require('./offersController');
 const ConnectionsController = require('./connectionsController');
+const ReviewsController = require('./reviewsController');
 
 module.exports = {
   UsersController,
@@ -12,4 +13,5 @@ module.exports = {
   OthersController,
   OffersController,
   ConnectionsController,
+  ReviewsController,
 };
