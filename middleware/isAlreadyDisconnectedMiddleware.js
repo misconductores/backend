@@ -8,20 +8,22 @@ module.exports = async (req, res, next) => {
     const userId = req.jwtToken.user.id;
     const role = req.jwtToken.user.role;
 
-    const {driverId, companyId} = req.body;
+    const {driverId, companyId, connectionId} = req.body;
 
     let query = {};
-
+    // this will act as a signal, it will check the review if review is present then it means user has been disconnected
     if (role === roles.driver.value) {
       query = {
         driverId: userId,
         companyId: companyId,
+        connectionId: connectionId,
         type: reviewTypes.driver_review.value,
       };
     } else {
       query = {
         companyId: userId,
         driverId: driverId,
+        connectionId: connectionId,
         type: reviewTypes.company_review.value,
       };
     }

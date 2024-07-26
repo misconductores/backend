@@ -1,11 +1,15 @@
-const {roles, QUERY_PROPERTY} = require('../constants/usersConstants');
+const {
+  roles,
+  QUERY_PROPERTY,
+  driverStatuses,
+} = require('../constants/usersConstants');
 const {ConnectionsController} = require('../controllers');
 const {
   authMiddleware,
   roleValidatorMiddleware,
-  findConnectionMiddleware,
-  isReviewExistMiddleware,
+  isAlreadyDisconnectedMiddleware,
   validatorMiddleware,
+  checkDriverStatusMiddleware,
 } = require('../middleware');
 const {reviewsSchema, connectionsSchema} = require('../schemas');
 const {catchAsync} = require('../utils');
@@ -16,10 +20,16 @@ router.post(
   '/driver-disconnect',
   authMiddleware,
   roleValidatorMiddleware({allowedRoles: [roles.driver.value]}),
+  checkDriverStatusMiddleware({
+    allowedDriverStatuses: [
+      driverStatuses.connected.value,
+      driverStatuses.availableSoon.value,
+      driverStatuses.underInspection.value,
+    ],
+  }),
   validatorMiddleware(reviewsSchema.validateDriverDisconnectReq),
-  isReviewExistMiddleware,
-  findConnectionMiddleware,
-  catchAsync(ConnectionsController.disconnectionByDriver)
+  isAlreadyDisconnectedMiddleware,
+  catchAsync(ConnectionsController.disconnectByDriver)
 );
 
 router.post(
@@ -27,9 +37,8 @@ router.post(
   authMiddleware,
   roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
   validatorMiddleware(reviewsSchema.validateCompanyDisconnectReq),
-  isReviewExistMiddleware,
-  findConnectionMiddleware,
-  catchAsync(ConnectionsController.disconnectionByCompany)
+  isAlreadyDisconnectedMiddleware,
+  catchAsync(ConnectionsController.disconnectByCompany)
 );
 
 router.get(

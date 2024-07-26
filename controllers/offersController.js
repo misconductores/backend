@@ -15,6 +15,7 @@ module.exports = class OffersController {
       jobId: jobId,
       driverId: driverId,
       companyId: userId,
+      status: statusTypes.pending.value,
     });
 
     if (findOffer?.status === statusTypes.pending.value)
@@ -23,9 +24,11 @@ module.exports = class OffersController {
     const findOfferForDriver = await OffersModel.findOne({
       driverId: driverId,
       companyId: userId,
+      jobId: jobId,
+      status: statusTypes.rejected.value,
     });
 
-    if (findOfferForDriver?.status === statusTypes.rejected.value) {
+    if (findOfferForDriver) {
       const remainingDays = getRemainingDays({
         createdAt: findOfferForDriver.createdAt,
       });

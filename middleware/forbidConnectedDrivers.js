@@ -1,3 +1,4 @@
+const {connectionStatuses} = require('../constants/usersConstants');
 const {GeneralErrorsFactory, ConnectionErrors} = require('../factories');
 const {ConnectionsServices} = require('../services');
 
@@ -7,7 +8,7 @@ module.exports = async (req, res, next) => {
 
     const findConnectionQuery = {
       driverId: userId,
-      isActive: true,
+      status: connectionStatuses.active.value,
     };
 
     const {connection: findConnection} =

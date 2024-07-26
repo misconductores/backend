@@ -277,3 +277,15 @@ module.exports.reviewTypes = {
     value: 'driver_review',
   },
 };
+
+module.exports.connectionStatuses = {
+  active: {
+    value: 'active',
+  },
+  pending: {
+    value: 'pending',
+  },
+  inactive: {
+    value: 'inactive',
+  },
+};

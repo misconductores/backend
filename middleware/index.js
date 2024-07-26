@@ -11,8 +11,7 @@ const isCompanyJobCheckMiddleware = require('./isCompanyJobCheckMiddleware');
 const forbidConnectedDrivers = require('./forbidConnectedDrivers');
 const forbidResolvedOffers = require('./forbidResolvedOffers');
 const isCompanyDriverCheckMiddleware = require('./isCompanyDriverCheckMiddleware');
-const isReviewExistMiddleware = require('./isReviewExistMiddleware');
-const findConnectionMiddleware = require('./findConnectionMiddleware');
+const isAlreadyDisconnectedMiddleware = require('./isAlreadyDisconnectedMiddleware');
 
 module.exports = {
   authMiddleware,
@@ -28,6 +27,5 @@ module.exports = {
   forbidConnectedDrivers,
   forbidResolvedOffers,
   isCompanyDriverCheckMiddleware,
-  isReviewExistMiddleware,
-  findConnectionMiddleware,
+  isAlreadyDisconnectedMiddleware,
 };
