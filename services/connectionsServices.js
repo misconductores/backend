@@ -78,7 +78,12 @@ module.exports = class ConnectionsServices {
     try {
       let connectionQuery = {
         driverId: userId,
-        status: connectionStatuses.active.value,
+        status: {
+          $in: [
+            connectionStatuses.active.value,
+            connectionStatuses.pending.value,
+          ],
+        },
       };
 
       const {doc: connection} = await GeneralServices.findOne({
@@ -118,24 +123,31 @@ module.exports = class ConnectionsServices {
 
         let updateDriverStatusData = {};
 
-        // if companyReviewId is already present then make driver to available otherwise make it to available soon
-        if (connection.companyReviewId) {
-          updateDriverStatusData = {
-            driverStatus: driverStatuses.available.value,
-          };
-        } else {
-          updateDriverStatusData = {
-            driverStatus: driverStatuses.availableSoon.value,
-          };
-        }
+        const {doc: user} = await GeneralServices.findById({
+          id: userId,
+          model: UsersModel,
+        });
 
-        await UsersModel.updateOne(
-          {
-            _id: userId,
-          },
-          updateDriverStatusData,
-          {session}
-        );
+        if (user.driverStatus !== driverStatuses.underInspection.value) {
+          // if companyReviewId is already present then make driver to available otherwise make it to available soon
+          if (connection.companyReviewId) {
+            updateDriverStatusData = {
+              driverStatus: driverStatuses.available.value,
+            };
+          } else {
+            updateDriverStatusData = {
+              driverStatus: driverStatuses.availableSoon.value,
+            };
+          }
+
+          await UsersModel.updateOne(
+            {
+              _id: userId,
+            },
+            updateDriverStatusData,
+            {session}
+          );
+        }
 
         await NotificationsModel.create(
           [
@@ -172,7 +184,12 @@ module.exports = class ConnectionsServices {
       let connectionQuery = {
         driverId: data.driverId,
         companyId: userId,
-        status: connectionStatuses.active.value,
+        status: {
+          $in: [
+            connectionStatuses.active.value,
+            connectionStatuses.pending.value,
+          ],
+        },
       };
 
       const {doc: connection} = await GeneralServices.findOne({
@@ -220,13 +237,19 @@ module.exports = class ConnectionsServices {
         let updateDriverStatusData = {};
 
         // if driverReviewId is already present then make driver to available otherwise make it to available soon
-        if (connection.driverReviewId) {
-          updateDriverStatusData = {
-            driverStatus: driverStatuses.available.value,
-          };
+        if (averageRating >= 2) {
+          if (connection.driverReviewId) {
+            updateDriverStatusData = {
+              driverStatus: driverStatuses.available.value,
+            };
+          } else {
+            updateDriverStatusData = {
+              driverStatus: driverStatuses.availableSoon.value,
+            };
+          }
         } else {
           updateDriverStatusData = {
-            driverStatus: driverStatuses.availableSoon.value,
+            driverStatus: driverStatuses.underInspection.value,
           };
         }
 
@@ -297,10 +320,19 @@ module.exports = class ConnectionsServices {
       const query = {companyId: userId, status: status};
       const [totalCount, data] = await Promise.all([
         ConnectionsModel.countDocuments(query),
-        ConnectionsModel.find(query, null, {skip, limit}).populate({
-          path: 'driverId',
-          select: restrictedUserData,
-        }),
+        ConnectionsModel.find(query, null, {skip, limit})
+          .populate({
+            path: 'driverId',
+            select: restrictedUserData,
+          })
+          .populate({
+            path: 'offerId',
+            select: 'jobId',
+            populate: {
+              path: 'jobId',
+              select: 'title',
+            },
+          }),
       ]);
       return {success: true, drivers: {totalCount, data}};
     } catch (error) {

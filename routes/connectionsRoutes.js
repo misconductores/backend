@@ -24,6 +24,7 @@ router.post(
     allowedDriverStatuses: [
       driverStatuses.connected.value,
       driverStatuses.availableSoon.value,
+      driverStatuses.underInspection.value,
     ],
   }),
   validatorMiddleware(reviewsSchema.validateDriverDisconnectReq),

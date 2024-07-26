@@ -21,7 +21,7 @@ module.exports = class OfferErrorsFactory {
   }
   static offerAfterDaysErr({day}) {
     return new AppError({
-      message: `This driver already has rejected your offer. You can send offer after ${day} ${
+      message: `This driver already has rejected this offer. You can send this offer after ${day} ${
         day === 1 ? 'day' : 'days'
       } to this driver`,
       statusCode: 400,

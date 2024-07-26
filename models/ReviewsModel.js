@@ -14,6 +14,11 @@ const ReviewsSchema = new Schema(
       ref: 'Users',
       required: true,
     },
+    connectionId: {
+      type: String,
+      ref: 'connections',
+      required: true,
+    },
     type: {
       type: String,
       required: true,
