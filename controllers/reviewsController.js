@@ -26,4 +26,19 @@ module.exports = class ReviewsController {
 
     if (error) throw error;
   }
+
+  static async getUserRatings(req, res, next) {
+    const userId = req.jwtToken.user.id;
+    const role = req.jwtToken.user.role;
+
+    const {success, error, ratings} = await ReviewsServices.getUserRatings({
+      userId,
+      role,
+    });
+
+    if (success)
+      next(ReviewsResponseFactory.ratingsRetrievedSuccessfully({ratings}));
+
+    if (error) throw error;
+  }
 };

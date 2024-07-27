@@ -1,3 +1,8 @@
+const {
+  roles,
+  reviewTypes,
+  statusTypes,
+} = require('../constants/usersConstants');
 const {ReviewsModel} = require('../models');
 
 module.exports = class ReviewsServices {
@@ -18,6 +23,42 @@ module.exports = class ReviewsServices {
           }),
       ]);
       return {success: true, reviews: {totalCount, data}};
+    } catch (error) {
+      return {success: false, error};
+    }
+  }
+
+  static async getUserRatings({userId, role}) {
+    try {
+      let query = {
+        status: statusTypes.accepted.value,
+      };
+      if (role === roles.driver.value) {
+        query = {
+          ...query,
+          driverId: userId,
+          type: reviewTypes.company_review.value,
+        };
+      } else {
+        query = {
+          ...query,
+          companyId: userId,
+          type: reviewTypes.driver_review.value,
+        };
+      }
+      const reviews = await ReviewsModel.find(query);
+
+      let finalRatings = 0;
+
+      if (reviews.length > 0) {
+        const sumOfAverageRating = reviews.reduce(
+          (sum, review) => sum + parseFloat(review.averageRating),
+          0
+        );
+
+        finalRatings = sumOfAverageRating / reviews.length;
+      }
+      return {success: true, ratings: finalRatings};
     } catch (error) {
       return {success: false, error};
     }

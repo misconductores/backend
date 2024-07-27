@@ -17,4 +17,10 @@ router.get(
   catchAsync(ReviewsController.getReviewsForAdmin)
 );
 
+router.get(
+  '/user-ratings',
+  authMiddleware,
+  catchAsync(ReviewsController.getUserRatings)
+);
+
 module.exports = router;
