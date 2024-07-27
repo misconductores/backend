@@ -23,4 +23,12 @@ router.get(
   catchAsync(ReviewsController.getUserRatings)
 );
 
+router.patch(
+  '/:id/status',
+  authMiddleware,
+  roleValidatorMiddleware({allowedRoles: [roles.admin.value]}),
+  validatorMiddleware(reviewsSchema.validateUpdateReviewStatusReq),
+  catchAsync(ReviewsController.updateReviewStatus)
+);
+
 module.exports = router;
