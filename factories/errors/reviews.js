@@ -4,7 +4,7 @@ module.exports = class ReviewsErrorsFactory {
   static alreadyReviewExistErr() {
     return new AppError({
       message: 'You have already given the review',
-      statusCode: 403,
+      statusCode: 400,
     });
   }
 };
