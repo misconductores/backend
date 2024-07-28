@@ -1,6 +1,8 @@
 const Yup = require('yup');
 const {validatorUtils} = require('../utils');
+const {statusTypes} = require('../constants/usersConstants');
 
+const statusValues = Object.values(statusTypes).map((status) => status.value);
 
 module.exports.validateDriverDisconnectReq = (data) => {
   const schema = Yup.object().shape({
@@ -38,4 +40,28 @@ module.exports.validateCompanyDisconnectReq = (data) => {
     performance: Yup.string().required('Performance rating is required'),
   });
   return validatorUtils.validate(schema, data);
-}
+};
+
+module.exports.validateGetAdminReviewsReq = (data) => {
+  const schema = Yup.object().shape({
+    page: Yup.string().required('Page number is required'),
+    limit: Yup.string().required('Page limit is required'),
+    status: Yup.string()
+      .oneOf(statusValues, 'Invalid Status')
+      .required('Connection active status is required'),
+    reviewType: Yup.string().required('Review type is required'),
+  });
+  return validatorUtils.validate(schema, data);
+};
+
+module.exports.validateUpdateReviewStatusReq = (data) => {
+  const schema = Yup.object().shape({
+    status: Yup.string()
+      .oneOf(
+        [statusTypes.accepted.value, statusTypes.rejected.value],
+        'Invalid Status'
+      )
+      .required('Status is required'),
+  });
+  return validatorUtils.validate(schema, data);
+};

@@ -5,7 +5,7 @@ const jobsRoute = require('./jobsRoute.js');
 const othersRoute = require('./othersRoute.js');
 const offersRoute = require('./offersRoute.js');
 const connectionsRoute = require('./connectionsRoutes.js');
-const reviewsRoute = require('./reviews.js');
+const reviewsRoute = require('./reviewsRoute.js');
 
 module.exports = {
   usersRoute,

@@ -132,4 +132,22 @@ module.exports = class UsersErrorsFactory {
       statusCode: 400,
     });
   }
+  static alreadyBlockedErr() {
+    return new AppError({
+      message: 'You have already blocked this user',
+      statusCode: 400,
+    });
+  }
+  static roleOtherThanDriverBlockErr() {
+    return new AppError({
+      message: 'You are not allowed to block others except drivers',
+      statusCode: 403,
+    });
+  }
+  static accountBlockedErr() {
+    return new AppError({
+      message: 'Your account has been blocked',
+      statusCode: 400,
+    });
+  }
 };
