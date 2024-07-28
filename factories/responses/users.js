@@ -144,4 +144,11 @@ module.exports = class UsersResponsesFactory {
       body: {},
     });
   }
+  static userBlockedSuccessfully() {
+    return new AppResponse({
+      statusCode: 200,
+      message: 'User has been blocked successfully',
+      body: {},
+    });
+  }
 };

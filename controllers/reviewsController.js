@@ -1,5 +1,7 @@
-const {ReviewsResponseFactory} = require('../factories');
-const {ReviewsServices} = require('../services');
+const {statusTypes} = require('../constants/usersConstants');
+const {ReviewsResponseFactory, ReviewsErrors} = require('../factories');
+const {ReviewsModel} = require('../models');
+const {ReviewsServices, GeneralServices} = require('../services');
 
 module.exports = class ReviewsController {
   static async getReviewsForAdmin(req, res, next) {
@@ -23,6 +25,48 @@ module.exports = class ReviewsController {
           perPage: limit,
         })
       );
+
+    if (error) throw error;
+  }
+
+  static async getUserRatings(req, res, next) {
+    const userId = req.jwtToken.user.id;
+    const role = req.jwtToken.user.role;
+
+    const {success, error, ratings} = await ReviewsServices.getUserRatings({
+      userId,
+      role,
+    });
+
+    if (success)
+      next(ReviewsResponseFactory.ratingsRetrievedSuccessfully({ratings}));
+
+    if (error) throw error;
+  }
+
+  static async updateReviewStatus(req, res, next) {
+    const {id: reviewId} = req.params;
+    const {status} = req.body;
+
+    const {doc: review} = await GeneralServices.findById({
+      id: reviewId,
+      model: ReviewsModel,
+    });
+
+    if (
+      review.status === statusTypes.accepted.value ||
+      review.status === statusTypes.rejected.value
+    )
+      return next(ReviewsErrors.alreadyReviewUpdateErr());
+
+    const {success, error, updatedReview} =
+      await ReviewsServices.updateReviewStatus({
+        reviewId,
+        status,
+      });
+
+    if (success && updatedReview)
+      next(ReviewsResponseFactory.statusUpdatedSuccessfully());
 
     if (error) throw error;
   }
