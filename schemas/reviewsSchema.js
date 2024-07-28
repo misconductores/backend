@@ -53,3 +53,15 @@ module.exports.validateGetAdminReviewsReq = (data) => {
   });
   return validatorUtils.validate(schema, data);
 };
+
+module.exports.validateUpdateReviewStatusReq = (data) => {
+  const schema = Yup.object().shape({
+    status: Yup.string()
+      .oneOf(
+        [statusTypes.accepted.value, statusTypes.rejected.value],
+        'Invalid Status'
+      )
+      .required('Status is required'),
+  });
+  return validatorUtils.validate(schema, data);
+};

@@ -15,4 +15,11 @@ module.exports = class ReviewsResponsesFactory {
       body: {ratings},
     });
   }
+  static statusUpdatedSuccessfully() {
+    return new AppResponse({
+      message: 'Status updated successfully',
+      statusCode: 200,
+      body: {},
+    });
+  }
 };

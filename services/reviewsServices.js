@@ -4,6 +4,7 @@ const {
   statusTypes,
 } = require('../constants/usersConstants');
 const {ReviewsModel} = require('../models');
+const GeneralServices = require('./generalServices');
 
 module.exports = class ReviewsServices {
   static async getReviewsForAdmin({page, limit, status, reviewType}) {
@@ -59,6 +60,19 @@ module.exports = class ReviewsServices {
         finalRatings = sumOfAverageRating / reviews.length;
       }
       return {success: true, ratings: finalRatings};
+    } catch (error) {
+      return {success: false, error};
+    }
+  }
+
+  static async updateReviewStatus({reviewId, status}) {
+    try {
+      const {doc: updatedReview} = await GeneralServices.update({
+        id: reviewId,
+        model: ReviewsModel,
+        data: {status: status},
+      });
+      return {success: true, updatedReview};
     } catch (error) {
       return {success: false, error};
     }

@@ -10,6 +10,7 @@ const {
 const {jwtUtils} = require('../utils');
 const {usersConstants} = require('../constants');
 const UsersModel = require('../models/UsersModel');
+const {driverStatuses, roles} = require('../constants/usersConstants');
 
 module.exports = class UsersController {
   static async createUser(req, res, next) {
@@ -79,6 +80,9 @@ module.exports = class UsersController {
     });
 
     if (!userToLogin) return next(UsersErrorsFactory.wrongEmailOrPasswordErr());
+
+    if (userToLogin.driverStatus === driverStatuses.blocked.value)
+      return next(UsersErrorsFactory.accountBlockedErr());
 
     const {success, err} = await UsersServices.verifyUserPassword({
       inputPassword: inputData.password,
@@ -437,5 +441,34 @@ module.exports = class UsersController {
     });
     if (doc) return next(UsersErrorsFactory.emailAlreadyExistErr());
     if (!doc) return next(UsersResponsesFactory.emailAvailable());
+  }
+  static async blockDriver(req, res, next) {
+    const {userId} = req.params;
+
+    const {doc: user} = await GeneralServices.findOne({
+      query: {_id: userId},
+      model: UsersModel,
+    });
+
+    if (user.driverStatus === driverStatuses.blocked.value)
+      return next(UsersErrorsFactory.alreadyBlockedErr());
+
+    if (user.role !== roles.driver.role)
+      return next(UsersErrorsFactory.roleOtherThanDriverBlockErr());
+
+    const {
+      success,
+      doc: updatedUser,
+      error,
+    } = await GeneralServices.update({
+      id: userId,
+      data: {driverStatus: driverStatuses.blocked.value},
+      model: UsersModel,
+    });
+
+    if (success && updatedUser)
+      return next(UsersResponsesFactory.userBlockedSuccessfully());
+
+    if (error) throw error;
   }
 };

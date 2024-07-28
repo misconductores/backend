@@ -7,4 +7,10 @@ module.exports = class ReviewsErrorsFactory {
       statusCode: 403,
     });
   }
+  static alreadyReviewUpdateErr() {
+    return new AppError({
+      message: 'You have already update the review',
+      statusCode: 400,
+    });
+  }
 };

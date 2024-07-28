@@ -1,6 +1,10 @@
 const express = require('express');
 const {UsersController} = require('../controllers');
-const {validatorMiddleware, authMiddleware} = require('../middleware');
+const {
+  validatorMiddleware,
+  authMiddleware,
+  roleValidatorMiddleware,
+} = require('../middleware');
 const {catchAsync} = require('../utils');
 const {usersSchema, othersSchema} = require('../schemas');
 const {uploadImage} = require('../middleware/uploadImageMiddleware');
@@ -8,6 +12,7 @@ const {uploadDocument} = require('../middleware/documentUploadMiddleware');
 const {
   PARAMS_PROPERTY,
   QUERY_PROPERTY,
+  roles,
 } = require('../constants/usersConstants');
 const router = express.Router();
 
@@ -128,6 +133,14 @@ router.post(
   '/check-email',
   validatorMiddleware(usersSchema.validateCheckEmailRequest),
   catchAsync(UsersController.checkRegisteredEmail)
+);
+
+router.patch(
+  '/:userId/block',
+  authMiddleware,
+  roleValidatorMiddleware({allowedRoles: [roles.admin.value]}),
+  validatorMiddleware(usersSchema.validateBlockUserReq, PARAMS_PROPERTY),
+  catchAsync(UsersController.blockDriver)
 );
 
 module.exports = router;
