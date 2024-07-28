@@ -34,6 +34,9 @@ module.exports.driverStatuses = {
   underInspection: {
     value: 'underInspection',
   },
+  blocked: {
+    value:'blocked'
+  }
 };
 
 module.exports.PARAMS_PROPERTY = 'params';
