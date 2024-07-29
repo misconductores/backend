@@ -7,6 +7,7 @@ const OthersResponsesFactory = require('./others');
 const OffersResponsesFactory = require('./offers');
 const ConnectionsResponsesFactory = require('./connections');
 const ReviewsResponseFactory = require('./reviews');
+const DocumentsAccessResponseFactory = require('./documentsAccess');
 
 module.exports = {
   AppResponse,
@@ -17,4 +18,5 @@ module.exports = {
   OffersResponsesFactory,
   ConnectionsResponsesFactory,
   ReviewsResponseFactory,
+  DocumentsAccessResponseFactory,
 };
