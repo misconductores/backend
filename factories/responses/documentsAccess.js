@@ -1,6 +1,6 @@
 const AppResponse = require('./AppResponse');
 
-module.exports = class OfferResponsesFactory {
+module.exports = class DocumentsAccessResponsesFactory {
   static documentsRequestSentSuccessfully() {
     return new AppResponse({
       message: 'You have successfully requested for this driver documents',
