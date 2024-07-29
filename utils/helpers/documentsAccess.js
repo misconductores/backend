@@ -1,8 +1,9 @@
 const {roles, documentRequestTypes} = require('../../constants/usersConstants');
+const {getCurrentDate} = require('../DateCalculations');
 
 exports.findDocumentsAccess = ({driverId, companyId, userId, role}) => {
   let query = {
-    endDate: {$lte: new Date()},
+    $or: [{endDate: {$gte: getCurrentDate()}}, {endDate: null}],
   };
 
   if (role === roles.driver.value) {

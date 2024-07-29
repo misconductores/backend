@@ -5,7 +5,7 @@ const DocumentsAccessResponsesFactory = require('../factories/responses/document
 const DocumentAccessModel = require('../models/DocumentAccessModel');
 const {DocumentsAccessServices} = require('../services');
 const GeneralServices = require('../services/generalServices');
-const {getRemainingDays} = require('../utils/DateCalculations');
+const {getRemainingDays, getCurrentDate} = require('../utils/DateCalculations');
 const {findDocumentsAccess} = require('../utils/helpers/documentsAccess');
 
 module.exports = class DocumentsAccessController {
@@ -27,10 +27,14 @@ module.exports = class DocumentsAccessController {
       model: DocumentAccessModel,
     });
 
+    const currentDate = getCurrentDate();
+
+    // if documents request status is pending or accepted, and previous request has not ended then it will prevent for new request until first one will end
     if (
       documentsAccessRequest &&
       (documentsAccessRequest.status === statusTypes.pending.value ||
-        documentsAccessRequest.status === statusTypes.accepted.value)
+        documentsAccessRequest.status === statusTypes.accepted.value) &&
+      currentDate <= documentsAccessRequest.endDate
     )
       return next(
         DocumentsAccessErrorsFactory.documentsRequestAlreadySendErr()
@@ -41,7 +45,7 @@ module.exports = class DocumentsAccessController {
       documentsAccessRequest.status === statusTypes.rejected.value
     ) {
       const remainingDays = getRemainingDays({
-        createdAt: documentsAccessRequest.createdAt,
+        createdAt: documentsAccessRequest.startDate,
       });
       return next(
         DocumentsAccessErrors.docsAccessRequestAfterDaysErr({
