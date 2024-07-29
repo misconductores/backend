@@ -4,6 +4,7 @@ const othersSchema = require('./othersSchema');
 const offersSchema = require('./offersSchema');
 const reviewsSchema = require('./reviewsSchema');
 const connectionsSchema = require('./connectionsSchema');
+const documentAccessSchema = require('./documentsAccessSchema');
 
 module.exports = {
   usersSchema,
@@ -12,4 +13,5 @@ module.exports = {
   offersSchema,
   reviewsSchema,
   connectionsSchema,
+  documentAccessSchema,
 };

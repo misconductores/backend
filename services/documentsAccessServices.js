@@ -2,6 +2,7 @@ const {
   roles,
   documentRequestTypes,
   notificationTypes,
+  statusTypes,
 } = require('../constants/usersConstants');
 const {DocumentAccessModel, NotificationsModel} = require('../models');
 const {getCurrentDate} = require('../utils/DateCalculations');
@@ -10,7 +11,10 @@ const GeneralServices = require('./generalServices');
 module.exports = class DocumentsAccessServices {
   static async accessRequestForDocuments({role, driverId, companyId, userId}) {
     try {
-      let data = {startDate: getCurrentDate()};
+      let data = {
+        startDate: getCurrentDate(),
+        status: statusTypes.pending.value,
+      };
 
       if (role === roles.driver.value) {
         data = {
