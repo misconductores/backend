@@ -58,7 +58,7 @@ module.exports = class DocumentsAccessController {
         userId,
       });
 
-    if (success)
+    if (success && accessDocsRequest)
       return next(
         DocumentsAccessResponsesFactory.documentsRequestSentSuccessfully({
           accessDocsRequest,
