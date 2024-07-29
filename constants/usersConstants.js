@@ -35,8 +35,8 @@ module.exports.driverStatuses = {
     value: 'underInspection',
   },
   blocked: {
-    value:'blocked'
-  }
+    value: 'blocked',
+  },
 };
 
 module.exports.PARAMS_PROPERTY = 'params';
@@ -264,6 +264,12 @@ module.exports.notificationTypes = {
   driver_disconnect: {
     value: 'driver_disconnect',
   },
+  driver_document_access: {
+    value: 'driver_document_access',
+  },
+  company_document_access: {
+    value: 'company_document_access',
+  },
 };
 
 module.exports.TIMEZONES = {
@@ -290,5 +296,14 @@ module.exports.connectionStatuses = {
   },
   inactive: {
     value: 'inactive',
+  },
+};
+
+module.exports.documentRequestTypes = {
+  driver_request: {
+    value: 'driver_request',
+  },
+  company_request: {
+    value: 'company_request',
   },
 };

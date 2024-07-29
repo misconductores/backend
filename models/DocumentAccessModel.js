@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
-const {statusTypes} = require('../constants/usersConstants');
+const {
+  statusTypes,
+  documentRequestTypes,
+} = require('../constants/usersConstants');
 
 const Schema = mongoose.Schema;
 
@@ -17,6 +20,11 @@ const DocumentsAccessSchema = new Schema(
     },
     startDate: {type: Date, required: true},
     endDate: {type: Date, default: null},
+    type: {
+      type: String,
+      required: true,
+      enum: Object.values(documentRequestTypes).map((status) => status.value),
+    },
     status: {
       type: String,
       default: statusTypes.pending.value,
