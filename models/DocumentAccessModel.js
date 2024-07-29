@@ -6,20 +6,21 @@ const Schema = mongoose.Schema;
 const DocumentsAccessSchema = new Schema(
   {
     companyId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'Users',
       required: true,
     },
     driverId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'Users',
       required: true,
     },
-    startDate: {type: String, required: true},
-    endDate: {type: String, default: null},
+    startDate: {type: Date, required: true},
+    endDate: {type: Date, default: null},
     status: {
       type: String,
       default: statusTypes.pending.value,
+      enum: Object.values(statusTypes).map((status) => status.value),
     },
   },
   {
