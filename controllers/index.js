@@ -5,6 +5,7 @@ const OthersController = require('./othersController');
 const OffersController = require('./offersController');
 const ConnectionsController = require('./connectionsController');
 const ReviewsController = require('./reviewsController');
+const DocumentsAccessController = require('./documentsAccessController');
 
 module.exports = {
   UsersController,
@@ -14,4 +15,5 @@ module.exports = {
   OffersController,
   ConnectionsController,
   ReviewsController,
+  DocumentsAccessController,
 };
