@@ -17,6 +17,13 @@ const {
 const router = express.Router();
 
 router.get(
+  '/blocked-drivers',
+  authMiddleware,
+  roleValidatorMiddleware({allowedRoles: [roles.admin.value]}),
+  catchAsync(UsersController.getBlockedDrivers)
+);
+
+router.get(
   '/drivers',
   authMiddleware,
   validatorMiddleware(othersSchema.validatePaginationParams, QUERY_PROPERTY),

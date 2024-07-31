@@ -475,4 +475,27 @@ module.exports = class UsersController {
 
     if (error) throw error;
   }
+
+  static async getBlockedDrivers(req, res, next) {
+    let {limit, page} = req.query;
+    page = parseInt(page);
+    limit = parseInt(limit);
+
+    const {success, error, result} = await UsersServices.getBlockedDrivers({
+      page,
+      limit,
+    });
+
+    if (success)
+      return next(
+        UsersResponsesFactory.driversRetrievedSuccessfully({
+          count: result.totalCount,
+          data: result.data,
+          page: page,
+          perPage: limit,
+        })
+      );
+
+    if (error) throw error;
+  }
 };

@@ -466,4 +466,20 @@ module.exports = class UsersServices {
       return {success: false, error};
     }
   }
+
+  static async getBlockedDrivers({page, limit}) {
+    try {
+      const skip = (page - 1) * limit;
+      const query = {driverStatus: driverStatuses.blocked.value};
+
+      const [totalCount, data] = await Promise.all([
+        UsersModel.countDocuments(query),
+        UsersModel.find(query, null, {skip, limit}).select(restrictedUserData),
+      ]);
+
+      return {success: true, result: {totalCount, data}};
+    } catch (error) {
+      return {success: false, error};
+    }
+  }
 };
