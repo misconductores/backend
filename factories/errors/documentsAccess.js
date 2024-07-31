@@ -7,12 +7,4 @@ module.exports = class DocumentsAccessErrorsFactory {
       statusCode: 400,
     });
   }
-  static docsAccessRequestAfterDaysErr({day}) {
-    return new AppError({
-      message: `This user already has rejected the request. You can send request after ${day} ${
-        day === 1 ? 'day' : 'days'
-      } to this driver`,
-      statusCode: 400,
-    });
-  }
 };

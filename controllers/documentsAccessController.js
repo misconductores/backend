@@ -1,73 +1,40 @@
-const {statusTypes} = require('../constants/usersConstants');
-const {DocumentsAccessErrors} = require('../factories');
-const DocumentsAccessErrorsFactory = require('../factories/errors/documentsAccess');
-const DocumentsAccessResponsesFactory = require('../factories/responses/documentsAccess');
-const DocumentAccessModel = require('../models/DocumentAccessModel');
-const {DocumentsAccessServices} = require('../services');
-const GeneralServices = require('../services/generalServices');
-const {getRemainingDays, getCurrentDate} = require('../utils/DateCalculations');
-const {findDocumentsAccess} = require('../utils/helpers/documentsAccess');
+const {notificationTypes} = require('../constants/usersConstants');
+const {DocumentsAccessResponsesFactory} = require('../factories');
+const {DocumentAccessModel, NotificationsModel} = require('../models');
+const {GeneralServices} = require('../services');
+const {
+  getCurrentDate,
+  dateAfterSevenDays,
+} = require('../utils/DateCalculations');
 
 module.exports = class DocumentsAccessController {
-  static async accessRequestForDocuments(req, res, next) {
+  static async requestDocumentsAccess(req, res, next) {
     const userId = req.jwtToken.user.id;
-    const role = req.jwtToken.user.role;
+    const {requestedUserId} = req.body;
 
-    const {driverId, companyId} = req.body;
-
-    let findAccessDocumentQuery = findDocumentsAccess({
-      role,
-      driverId,
-      companyId,
-      userId,
-    });
-
-    const {doc: documentsAccessRequest} = await GeneralServices.findOne({
-      query: findAccessDocumentQuery,
+    const {success, error} = await GeneralServices.create({
+      data: {
+        companyId: userId,
+        driverId: requestedUserId,
+        startDate: getCurrentDate(),
+        endDate: dateAfterSevenDays(),
+      },
       model: DocumentAccessModel,
     });
 
-    const currentDate = getCurrentDate();
-
-    // if documents request status is pending or accepted, and previous request has not ended then it will prevent for new request until first one will end
-    if (
-      documentsAccessRequest &&
-      (documentsAccessRequest.status === statusTypes.pending.value ||
-        documentsAccessRequest.status === statusTypes.accepted.value) &&
-      currentDate <= documentsAccessRequest.endDate
-    )
-      return next(
-        DocumentsAccessErrorsFactory.documentsRequestAlreadySendErr()
-      );
-
-    if (
-      documentsAccessRequest &&
-      documentsAccessRequest.status === statusTypes.rejected.value
-    ) {
-      const remainingDays = getRemainingDays({
-        createdAt: documentsAccessRequest.startDate,
+    if (success) {
+      await GeneralServices.create({
+        data: {
+          userId: requestedUserId,
+          relatedUser: userId,
+          type: notificationTypes.company_document_access.value,
+        },
+        model: NotificationsModel,
       });
       return next(
-        DocumentsAccessErrors.docsAccessRequestAfterDaysErr({
-          day: remainingDays,
-        })
+        DocumentsAccessResponsesFactory.requestedDocumentsSuccessfully()
       );
     }
-
-    const {success, accessDocsRequest, error} =
-      await DocumentsAccessServices.accessRequestForDocuments({
-        role,
-        driverId,
-        companyId,
-        userId,
-      });
-
-    if (success && accessDocsRequest)
-      return next(
-        DocumentsAccessResponsesFactory.documentsRequestSentSuccessfully({
-          accessDocsRequest,
-        })
-      );
 
     if (error) throw error;
   }

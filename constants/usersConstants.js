@@ -264,9 +264,6 @@ module.exports.notificationTypes = {
   driver_disconnect: {
     value: 'driver_disconnect',
   },
-  driver_document_access: {
-    value: 'driver_document_access',
-  },
   company_document_access: {
     value: 'company_document_access',
   },
@@ -296,14 +293,5 @@ module.exports.connectionStatuses = {
   },
   inactive: {
     value: 'inactive',
-  },
-};
-
-module.exports.documentRequestTypes = {
-  driver_request: {
-    value: 'driver_request',
-  },
-  company_request: {
-    value: 'company_request',
   },
 };
