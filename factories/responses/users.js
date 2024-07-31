@@ -151,4 +151,11 @@ module.exports = class UsersResponsesFactory {
       body: {},
     });
   }
+  static userUnBlockedSuccessfully() {
+    return new AppResponse({
+      statusCode: 200,
+      message: 'User has been unblocked successfully',
+      body: {},
+    });
+  }
 };

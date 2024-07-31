@@ -475,7 +475,6 @@ module.exports = class UsersController {
 
     if (error) throw error;
   }
-
   static async getBlockedDrivers(req, res, next) {
     let {limit, page} = req.query;
     page = parseInt(page);
@@ -495,6 +494,27 @@ module.exports = class UsersController {
           perPage: limit,
         })
       );
+
+    if (error) throw error;
+  }
+  static async unBlockDriver(req, res, next) {
+    const {userId} = req.params;
+
+    const {doc: user} = await GeneralServices.findOne({
+      query: {_id: userId},
+      model: UsersModel,
+    });
+
+    if (user.driverStatus !== driverStatuses.blocked.value)
+      return next(UsersErrorsFactory.alreadyUnBlockedErr());
+
+    const {success, error} = await GeneralServices.update({
+      id: userId,
+      data: {driverStatus: driverStatuses.available.value},
+      model: UsersModel,
+    });
+
+    if (success) return next(UsersResponsesFactory.userUnBlockedSuccessfully());
 
     if (error) throw error;
   }

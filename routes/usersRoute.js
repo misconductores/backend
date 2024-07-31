@@ -146,8 +146,16 @@ router.patch(
   '/:userId/block',
   authMiddleware,
   roleValidatorMiddleware({allowedRoles: [roles.admin.value]}),
-  validatorMiddleware(usersSchema.validateBlockUserReq, PARAMS_PROPERTY),
+  validatorMiddleware(usersSchema.validateBlockUnblockUserReq, PARAMS_PROPERTY),
   catchAsync(UsersController.blockDriver)
+);
+
+router.patch(
+  '/:userId/unblock',
+  authMiddleware,
+  roleValidatorMiddleware({allowedRoles: [roles.admin.value]}),
+  validatorMiddleware(usersSchema.validateBlockUnblockUserReq, PARAMS_PROPERTY),
+  catchAsync(UsersController.unBlockDriver)
 );
 
 module.exports = router;
