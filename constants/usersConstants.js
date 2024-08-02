@@ -35,8 +35,8 @@ module.exports.driverStatuses = {
     value: 'underInspection',
   },
   blocked: {
-    value:'blocked'
-  }
+    value: 'blocked',
+  },
 };
 
 module.exports.PARAMS_PROPERTY = 'params';
@@ -263,6 +263,9 @@ module.exports.notificationTypes = {
   },
   driver_disconnect: {
     value: 'driver_disconnect',
+  },
+  company_document_access: {
+    value: 'company_document_access',
   },
 };
 
