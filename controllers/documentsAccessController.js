@@ -1,7 +1,7 @@
 const {notificationTypes} = require('../constants/usersConstants');
 const {DocumentsAccessResponsesFactory} = require('../factories');
 const {DocumentAccessModel, NotificationsModel} = require('../models');
-const {GeneralServices} = require('../services');
+const {GeneralServices, DocumentsAccessServices} = require('../services');
 const {
   getCurrentDate,
   dateAfterSevenDays,
@@ -35,6 +35,60 @@ module.exports = class DocumentsAccessController {
         DocumentsAccessResponsesFactory.requestedDocumentsSuccessfully()
       );
     }
+
+    if (error) throw error;
+  }
+  static async getDocumentAccessRequestsForCompany(req, res, next) {
+    const userId = req.jwtToken.user.id;
+
+    let {page, limit, status} = req.query;
+    page = parseInt(page);
+    limit = parseInt(limit);
+
+    const {success, error, result} =
+      await DocumentsAccessServices.getDocumentAccessRequestsForCompany({
+        page,
+        limit,
+        userId,
+        status,
+      });
+
+    if (success)
+      return next(
+        DocumentsAccessResponsesFactory.documentRequestsRetrievedSuccessfully({
+          count: result.totalCount,
+          data: result.data,
+          page,
+          perPage: limit,
+        })
+      );
+
+    if (error) throw error;
+  }
+  static async getDocumentAccessRequestsForDriver(req, res, next) {
+    const userId = req.jwtToken.user.id;
+
+    let {page, limit, status} = req.query;
+    page = parseInt(page);
+    limit = parseInt(limit);
+
+    const {success, error, result} =
+      await DocumentsAccessServices.getDocumentAccessRequestsForDriver({
+        page,
+        limit,
+        userId,
+        status,
+      });
+
+    if (success)
+      return next(
+        DocumentsAccessResponsesFactory.documentRequestsRetrievedSuccessfully({
+          count: result.totalCount,
+          data: result.data,
+          page,
+          perPage: limit,
+        })
+      );
 
     if (error) throw error;
   }

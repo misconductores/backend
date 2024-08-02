@@ -8,4 +8,11 @@ module.exports = class DocumentsAccessResponsesFactory {
       body: {},
     });
   }
+  static documentRequestsRetrievedSuccessfully({count, data, page, perPage}) {
+    return new AppResponse({
+      message: 'Documents access requests retrieved successfully',
+      statusCode: 200,
+      body: {count, data, page, perPage},
+    });
+  }
 };
