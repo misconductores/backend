@@ -1,5 +1,10 @@
 const config = require('config');
-const {UsersServices, FilesServices, GeneralServices} = require('../services');
+const {
+  UsersServices,
+  FilesServices,
+  GeneralServices,
+  ReviewsServices,
+} = require('../services');
 const actions = require('../utils/actions');
 const {
   UsersErrorsFactory,
@@ -10,7 +15,11 @@ const {
 const {jwtUtils} = require('../utils');
 const {usersConstants} = require('../constants');
 const UsersModel = require('../models/UsersModel');
-const {driverStatuses, roles} = require('../constants/usersConstants');
+const {
+  driverStatuses,
+  roles,
+  statusTypes,
+} = require('../constants/usersConstants');
 
 module.exports = class UsersController {
   static async createUser(req, res, next) {
@@ -444,6 +453,7 @@ module.exports = class UsersController {
   }
   static async blockDriver(req, res, next) {
     const {userId} = req.params;
+    const {reviewId} = req.body;
 
     const {doc: user} = await GeneralServices.findOne({
       query: {_id: userId},
@@ -453,21 +463,58 @@ module.exports = class UsersController {
     if (user.driverStatus === driverStatuses.blocked.value)
       return next(UsersErrorsFactory.alreadyBlockedErr());
 
-    if (user.role !== roles.driver.role)
+    if (user.role !== roles.driver.value)
       return next(UsersErrorsFactory.roleOtherThanDriverBlockErr());
 
-    const {
-      success,
-      doc: updatedUser,
-      error,
-    } = await GeneralServices.update({
-      id: userId,
-      data: {driverStatus: driverStatuses.blocked.value},
+    const {success, error} = await UsersServices.blockDriver({
+      userId,
+      reviewId,
+    });
+
+    if (success) return next(UsersResponsesFactory.userBlockedSuccessfully());
+
+    if (error) throw error;
+  }
+  static async getBlockedDrivers(req, res, next) {
+    let {limit, page} = req.query;
+    page = parseInt(page);
+    limit = parseInt(limit);
+
+    const {success, error, result} = await UsersServices.getBlockedDrivers({
+      page,
+      limit,
+    });
+
+    if (success)
+      return next(
+        UsersResponsesFactory.driversRetrievedSuccessfully({
+          count: result.totalCount,
+          data: result.data,
+          page: page,
+          perPage: limit,
+        })
+      );
+
+    if (error) throw error;
+  }
+  static async unBlockDriver(req, res, next) {
+    const {userId} = req.params;
+
+    const {doc: user} = await GeneralServices.findOne({
+      query: {_id: userId},
       model: UsersModel,
     });
 
-    if (success && updatedUser)
-      return next(UsersResponsesFactory.userBlockedSuccessfully());
+    if (user.driverStatus !== driverStatuses.blocked.value)
+      return next(UsersErrorsFactory.alreadyUnBlockedErr());
+
+    const {success, error} = await GeneralServices.update({
+      id: userId,
+      data: {driverStatus: driverStatuses.available.value},
+      model: UsersModel,
+    });
+
+    if (success) return next(UsersResponsesFactory.userUnBlockedSuccessfully());
 
     if (error) throw error;
   }

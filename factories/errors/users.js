@@ -138,6 +138,12 @@ module.exports = class UsersErrorsFactory {
       statusCode: 400,
     });
   }
+  static alreadyUnBlockedErr() {
+    return new AppError({
+      message: 'You have already unblocked this user',
+      statusCode: 400,
+    });
+  }
   static roleOtherThanDriverBlockErr() {
     return new AppError({
       message: 'You are not allowed to block others except drivers',

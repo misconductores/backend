@@ -6,7 +6,13 @@ const FilesServices = require('./fileServices');
 const DocumentsModel = require('../models/DocumentsModel');
 const PostalCodeModel = require('../models/PostalCodeModel');
 const JobModel = require('../models/JobModel');
-const {roles, restrictedUserData} = require('../constants/usersConstants');
+const {
+  roles,
+  restrictedUserData,
+  connectionStatuses,
+  driverStatuses,
+  statusTypes,
+} = require('../constants/usersConstants');
 const {addDriverConditions} = require('../utils/helpers/users');
 const {
   S3Client,
@@ -18,6 +24,9 @@ const accessKeyId = config.get('awsAccessKey');
 const secretAccessKey = config.get('awsSecretAccessKey');
 const Bucket = config.get('awsBucket');
 const region = config.get('awsBucketRegion');
+const mongoose = require('mongoose');
+const {ReviewsModel, ConnectionsModel} = require('../models');
+const GeneralServices = require('./generalServices');
 
 const s3Client = new S3Client({
   region: region,
@@ -413,6 +422,64 @@ module.exports = class UsersServices {
       return {success: true, result: {totalCount, data: finalList}};
     } catch (err) {
       return {success: false, err};
+    }
+  }
+  static async blockDriver({userId, reviewId}) {
+    const session = await mongoose.startSession();
+
+    try {
+      const {doc: connection} = await GeneralServices.findOne({
+        query: {driverId: userId, status: connectionStatuses.active.value},
+        model: ConnectionsModel,
+      });
+
+      session.startTransaction();
+
+      await UsersModel.findByIdAndUpdate(
+        {_id: userId},
+        {driverStatus: driverStatuses.blocked.value},
+        {session}
+      );
+
+      await ReviewsModel.findByIdAndUpdate(
+        {_id: reviewId},
+        {status: statusTypes.rejected.value},
+        {session}
+      );
+
+      if (connection) {
+        await ConnectionsModel.updateOne(
+          {driverId: userId, status: connectionStatuses.active.value},
+          {status: connectionStatuses.inactive.value},
+          {session}
+        );
+      }
+
+      await session.commitTransaction();
+      session.endSession();
+
+      return {success: true};
+    } catch (error) {
+      await session.abortTransaction();
+      session.endSession();
+
+      return {success: false, error};
+    }
+  }
+
+  static async getBlockedDrivers({page, limit}) {
+    try {
+      const skip = (page - 1) * limit;
+      const query = {driverStatus: driverStatuses.blocked.value};
+
+      const [totalCount, data] = await Promise.all([
+        UsersModel.countDocuments(query),
+        UsersModel.find(query, null, {skip, limit}).select(restrictedUserData),
+      ]);
+
+      return {success: true, result: {totalCount, data}};
+    } catch (error) {
+      return {success: false, error};
     }
   }
 };

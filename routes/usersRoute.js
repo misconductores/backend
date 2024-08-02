@@ -17,6 +17,13 @@ const {
 const router = express.Router();
 
 router.get(
+  '/blocked-drivers',
+  authMiddleware,
+  roleValidatorMiddleware({allowedRoles: [roles.admin.value]}),
+  catchAsync(UsersController.getBlockedDrivers)
+);
+
+router.get(
   '/drivers',
   authMiddleware,
   validatorMiddleware(othersSchema.validatePaginationParams, QUERY_PROPERTY),
@@ -139,8 +146,16 @@ router.patch(
   '/:userId/block',
   authMiddleware,
   roleValidatorMiddleware({allowedRoles: [roles.admin.value]}),
-  validatorMiddleware(usersSchema.validateBlockUserReq, PARAMS_PROPERTY),
+  validatorMiddleware(usersSchema.validateBlockUnblockUserReq, PARAMS_PROPERTY),
   catchAsync(UsersController.blockDriver)
+);
+
+router.patch(
+  '/:userId/unblock',
+  authMiddleware,
+  roleValidatorMiddleware({allowedRoles: [roles.admin.value]}),
+  validatorMiddleware(usersSchema.validateBlockUnblockUserReq, PARAMS_PROPERTY),
+  catchAsync(UsersController.unBlockDriver)
 );
 
 module.exports = router;
