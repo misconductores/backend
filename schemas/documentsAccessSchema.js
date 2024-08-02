@@ -1,9 +1,42 @@
 const Yup = require('yup');
 const {validatorUtils} = require('../utils');
+const {statusTypes} = require('../constants/usersConstants');
 
 module.exports.validateSendDocsReq = (data) => {
   const schema = Yup.object().shape({
     requestedUserId: Yup.string().required('Requested user Id is required'),
+  });
+  return validatorUtils.validate(schema, data);
+};
+
+module.exports.validateGetCompanyDocsRequests = (data) => {
+  const schema = Yup.object().shape({
+    page: Yup.string().required('Page number is required'),
+    limit: Yup.string().required('Page limit is required'),
+    status: Yup.string()
+      .oneOf(
+        [
+          statusTypes.accepted.value,
+          statusTypes.rejected.value,
+          statusTypes.pending.value,
+        ],
+        'Invalid Status'
+      )
+      .required('Status is required'),
+  });
+  return validatorUtils.validate(schema, data);
+};
+
+module.exports.validateGetDriverDocsRequests = (data) => {
+  const schema = Yup.object().shape({
+    page: Yup.string().required('Page number is required'),
+    limit: Yup.string().required('Page limit is required'),
+    status: Yup.string()
+      .oneOf(
+        [statusTypes.accepted.value, statusTypes.pending.value],
+        'Invalid Status'
+      )
+      .required('Status is required'),
   });
   return validatorUtils.validate(schema, data);
 };
