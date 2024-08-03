@@ -482,4 +482,14 @@ module.exports = class UsersServices {
       return {success: false, error};
     }
   }
+  static async getRestrictedUserById({userId}) {
+    try {
+      const user = await UsersModel.findById({_id: userId}).select(
+        restrictedUserData
+      );
+      return {success: true, user};
+    } catch (error) {
+      return {success: false, error};
+    }
+  }
 };

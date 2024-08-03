@@ -92,4 +92,20 @@ module.exports = class DocumentsAccessController {
 
     if (error) throw error;
   }
+
+  static async getRequestedDocuments(req, res, next) {
+    const {userId} = req.params;
+
+    const {success, documents, error} =
+      await DocumentsAccessServices.getRequestedDocuments({userId});
+
+    if (success)
+      return next(
+        DocumentsAccessResponsesFactory.documentsRetrievedSuccessfully({
+          documents,
+        })
+      );
+
+    if (error) throw error;
+  }
 };

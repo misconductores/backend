@@ -13,6 +13,7 @@ const forbidResolvedOffers = require('./forbidResolvedOffers');
 const isCompanyDriverCheckMiddleware = require('./isCompanyDriverCheckMiddleware');
 const isAlreadyDisconnectedMiddleware = require('./isAlreadyDisconnectedMiddleware');
 const isDocumentAccessRequestExist = require('./isDocumentAccessRequestExist');
+const verifyDocsRequestsMiddleware = require('./verifyDocsRequestsMiddleware');
 
 module.exports = {
   authMiddleware,
@@ -30,4 +31,5 @@ module.exports = {
   isCompanyDriverCheckMiddleware,
   isAlreadyDisconnectedMiddleware,
   isDocumentAccessRequestExist,
+  verifyDocsRequestsMiddleware,
 };
