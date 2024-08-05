@@ -267,6 +267,12 @@ module.exports.notificationTypes = {
   company_document_access: {
     value: 'company_document_access',
   },
+  driver_accepted_docs_access: {
+    value: 'driver_accepted_docs_access',
+  },
+  driver_rejected_docs_access: {
+    value: 'driver_rejected_docs_access',
+  },
 };
 
 module.exports.TIMEZONES = {

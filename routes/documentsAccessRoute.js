@@ -10,6 +10,7 @@ const {
   validatorMiddleware,
   isDocumentAccessRequestExist,
   verifyDocsRequestsMiddleware,
+  forbidResolveDocsAccessRequests,
 } = require('../middleware');
 const {documentAccessSchema} = require('../schemas');
 const {catchAsync} = require('../utils');
@@ -59,6 +60,15 @@ router.get(
   ),
   verifyDocsRequestsMiddleware,
   catchAsync(DocumentsAccessController.getRequestedDocuments)
+);
+
+router.patch(
+  '/:id/status',
+  authMiddleware,
+  roleValidatorMiddleware({allowedRoles: [roles.driver.value]}),
+  validatorMiddleware(documentAccessSchema.validateUpdateDocsRequestStatus),
+  forbidResolveDocsAccessRequests,
+  catchAsync(DocumentsAccessController.updateDocumentsRequestStatus)
 );
 
 module.exports = router;

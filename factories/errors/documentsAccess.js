@@ -7,4 +7,10 @@ module.exports = class DocumentsAccessErrorsFactory {
       statusCode: 400,
     });
   }
+  static requestResolvedErr() {
+    return new AppError({
+      message: 'This request is already resolved',
+      statusCode: 400,
+    });
+  }
 };
