@@ -47,3 +47,15 @@ module.exports.validateGetRequestedDocsRequests = (data) => {
   });
   return validatorUtils.validate(schema, data);
 };
+
+module.exports.validateUpdateDocsRequestStatus = (data) => {
+  const schema = Yup.object().shape({
+    status: Yup.string()
+      .oneOf(
+        [statusTypes.accepted.value, statusTypes.rejected.value],
+        'Invalid Status'
+      )
+      .required('Status is required'),
+  });
+  return validatorUtils.validate(schema, data);
+};

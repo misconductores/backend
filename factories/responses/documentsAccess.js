@@ -22,4 +22,11 @@ module.exports = class DocumentsAccessResponsesFactory {
       body: {documents},
     });
   }
+  static documentsAccessReqStatusUpdatedSuccessfully() {
+    return new AppResponse({
+      message: 'You have updated the status successfully',
+      statusCode: 200,
+      body: {},
+    });
+  }
 };
