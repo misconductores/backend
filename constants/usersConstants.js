@@ -159,7 +159,7 @@ module.exports.errorCodes = {
 };
 
 module.exports.restrictedUserData =
-  '-federalLicenses.federalLicenseNo -stateLicenses.stateLicenseNo -visaNumber -fastNumber -password -verificationToken';
+  '-federalLicenses.federalLicenseNo -stateLicenses.stateLicenseNo -visaNumber -fastNumber -password -verificationToken -documents';
 
 module.exports.experienceTypes = {
   student: {
@@ -266,6 +266,12 @@ module.exports.notificationTypes = {
   },
   company_document_access: {
     value: 'company_document_access',
+  },
+  driver_accepted_docs_access: {
+    value: 'driver_accepted_docs_access',
+  },
+  driver_rejected_docs_access: {
+    value: 'driver_rejected_docs_access',
   },
 };
 

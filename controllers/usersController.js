@@ -60,25 +60,22 @@ module.exports = class UsersController {
   }
 
   static async getUserInformation(req, res, next) {
-    const {id} = req.params;
-    const {
-      success,
-      error,
-      doc: user,
-    } = await GeneralServices.findById({
-      id: id,
-      model: UsersModel,
+    const {id: userId} = req.params;
+
+    const {success, error, user} = await UsersServices.getRestrictedUserById({
+      userId,
     });
 
     if (!user) return next(UsersErrorsFactory.userNotFoundErr());
 
-    if (!success) throw error;
+    if (success)
+      return next(
+        UsersResponsesFactory.singleUserInfoRetrievedRes({
+          user,
+        })
+      );
 
-    return next(
-      UsersResponsesFactory.singleUserInfoRetrievedRes({
-        user,
-      })
-    );
+    if (error) throw error;
   }
 
   static async loginUser(req, res, next) {

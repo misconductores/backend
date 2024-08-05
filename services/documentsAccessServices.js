@@ -1,5 +1,5 @@
 const {restrictedUserData} = require('../constants/usersConstants');
-const {DocumentAccessModel} = require('../models');
+const {DocumentAccessModel, UsersModel} = require('../models');
 
 module.exports = class DocumentsAccessServices {
   static async getDocumentAccessRequestsForCompany({
@@ -45,6 +45,17 @@ module.exports = class DocumentsAccessServices {
       ]);
 
       return {success: true, result: {totalCount, data}};
+    } catch (error) {
+      return {success: false, error};
+    }
+  }
+
+  static async getRequestedDocuments({userId}) {
+    try {
+      const documents = await UsersModel.findById({_id: userId}).select(
+        'documents'
+      );
+      return {success: true, documents};
     } catch (error) {
       return {success: false, error};
     }
