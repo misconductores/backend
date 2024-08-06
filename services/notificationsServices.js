@@ -13,4 +13,27 @@ module.exports = class NotificationsServices {
       return {success: false, err};
     }
   }
+
+  static async getNotificationsOfLoggedInUser({userId, page, limit}) {
+    try {
+      const skip = (page - 1) * limit;
+
+      const [totalCount, data] = await Promise.all([
+        NotificationsModel.countDocuments({userId: userId}),
+        NotificationsModel.find(
+          {
+            userId: userId,
+          },
+          null,
+          {skip, limit}
+        ).populate({
+          path: 'userId relatedUserId',
+          select: 'firstName lastName companyName profilePic',
+        }),
+      ]);
+      return {success: true, result: {totalCount, data}};
+    } catch (error) {
+      return {success: false, error};
+    }
+  }
 };
