@@ -25,7 +25,7 @@ module.exports = class NotificationsServices {
             userId: userId,
           },
           null,
-          {skip, limit}
+          {skip, limit, sort: {createdAt: -1}}
         ).populate({
           path: 'userId relatedUserId',
           select: 'firstName lastName companyName profilePic',
