@@ -26,7 +26,7 @@ module.exports = class DocumentsAccessController {
       await GeneralServices.create({
         data: {
           userId: requestedUserId,
-          relatedUser: userId,
+          relatedUserId: userId,
           type: notificationTypes.company_document_access.value,
         },
         model: NotificationsModel,
@@ -127,8 +127,8 @@ module.exports = class DocumentsAccessController {
     if (success) {
       await GeneralServices.create({
         data: {
-          userId: userId,
-          relatedUser: updatedDocsAccessRequest.driverId,
+          userId: updatedDocsAccessRequest.companyId,
+          relatedUserId: userId,
           type:
             updatedDocsAccessRequest.status === statusTypes.accepted.value
               ? notificationTypes.driver_accepted_docs_access.value
