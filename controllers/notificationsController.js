@@ -10,7 +10,7 @@ module.exports = class NotificationsController {
     limit = parseInt(limit);
 
     const {success, error, result} =
-      await NotificationsServices.getNotificationsOfLoggedInUser({
+      await NotificationsServices.getNotificationsByUserId({
         userId,
         limit,
         page,

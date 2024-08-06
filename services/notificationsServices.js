@@ -14,7 +14,7 @@ module.exports = class NotificationsServices {
     }
   }
 
-  static async getNotificationsOfLoggedInUser({userId, page, limit}) {
+  static async getNotificationsByUserId({userId, page, limit}) {
     try {
       const skip = (page - 1) * limit;
 
