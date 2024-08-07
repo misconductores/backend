@@ -7,6 +7,7 @@ const ConnectionsModel = require('./ConnectionsModel');
 const OffersModel = require('./OffersModel');
 const ReviewsModel = require('./ReviewsModel');
 const DocumentAccessModel = require('./DocumentAccessModel');
+const ApplicantsModel = require('./ApplicantsModel');
 
 module.exports = {
   mongoose,
@@ -18,4 +19,5 @@ module.exports = {
   OffersModel,
   ReviewsModel,
   DocumentAccessModel,
+  ApplicantsModel,
 };

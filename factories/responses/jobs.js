@@ -36,4 +36,12 @@ module.exports = class JobResponsesFactory {
       body: {},
     });
   }
+
+  static applyForJobSuccessfully() {
+    return new AppResponse({
+      message: 'You have been successfully applied for this job',
+      statusCode: 200,
+      body: {},
+    });
+  }
 };

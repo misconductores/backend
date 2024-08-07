@@ -6,6 +6,7 @@ const {
 } = require('../factories');
 const {JobsServices, UsersServices, GeneralServices} = require('../services');
 const JobModel = require('../models/JobModel');
+const JobServices = require('../services/jobsServices');
 
 module.exports = class JobController {
   static async createJob(req, res, next) {
@@ -191,5 +192,17 @@ module.exports = class JobController {
     if (response && deletedData)
       return next(JobResponsesFactory.jobDeletedSuccessfully());
     if (error) throw next(JobErrors.jobDeleteErr());
+  }
+
+  static async applyForJob(req, res, next) {
+    const {id: jobId} = req.params;
+
+    const {driverId} = req.body;
+
+    const {success, error} = await JobServices.applyForJob({driverId, jobId});
+
+    if (success) return next(JobResponsesFactory.applyForJobSuccessfully());
+
+    if (error) throw error;
   }
 };

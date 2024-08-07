@@ -1,6 +1,8 @@
+const {ApplicantsModel} = require('../models');
 const JobModel = require('../models/JobModel');
 const {addGetJobsConditions} = require('../utils/helpers/jobs');
 const {getJobsPipeline} = require('../utils/pipelines/jobs');
+const GeneralServices = require('./generalServices');
 
 module.exports = class JobServices {
   static async getJobList({
@@ -61,6 +63,25 @@ module.exports = class JobServices {
       return {success: true, result: {totalCount, data}};
     } catch (err) {
       return {success: false, err};
+    }
+  }
+
+  static async applyForJob({driverId, jobId}) {
+    try {
+      await GeneralServices.create({
+        data: {driverId, jobId},
+        model: ApplicantsModel,
+      });
+
+      await JobModel.findByIdAndUpdate(
+        {_id: jobId},
+        {$push: {applicants: driverId}},
+        {new: true}
+      );
+
+      return {success: true};
+    } catch (error) {
+      return {success: false, error};
     }
   }
 };
