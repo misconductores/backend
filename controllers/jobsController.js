@@ -205,4 +205,28 @@ module.exports = class JobController {
 
     if (error) throw error;
   }
+
+  static async getApplicantsByJobId(req, res, next) {
+    const {jobId} = req.params;
+
+    let {page, limit} = req.query;
+
+    const {success, error, result} = await JobServices.getApplicantsByJobId({
+      jobId,
+      page,
+      limit,
+    });
+
+    if (success)
+      return next(
+        JobResponsesFactory.applicantsRetrievedSuccessfully({
+          count: result.totalCount,
+          data: result.data,
+          page,
+          perPage: limit,
+        })
+      );
+
+    if (error) throw error;
+  }
 };

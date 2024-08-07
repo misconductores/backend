@@ -84,4 +84,22 @@ module.exports = class JobServices {
       return {success: false, error};
     }
   }
+
+  static async getApplicantsByJobId({jobId, limit, page}) {
+    try {
+      const skip = (page - 1) * limit;
+
+      const [totalCount, data] = await Promise.all([
+        ApplicantsModel.countDocuments({jobId: jobId}),
+        ApplicantsModel.find({jobId: jobId}, null, {skip, limit}).populate({
+          path: 'driverId',
+          select: 'firstName lastName profilePic',
+        }),
+      ]);
+
+      return {success: true, result: {totalCount, data}};
+    } catch (error) {
+      return {success: false, error};
+    }
+  }
 };
