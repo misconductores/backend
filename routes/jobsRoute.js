@@ -58,6 +58,7 @@ router.delete(
 router.post(
   '/:id/apply-job',
   authMiddleware,
+  roleValidatorMiddleware({allowedRoles: [roles.driver.value]}),
   validatorMiddleware(jobsSchema.validateJobIdParams, PARAMS_PROPERTY),
   isApplicantExist,
   catchAsync(JobsController.applyForJob)
