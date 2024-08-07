@@ -28,4 +28,38 @@ module.exports = class NotificationsController {
 
     if (error) throw error;
   }
+
+  static async getUnreadNotificationsCount(req, res, next) {
+    const userId = req.jwtToken.user.id;
+
+    const {success, count, error} =
+      await NotificationsServices.getUnreadNotifications({userId});
+
+    if (success)
+      return next(
+        NotificationsResponsesFactory.notificationsCountRetrievedSuccessfully({
+          notificationsCount: count,
+        })
+      );
+
+    if (error) throw error;
+  }
+
+  static async updateNotificationReadStatus(req, res, next) {
+    const {notificationIds} = req.body;
+
+    const {success, error, updatedNotifications} =
+      await NotificationsServices.updateNotificationReadStatus({
+        notificationIds,
+      });
+
+    if (success)
+      next(
+        NotificationsResponsesFactory.updatedNotificationsRetrievedSuccessfully(
+          {notifications: updatedNotifications}
+        )
+      );
+
+    if (error) throw error;
+  }
 };

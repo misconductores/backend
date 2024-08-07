@@ -8,4 +8,18 @@ module.exports = class NotificationsResponsesFactory {
       body: {count, data, page, perPage},
     });
   }
+  static notificationsCountRetrievedSuccessfully({notificationsCount}) {
+    return new AppResponse({
+      message: 'Notifications count retrieved successfully',
+      statusCode: 200,
+      body: {notificationsCount},
+    });
+  }
+  static updatedNotificationsRetrievedSuccessfully({notifications}) {
+    return new AppResponse({
+      message: 'Updated notifications retrieved successfully',
+      statusCode: 200,
+      body: {notifications},
+    });
+  }
 };

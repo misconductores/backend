@@ -14,6 +14,18 @@ module.exports = class NotificationsServices {
     }
   }
 
+  static async getNotifications({query}) {
+    try {
+      const notifications = await NotificationsModel.find(query).populate({
+        path: 'userId relatedUserId',
+        select: 'firstName lastName companyName profilePic',
+      });
+      return {success: true, notifications};
+    } catch (error) {
+      return {success: false, error};
+    }
+  }
+
   static async getNotificationsByUserId({userId, page, limit}) {
     try {
       const skip = (page - 1) * limit;
@@ -32,6 +44,35 @@ module.exports = class NotificationsServices {
         }),
       ]);
       return {success: true, result: {totalCount, data}};
+    } catch (error) {
+      return {success: false, error};
+    }
+  }
+  static async getUnreadNotifications({userId}) {
+    try {
+      const notificationsCount = await NotificationsModel.countDocuments({
+        userId: userId,
+        isRead: false,
+      });
+      return {success: true, count: notificationsCount};
+    } catch (error) {
+      return {success: false, error};
+    }
+  }
+
+  static async updateNotificationReadStatus({notificationIds}) {
+    try {
+      await NotificationsModel.updateMany(
+        {_id: {$in: notificationIds}},
+        {$set: {isRead: true}}
+      );
+
+      // get updated notifications
+      const {notifications} = await NotificationsServices.getNotifications({
+        query: {_id: {$in: notificationIds}},
+      });
+
+      return {success: true, updatedNotifications: notifications};
     } catch (error) {
       return {success: false, error};
     }
