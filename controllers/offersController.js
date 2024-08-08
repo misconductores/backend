@@ -3,7 +3,6 @@ const {OffersResponsesFactory, OffersErrors} = require('../factories');
 const OfferResponsesFactory = require('../factories/responses/offers');
 const {OffersModel} = require('../models');
 const {OffersServices} = require('../services');
-const {getRemainingDays} = require('../utils/DateCalculations');
 
 module.exports = class OffersController {
   static async sendOffer(req, res, next) {
@@ -20,21 +19,6 @@ module.exports = class OffersController {
 
     if (findOffer?.status === statusTypes.pending.value)
       return next(OffersErrors.alreadySendOfferErr());
-
-    const findOfferForDriver = await OffersModel.findOne({
-      driverId: driverId,
-      companyId: userId,
-      jobId: jobId,
-      status: statusTypes.rejected.value,
-    });
-
-    if (findOfferForDriver) {
-      const remainingDays = getRemainingDays({
-        createdAt: findOfferForDriver.createdAt,
-      });
-
-      return next(OffersErrors.offerAfterDaysErr({day: remainingDays}));
-    }
 
     const {
       success: response,
