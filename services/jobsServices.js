@@ -1,3 +1,4 @@
+const {restrictedUserData} = require('../constants/usersConstants');
 const {ApplicantsModel} = require('../models');
 const JobModel = require('../models/JobModel');
 const {addGetJobsConditions} = require('../utils/helpers/jobs');
@@ -93,7 +94,7 @@ module.exports = class JobServices {
         ApplicantsModel.countDocuments({jobId: jobId}),
         ApplicantsModel.find({jobId: jobId}, null, {skip, limit}).populate({
           path: 'driverId',
-          select: 'firstName lastName profilePic',
+          select: restrictedUserData,
         }),
       ]);
 
