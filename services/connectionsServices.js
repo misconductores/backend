@@ -264,7 +264,7 @@ module.exports = class ConnectionsServices {
         await NotificationsModel.create(
           [
             {
-              userId: finalData.companyId,
+              userId: finalData.driverId,
               relatedUserId: userId,
               type: notificationTypes.company_disconnect.value,
             },
