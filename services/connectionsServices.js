@@ -116,7 +116,7 @@ module.exports = class ConnectionsServices {
         // update connection on the base of driver review
         await ConnectionsServices.UpdateConnection({
           reviewId: newReview[0].id,
-          reviewType: reviewTypes.driver_review.value,
+          reviewType: reviewTypes.company_review.value,
           connection,
           session,
         });
@@ -229,7 +229,7 @@ module.exports = class ConnectionsServices {
         // update connection on the base of company review
         await ConnectionsServices.UpdateConnection({
           reviewId: newReview[0].id,
-          reviewType: reviewTypes.company_review.value,
+          reviewType: reviewTypes.driver_review.value,
           connection,
           session,
         });
