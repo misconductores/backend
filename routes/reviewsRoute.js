@@ -9,7 +9,7 @@ const {
   roleValidatorMiddleware,
   validatorMiddleware,
 } = require('../middleware');
-const {reviewsSchema} = require('../schemas');
+const {reviewsSchema, othersSchema} = require('../schemas');
 const {catchAsync} = require('../utils');
 const router = require('express').Router();
 
@@ -34,6 +34,14 @@ router.patch(
   roleValidatorMiddleware({allowedRoles: [roles.admin.value]}),
   validatorMiddleware(reviewsSchema.validateUpdateReviewStatusReq),
   catchAsync(ReviewsController.updateReviewStatus)
+);
+
+router.get(
+  '/reviews-for-company',
+  authMiddleware,
+  roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
+  validatorMiddleware(othersSchema.validatePaginationParams, QUERY_PROPERTY),
+  catchAsync(ReviewsController.getDriverReviewsForCompany)
 );
 
 module.exports = router;
