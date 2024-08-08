@@ -195,9 +195,9 @@ module.exports = class JobController {
   }
 
   static async applyForJob(req, res, next) {
-    const {id: jobId} = req.params;
+    const driverId = req.jwtToken.user.id;
 
-    const {driverId} = req.body;
+    const {id: jobId} = req.params;
 
     const {success, error} = await JobServices.applyForJob({driverId, jobId});
 
