@@ -282,11 +282,11 @@ module.exports.TIMEZONES = {
 };
 
 module.exports.reviewTypes = {
-  driver_review: {
-    value: 'driver_review',
-  },
   company_review: {
     value: 'company_review',
+  },
+  driver_review: {
+    value: 'driver_review',
   },
 };
 
