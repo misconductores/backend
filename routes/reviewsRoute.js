@@ -18,9 +18,9 @@ router.get(
 );
 
 router.get(
-  '/user-ratings',
+  '/:userId/user-ratings',
   authMiddleware,
-  catchAsync(ReviewsController.getUserRatings)
+  catchAsync(ReviewsController.getUserRatingsByUserId)
 );
 
 router.patch(
