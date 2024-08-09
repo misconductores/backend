@@ -448,7 +448,7 @@ module.exports = class UsersController {
     if (doc) return next(UsersErrorsFactory.emailAlreadyExistErr());
     if (!doc) return next(UsersResponsesFactory.emailAvailable());
   }
-  static async blockDriver(req, res, next) {
+  static async reviewAndBlockDriver(req, res, next) {
     const {userId} = req.params;
     const {reviewId} = req.body;
 
@@ -463,7 +463,7 @@ module.exports = class UsersController {
     if (user.role !== roles.driver.value)
       return next(UsersErrorsFactory.roleOtherThanDriverBlockErr());
 
-    const {success, error} = await UsersServices.blockDriver({
+    const {success, error} = await UsersServices.reviewAndBlockDriver({
       userId,
       reviewId,
     });
@@ -472,14 +472,39 @@ module.exports = class UsersController {
 
     if (error) throw error;
   }
+  static async blockDriver(req, res, next) {
+    const {userId} = req.params;
+
+    const {doc: user} = await GeneralServices.findOne({
+      query: {_id: userId},
+      model: UsersModel,
+    });
+
+    if (user?.driverStatus === driverStatuses.blocked.value)
+      return next(UsersErrorsFactory.alreadyBlockedErr());
+
+    if (user?.role !== roles.driver.value)
+      return next(UsersErrorsFactory.roleOtherThanDriverBlockErr());
+
+    const {success, error} = await GeneralServices.update({
+      id: userId,
+      data: {driverStatus: driverStatuses.blocked.value},
+      model: UsersModel,
+    });
+
+    if (success) return next(UsersResponsesFactory.userBlockedSuccessfully());
+
+    if (error) throw error;
+  }
   static async getBlockedDrivers(req, res, next) {
-    let {limit, page} = req.query;
+    let {limit, page, title} = req.query;
     page = parseInt(page);
     limit = parseInt(limit);
 
     const {success, error, result} = await UsersServices.getBlockedDrivers({
       page,
       limit,
+      title,
     });
 
     if (success)
