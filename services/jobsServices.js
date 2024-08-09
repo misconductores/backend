@@ -65,23 +65,4 @@ module.exports = class JobServices {
       return {success: false, err};
     }
   }
-
-  static async applyForJob({driverId, jobId}) {
-    try {
-      await GeneralServices.create({
-        data: {driverId, jobId},
-        model: ApplicantsModel,
-      });
-
-      await JobModel.findByIdAndUpdate(
-        {_id: jobId},
-        {$push: {applicants: driverId}},
-        {new: true}
-      );
-
-      return {success: true};
-    } catch (error) {
-      return {success: false, error};
-    }
-  }
 };
