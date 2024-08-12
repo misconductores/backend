@@ -89,11 +89,8 @@ module.exports = class JobController {
     if (error) throw error;
   }
   static async getCompanyJobList(req, res, next) {
-    const {success, err, user} = await UsersServices.getUserById({
-      id: req.jwtToken.user.id,
-    });
-    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
-    if (!success) throw err;
+    const userId = req.jwtToken.user.id;
+
     let {page, limit} = req.query;
     page = parseInt(page);
     limit = parseInt(limit);
@@ -104,7 +101,7 @@ module.exports = class JobController {
     } = await JobsServices.getCompanyJobList({
       page,
       limit,
-      id: user.id,
+      id: userId,
     });
     if (response)
       return next(

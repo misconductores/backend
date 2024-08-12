@@ -1,5 +1,5 @@
 const {restrictedUserData} = require('../constants/usersConstants');
-const {ApplicantsModel} = require('../models');
+const {ApplicantsModel, OffersModel} = require('../models');
 const JobModel = require('../models/JobModel');
 const {addGetJobsConditions} = require('../utils/helpers/jobs');
 const {getJobsPipeline} = require('../utils/pipelines/jobs');
@@ -55,13 +55,28 @@ module.exports = class JobServices {
   static async getCompanyJobList({page, limit, id}) {
     try {
       const skip = (page - 1) * limit;
-      const [totalCount, data] = await Promise.all([
-        JobModel.countDocuments({companyId: id}),
-        JobModel.find({companyId: id}, null, {skip, limit})
-          .sort({createdAt: -1})
-          .populate('companyId'),
-      ]);
-      return {success: true, result: {totalCount, data}};
+      let data = [];
+
+      const jobCount = await JobModel.countDocuments({companyId: id});
+
+      const jobs = await JobModel.find({companyId: id}, null, {skip, limit})
+        .sort({createdAt: -1})
+        .populate({path: 'companyId', select: 'companyName profilePic'});
+
+      for (const job of jobs) {
+        const offers = await OffersModel.countDocuments({jobId: job._id});
+        const applicants = await ApplicantsModel.countDocuments({
+          jobId: job._id,
+        });
+        let jobObj = job.toObject();
+
+        jobObj.offers = offers;
+        jobObj.applicants = applicants;
+
+        data.push(jobObj);
+      }
+
+      return {success: true, result: {totalCount: jobCount, data}};
     } catch (err) {
       return {success: false, err};
     }
