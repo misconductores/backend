@@ -1,3 +1,4 @@
+const {restrictedUserData} = require('../constants/usersConstants');
 const {ApplicantsModel} = require('../models');
 const JobModel = require('../models/JobModel');
 const {addGetJobsConditions} = require('../utils/helpers/jobs');
@@ -63,6 +64,42 @@ module.exports = class JobServices {
       return {success: true, result: {totalCount, data}};
     } catch (err) {
       return {success: false, err};
+    }
+  }
+  static async applyForJob({driverId, jobId}) {
+    try {
+      await GeneralServices.create({
+        data: {driverId, jobId},
+        model: ApplicantsModel,
+      });
+
+      await JobModel.findByIdAndUpdate(
+        {_id: jobId},
+        {$push: {applicants: driverId}},
+        {new: true}
+      );
+
+      return {success: true};
+    } catch (error) {
+      return {success: false, error};
+    }
+  }
+
+  static async getApplicantsByJobId({jobId, limit, page}) {
+    try {
+      const skip = (page - 1) * limit;
+
+      const [totalCount, data] = await Promise.all([
+        ApplicantsModel.countDocuments({jobId: jobId}),
+        ApplicantsModel.find({jobId: jobId}, null, {skip, limit}).populate({
+          path: 'driverId',
+          select: restrictedUserData,
+        }),
+      ]);
+
+      return {success: true, result: {totalCount, data}};
+    } catch (error) {
+      return {success: false, error};
     }
   }
 };

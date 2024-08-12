@@ -9,6 +9,7 @@ const {
   validatorMiddleware,
   isApplicantExist,
   roleValidatorMiddleware,
+  isCompanyJobCheckMiddleware,
 } = require('../middleware');
 const {jobsSchema, othersSchema} = require('../schemas');
 const {catchAsync} = require('../utils');
@@ -61,6 +62,15 @@ router.post(
   validatorMiddleware(jobsSchema.validateJobIdParams, PARAMS_PROPERTY),
   isApplicantExist,
   catchAsync(JobsController.applyForJob)
+);
+
+router.get(
+  '/:jobId/applicants',
+  authMiddleware,
+  roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
+  isCompanyJobCheckMiddleware,
+  validatorMiddleware(othersSchema.validatePaginationParams, QUERY_PROPERTY),
+  catchAsync(JobsController.getApplicantsByJobId)
 );
 
 module.exports = router;
