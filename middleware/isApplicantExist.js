@@ -5,7 +5,7 @@ const {GeneralServices} = require('../services');
 module.exports = async (req, res, next) => {
   try {
     const {id: jobId} = req.params;
-    const {driverId} = req.body;
+    const driverId = req.jwtToken.user.id;
 
     const {doc: applicant} = await GeneralServices.findOne({
       query: {driverId, jobId},

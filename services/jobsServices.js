@@ -66,7 +66,6 @@ module.exports = class JobServices {
       return {success: false, err};
     }
   }
-
   static async applyForJob({driverId, jobId}) {
     try {
       await GeneralServices.create({

@@ -6,7 +6,7 @@ const {
 } = require('../factories');
 const {JobsServices, UsersServices, GeneralServices} = require('../services');
 const JobModel = require('../models/JobModel');
-const JobServices = require('../services/jobsServices');
+const {ApplicantsModel} = require('../models');
 
 module.exports = class JobController {
   static async createJob(req, res, next) {
@@ -195,11 +195,14 @@ module.exports = class JobController {
   }
 
   static async applyForJob(req, res, next) {
+    const driverId = req.jwtToken.user.id;
+
     const {id: jobId} = req.params;
 
-    const {driverId} = req.body;
-
-    const {success, error} = await JobServices.applyForJob({driverId, jobId});
+    const {success, error} = await GeneralServices.create({
+      data: {driverId, jobId},
+      model: ApplicantsModel,
+    });
 
     if (success) return next(JobResponsesFactory.applyForJobSuccessfully());
 
