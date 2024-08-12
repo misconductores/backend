@@ -169,25 +169,12 @@ module.exports = class JobController {
     if (error) throw next(JobErrors.jobUpdateErr());
   }
   static async deleteJobById(req, res, next) {
-    const {success, err, user} = await UsersServices.getUserById({
-      id: req.jwtToken.user.id,
-    });
-    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
-    if (!success) throw err;
-    if (user?.role !== roles.company.value)
-      return next(UsersErrorsFactory.forbiddenCompanyErr());
-    if (!success) throw err;
-    const {id} = req.params;
-    const {
-      success: response,
-      doc: deletedData,
-      error,
-    } = await GeneralServices.delete({
-      id,
-      model: JobModel,
-    });
-    if (response && deletedData)
-      return next(JobResponsesFactory.jobDeletedSuccessfully());
+    const {id: jobId} = req.params;
+
+    const {success, error} = await JobServices.deleteJobById({jobId});
+
+    if (success) return next(JobResponsesFactory.jobDeletedSuccessfully());
+
     if (error) throw next(JobErrors.jobDeleteErr());
   }
 

@@ -4,6 +4,7 @@ const JobModel = require('../models/JobModel');
 const {addGetJobsConditions} = require('../utils/helpers/jobs');
 const {getJobsPipeline} = require('../utils/pipelines/jobs');
 const GeneralServices = require('./generalServices');
+const mongoose = require('mongoose');
 
 module.exports = class JobServices {
   static async getJobList({
@@ -115,6 +116,26 @@ module.exports = class JobServices {
 
       return {success: true, result: {totalCount, data}};
     } catch (error) {
+      return {success: false, error};
+    }
+  }
+  static async deleteJobById({jobId}) {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+      await JobModel.findByIdAndDelete({_id: jobId}, {session});
+
+      await OffersModel.deleteMany({jobId: jobId}, {session});
+
+      await ApplicantsModel.deleteMany({jobId: jobId}, {session});
+
+      await session.commitTransaction();
+      session.endSession();
+      return {success: true};
+    } catch (error) {
+      await session.abortTransaction();
+      session.endSession();
       return {success: false, error};
     }
   }
