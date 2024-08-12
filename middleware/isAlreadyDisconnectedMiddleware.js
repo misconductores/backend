@@ -17,14 +17,14 @@ module.exports = async (req, res, next) => {
         driverId: userId,
         companyId: companyId,
         connectionId: connectionId,
-        type: reviewTypes.driver_review.value,
+        type: reviewTypes.company_review.value,
       };
     } else {
       query = {
         companyId: userId,
         driverId: driverId,
         connectionId: connectionId,
-        type: reviewTypes.company_review.value,
+        type: reviewTypes.driver_review.value,
       };
     }
 

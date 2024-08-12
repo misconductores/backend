@@ -38,13 +38,13 @@ module.exports = class ReviewsServices {
         query = {
           ...query,
           driverId: userId,
-          type: reviewTypes.company_review.value,
+          type: reviewTypes.driver_review.value,
         };
       } else {
         query = {
           ...query,
           companyId: userId,
-          type: reviewTypes.driver_review.value,
+          type: reviewTypes.company_review.value,
         };
       }
       const reviews = await ReviewsModel.find(query);
@@ -84,7 +84,7 @@ module.exports = class ReviewsServices {
 
       const query = {
         companyId: userId,
-        type: reviewTypes.driver_review.value,
+        type: reviewTypes.company_review.value,
         status: statusTypes.accepted.value,
       };
 
