@@ -16,8 +16,6 @@ module.exports = class DocumentsAccessController {
       data: {
         companyId: userId,
         driverId: requestedUserId,
-        startDate: getCurrentDate(),
-        endDate: dateAfterSevenDays(),
       },
       model: DocumentAccessModel,
     });
@@ -114,13 +112,25 @@ module.exports = class DocumentsAccessController {
     const {id} = req.params;
     const {status} = req.body;
 
+    let data = {
+      status: status,
+    };
+
+    if (status === statusTypes.accepted.value) {
+      data = {
+        ...data,
+        startDate: getCurrentDate(),
+        endDate: dateAfterSevenDays(),
+      };
+    }
+
     const {
       success,
       error,
       doc: updatedDocsAccessRequest,
     } = await GeneralServices.update({
       id,
-      data: {status: status},
+      data,
       model: DocumentAccessModel,
     });
 
