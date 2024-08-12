@@ -19,12 +19,4 @@ module.exports = class OfferErrorsFactory {
       statusCode: 400,
     });
   }
-  static offerAfterDaysErr({day}) {
-    return new AppError({
-      message: `This driver already has rejected this offer. You can send this offer after ${day} ${
-        day === 1 ? 'day' : 'days'
-      } to this driver`,
-      statusCode: 400,
-    });
-  }
 };
