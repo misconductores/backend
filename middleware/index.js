@@ -15,6 +15,7 @@ const isAlreadyDisconnectedMiddleware = require('./isAlreadyDisconnectedMiddlewa
 const isDocumentAccessRequestExist = require('./isDocumentAccessRequestExist');
 const verifyDocsRequestsMiddleware = require('./verifyDocsRequestsMiddleware');
 const forbidResolveDocsAccessRequests = require('./forbidResolveDocsAccessRequests');
+const isApplicantExist = require('./isApplicantExist');
 
 module.exports = {
   authMiddleware,
@@ -34,4 +35,5 @@ module.exports = {
   isDocumentAccessRequestExist,
   verifyDocsRequestsMiddleware,
   forbidResolveDocsAccessRequests,
+  isApplicantExist,
 };

@@ -1,9 +1,15 @@
 const {
   QUERY_PROPERTY,
   PARAMS_PROPERTY,
+  roles,
 } = require('../constants/usersConstants');
 const {JobsController} = require('../controllers');
-const {authMiddleware, validatorMiddleware} = require('../middleware');
+const {
+  authMiddleware,
+  validatorMiddleware,
+  isApplicantExist,
+  roleValidatorMiddleware,
+} = require('../middleware');
 const {jobsSchema, othersSchema} = require('../schemas');
 const {catchAsync} = require('../utils');
 
@@ -46,6 +52,15 @@ router.delete(
   authMiddleware,
   validatorMiddleware(jobsSchema.validateJobIdParams, PARAMS_PROPERTY),
   catchAsync(JobsController.deleteJobById)
+);
+
+router.post(
+  '/:id/apply-job',
+  authMiddleware,
+  roleValidatorMiddleware({allowedRoles: [roles.driver.value]}),
+  validatorMiddleware(jobsSchema.validateJobIdParams, PARAMS_PROPERTY),
+  isApplicantExist,
+  catchAsync(JobsController.applyForJob)
 );
 
 module.exports = router;

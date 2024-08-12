@@ -1,6 +1,8 @@
+const {ApplicantsModel} = require('../models');
 const JobModel = require('../models/JobModel');
 const {addGetJobsConditions} = require('../utils/helpers/jobs');
 const {getJobsPipeline} = require('../utils/pipelines/jobs');
+const GeneralServices = require('./generalServices');
 
 module.exports = class JobServices {
   static async getJobList({
