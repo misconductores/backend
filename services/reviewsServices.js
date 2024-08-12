@@ -77,4 +77,28 @@ module.exports = class ReviewsServices {
       return {success: false, error};
     }
   }
+
+  static async getDriverReviewsForCompany({userId, page, limit}) {
+    try {
+      const skip = (page - 1) * limit;
+
+      const query = {
+        companyId: userId,
+        type: reviewTypes.driver_review.value,
+        status: statusTypes.accepted.value,
+      };
+
+      const [totalCount, data] = await Promise.all([
+        ReviewsModel.countDocuments(query),
+        ReviewsModel.find(query, null, {skip, limit}).populate({
+          path: 'driverId',
+          select: 'firstName lastName profilePic',
+        }),
+      ]);
+
+      return {success: true, result: {totalCount, data}};
+    } catch (error) {
+      return {success: false, error};
+    }
+  }
 };
