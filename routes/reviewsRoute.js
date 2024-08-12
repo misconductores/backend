@@ -1,4 +1,8 @@
-const {roles, QUERY_PROPERTY} = require('../constants/usersConstants');
+const {
+  roles,
+  QUERY_PROPERTY,
+  PARAMS_PROPERTY,
+} = require('../constants/usersConstants');
 const {ReviewsController} = require('../controllers');
 const {
   authMiddleware,
@@ -18,9 +22,10 @@ router.get(
 );
 
 router.get(
-  '/user-ratings',
+  '/:userId/user-ratings',
   authMiddleware,
-  catchAsync(ReviewsController.getUserRatings)
+  validatorMiddleware(reviewsSchema.validateGetUserRatingsReq, PARAMS_PROPERTY),
+  catchAsync(ReviewsController.getUserRatingsByUserId)
 );
 
 router.patch(

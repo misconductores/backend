@@ -29,7 +29,7 @@ module.exports = class ReviewsServices {
     }
   }
 
-  static async getUserRatings({userId, role}) {
+  static async getUserRatingsByUserId({userId, role}) {
     try {
       let query = {
         status: statusTypes.accepted.value,
