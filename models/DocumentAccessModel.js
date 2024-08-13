@@ -15,7 +15,7 @@ const DocumentsAccessSchema = new Schema(
       ref: 'Users',
       required: true,
     },
-    startDate: {type: Date, required: true},
+    startDate: {type: Date, default: null},
     endDate: {type: Date, default: null},
     status: {
       type: String,

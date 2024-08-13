@@ -19,6 +19,7 @@ module.exports.validateGetCompanyDocsRequests = (data) => {
           statusTypes.accepted.value,
           statusTypes.rejected.value,
           statusTypes.pending.value,
+          statusTypes.expired.value,
         ],
         'Invalid Status'
       )
@@ -33,7 +34,12 @@ module.exports.validateGetDriverDocsRequests = (data) => {
     limit: Yup.string().required('Page limit is required'),
     status: Yup.string()
       .oneOf(
-        [statusTypes.accepted.value, statusTypes.pending.value],
+        [
+          statusTypes.accepted.value,
+          statusTypes.pending.value,
+          statusTypes.rejected.value,
+          statusTypes.expired.value,
+        ],
         'Invalid Status'
       )
       .required('Status is required'),
@@ -52,7 +58,11 @@ module.exports.validateUpdateDocsRequestStatus = (data) => {
   const schema = Yup.object().shape({
     status: Yup.string()
       .oneOf(
-        [statusTypes.accepted.value, statusTypes.rejected.value],
+        [
+          statusTypes.accepted.value,
+          statusTypes.rejected.value,
+          statusTypes.expired.value,
+        ],
         'Invalid Status'
       )
       .required('Status is required'),
