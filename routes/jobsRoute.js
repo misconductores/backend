@@ -51,6 +51,7 @@ router.patch(
 router.delete(
   '/:id',
   authMiddleware,
+  roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
   validatorMiddleware(jobsSchema.validateJobIdParams, PARAMS_PROPERTY),
   catchAsync(JobsController.deleteJobById)
 );

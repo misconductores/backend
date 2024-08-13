@@ -119,7 +119,6 @@ module.exports = class OffersServices {
 
       const query = {
         jobId: jobId,
-        status: {$ne: statusTypes.expired.value},
       };
 
       const [totalCount, data] = await Promise.all([
@@ -132,7 +131,8 @@ module.exports = class OffersServices {
           .populate({
             path: 'driverId',
             select: restrictedUserData,
-          }),
+          })
+          .populate({path: 'jobId', select: 'title'}),
       ]);
       return {success: true, offers: {totalCount, data}};
     } catch (err) {
