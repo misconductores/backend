@@ -2,8 +2,9 @@ const {
   roles,
   reviewTypes,
   statusTypes,
+  driverStatuses,
 } = require('../constants/usersConstants');
-const {ReviewsModel} = require('../models');
+const {ReviewsModel, UsersModel, ConnectionsModel} = require('../models');
 const GeneralServices = require('./generalServices');
 
 module.exports = class ReviewsServices {
@@ -65,14 +66,30 @@ module.exports = class ReviewsServices {
     }
   }
 
-  static async updateReviewStatus({reviewId, status}) {
+  static async updateReviewStatus({status, review}) {
     try {
-      const {doc: updatedReview} = await GeneralServices.update({
-        id: reviewId,
+      await GeneralServices.update({
+        id: review.id,
         model: ReviewsModel,
         data: {status: status},
       });
-      return {success: true, updatedReview};
+      if (review.type === reviewTypes.driver_review.value) {
+        const {doc: connection} = await GeneralServices.findOne({
+          query: {_id: review.connectionId},
+          model: ConnectionsModel,
+        });
+
+        await GeneralServices.update({
+          id: review.driverId,
+          data: {
+            driverStatus: connection.companyReviewId
+              ? driverStatuses.available.value
+              : driverStatuses.availableSoon.value,
+          },
+          model: UsersModel,
+        });
+      }
+      return {success: true};
     } catch (error) {
       return {success: false, error};
     }

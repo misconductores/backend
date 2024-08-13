@@ -238,7 +238,7 @@ module.exports = class ConnectionsServices {
 
         // if driverReviewId is already present then make driver to available otherwise make it to available soon
         if (averageRating >= 2) {
-          if (connection.driverReviewId) {
+          if (connection.companyReviewId) {
             updateDriverStatusData = {
               driverStatus: driverStatuses.available.value,
             };

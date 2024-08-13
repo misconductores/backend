@@ -60,14 +60,12 @@ module.exports = class ReviewsController {
     )
       return next(ReviewsErrors.alreadyReviewUpdateErr());
 
-    const {success, error, updatedReview} =
-      await ReviewsServices.updateReviewStatus({
-        reviewId,
-        status,
-      });
+    const {success, error} = await ReviewsServices.updateReviewStatus({
+      status,
+      review,
+    });
 
-    if (success && updatedReview)
-      next(ReviewsResponseFactory.statusUpdatedSuccessfully());
+    if (success) next(ReviewsResponseFactory.statusUpdatedSuccessfully());
 
     if (error) throw error;
   }
