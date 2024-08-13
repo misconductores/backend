@@ -424,7 +424,7 @@ module.exports = class UsersServices {
       return {success: false, err};
     }
   }
-  static async blockDriver({userId, reviewId}) {
+  static async rejectAndBlockDriver({userId, reviewId}) {
     const session = await mongoose.startSession();
 
     try {
@@ -467,10 +467,29 @@ module.exports = class UsersServices {
     }
   }
 
-  static async getBlockedDrivers({page, limit}) {
+  static async getBlockedDrivers({page, limit, title}) {
     try {
       const skip = (page - 1) * limit;
-      const query = {driverStatus: driverStatuses.blocked.value};
+
+      let query = {};
+
+      const andConditions = [{driverStatus: driverStatuses.blocked.value}];
+
+      if (title) {
+        title = title.trim();
+        const titleWords = title.split(' ').filter((word) => word.length > 0);
+        const titleConditions = titleWords.map((word) => ({
+          $or: [
+            {firstName: {$regex: word, $options: 'i'}},
+            {lastName: {$regex: word, $options: 'i'}},
+          ],
+        }));
+        andConditions.push(...titleConditions);
+      }
+
+      if (andConditions.length > 0) {
+        query.$and = andConditions;
+      }
 
       const [totalCount, data] = await Promise.all([
         UsersModel.countDocuments(query),

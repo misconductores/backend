@@ -143,6 +143,14 @@ router.post(
 );
 
 router.patch(
+  '/:userId/reject-and-block',
+  authMiddleware,
+  roleValidatorMiddleware({allowedRoles: [roles.admin.value]}),
+  validatorMiddleware(usersSchema.validateBlockUnblockUserReq, PARAMS_PROPERTY),
+  catchAsync(UsersController.rejectAndBlockDriver)
+);
+
+router.patch(
   '/:userId/block',
   authMiddleware,
   roleValidatorMiddleware({allowedRoles: [roles.admin.value]}),
