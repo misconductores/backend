@@ -424,7 +424,7 @@ module.exports = class UsersServices {
       return {success: false, err};
     }
   }
-  static async reviewAndBlockDriver({userId, reviewId}) {
+  static async rejectAndBlockDriver({userId, reviewId}) {
     const session = await mongoose.startSession();
 
     try {

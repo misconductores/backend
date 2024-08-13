@@ -448,7 +448,7 @@ module.exports = class UsersController {
     if (doc) return next(UsersErrorsFactory.emailAlreadyExistErr());
     if (!doc) return next(UsersResponsesFactory.emailAvailable());
   }
-  static async reviewAndBlockDriver(req, res, next) {
+  static async rejectAndBlockDriver(req, res, next) {
     const {userId} = req.params;
     const {reviewId} = req.body;
 
@@ -463,7 +463,7 @@ module.exports = class UsersController {
     if (user.role !== roles.driver.value)
       return next(UsersErrorsFactory.roleOtherThanDriverBlockErr());
 
-    const {success, error} = await UsersServices.reviewAndBlockDriver({
+    const {success, error} = await UsersServices.rejectAndBlockDriver({
       userId,
       reviewId,
     });
