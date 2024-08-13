@@ -7,7 +7,7 @@ const {dateAfterSevenDays} = require('../DateCalculations');
 exports.generateConnectionQuery = ({connection, reviewType, reviewId}) => {
   let body;
 
-  const isDriverReview = reviewType === reviewTypes.company_review.value;
+  const isDriverReview = reviewType === reviewTypes.driver_review.value;
   const checkReviewId = isDriverReview
     ? connection.companyReviewId
     : connection.driverReviewId;
