@@ -38,7 +38,17 @@ module.exports.validateCompanyDisconnectReq = (data) => {
       'Punctuality unit rating is required'
     ),
     performance: Yup.string().required('Performance rating is required'),
+    obligationsAndDuties: Yup.string().required(
+      'Obligations & Duties answer is required'
+    ),
+    significantProblems: Yup.string().required(
+      'Significant problems answer is required'
+    ),
+    vehicleCondition: Yup.string().required(
+      'Vehicle condition answer is required'
+    ),
   });
+
   return validatorUtils.validate(schema, data);
 };
 

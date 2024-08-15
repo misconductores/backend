@@ -32,6 +32,7 @@ const ReviewsSchema = new Schema(
     communication: {type: String, default: null},
     obligationsAndDuties: {type: String, default: null},
     significantProblems: {type: String, default: null},
+    vehicleCondition: {type: String, default: null},
     reasonToLeave: {type: String, default: null},
     careUnit: {
       type: String,
