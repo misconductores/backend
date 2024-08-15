@@ -33,10 +33,7 @@ exports.updateConnectionsToInactive = async () => {
             id: connection.driverId,
             model: UsersModel,
           });
-          if (
-            (!connection.driverReviewId || !connection.companyReviewId) &&
-            driver.driverStatus !== driverStatuses.underInspection.value
-          ) {
+          if (driver.driverStatus !== driverStatuses.underInspection.value) {
             await GeneralServices.update({
               id: connection.driverId,
               data: {driverStatus: driverStatuses.available.value},
@@ -44,8 +41,6 @@ exports.updateConnectionsToInactive = async () => {
             });
           }
         }
-      } else {
-        logger.info('No connections to update');
       }
     } catch (error) {
       logger.error(error);
