@@ -45,7 +45,7 @@ exports.updateConnectionsToInactive = async () => {
           }
         }
       } else {
-        logger.error('Cron Job failed');
+        logger.info('No connections to update');
       }
     } catch (error) {
       logger.error(error);
