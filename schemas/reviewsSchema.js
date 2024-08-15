@@ -1,6 +1,6 @@
 const Yup = require('yup');
 const {validatorUtils} = require('../utils');
-const {statusTypes} = require('../constants/usersConstants');
+const {statusTypes, bitAnswers} = require('../constants/usersConstants');
 
 const statusValues = Object.values(statusTypes).map((status) => status.value);
 
@@ -10,13 +10,15 @@ module.exports.validateDriverDisconnectReq = (data) => {
     driverId: Yup.string().required('Driver Id is required'),
     type: Yup.string().required('Review type is required'),
     description: Yup.string().required('Description is required'),
-    communication: Yup.string().required('Communications answer is required'),
-    obligationsAndDuties: Yup.string().required(
-      'Obligations & Duties answer is required'
-    ),
-    significantProblems: Yup.string().required(
-      'Significant problems answer is required'
-    ),
+    communication: Yup.string()
+      .oneOf(bitAnswers)
+      .required('Communications answer is required'),
+    obligationsAndDuties: Yup.string()
+      .oneOf(bitAnswers)
+      .required('Obligations & Duties answer is required'),
+    significantProblems: Yup.string()
+      .oneOf(bitAnswers)
+      .required('Significant problems answer is required'),
     reasonToLeave: Yup.string().required('Reason to leave answer is required'),
     personalRelations: Yup.string().required(
       'Personal relations rating is required'
@@ -38,7 +40,17 @@ module.exports.validateCompanyDisconnectReq = (data) => {
       'Punctuality unit rating is required'
     ),
     performance: Yup.string().required('Performance rating is required'),
+    obligationsAndDuties: Yup.string()
+      .oneOf(bitAnswers)
+      .required('Obligations & Duties answer is required'),
+    significantProblems: Yup.string()
+      .oneOf(bitAnswers)
+      .required('Significant problems answer is required'),
+    vehicleCondition: Yup.string()
+      .oneOf(bitAnswers)
+      .required('Vehicle condition answer is required'),
   });
+
   return validatorUtils.validate(schema, data);
 };
 
