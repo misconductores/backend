@@ -6,7 +6,10 @@ const {
 const {GeneralErrorsFactory} = require('../factories');
 const {DocumentAccessModel, ConnectionsModel} = require('../models');
 const {GeneralServices} = require('../services');
-const {getCurrentDate, getDate1YearAgo} = require('../utils/DateCalculations');
+const {
+  getCurrentDate,
+  getDateAfter1Year,
+} = require('../utils/DateCalculations');
 
 module.exports = async (req, res, next) => {
   try {
@@ -39,10 +42,10 @@ module.exports = async (req, res, next) => {
     }).sort({createdAt: -1});
 
     const currentDate = getCurrentDate();
-    const dateAfter1Year = getDate1YearAgo({date: connections[0].endDate});
+    const dateAfter1Year = getDateAfter1Year({date: connections[0].endDate});
 
     if (
-      connections[0].status === connectionStatuses.active.value ||
+      connections[0].status !== connectionStatuses.inactive.value ||
       currentDate <= dateAfter1Year
     ) {
       return next();

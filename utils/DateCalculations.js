@@ -25,7 +25,7 @@ module.exports.dateAfterSevenDays = () => {
   return after7Days;
 };
 
-module.exports.getDate1YearAgo = ({date}) => {
+module.exports.getDateAfter1Year = ({date}) => {
   const endDate = DateTime.fromJSDate(date);
   const dateAfter1Year = endDate.plus({years: 1});
   return dateAfter1Year;
