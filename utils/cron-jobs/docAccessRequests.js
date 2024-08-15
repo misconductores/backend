@@ -2,6 +2,7 @@ const {TIMEZONES, statusTypes} = require('../../constants/usersConstants');
 const {DocumentAccessModel} = require('../../models');
 const {CronJob} = require('cron');
 const {getCurrentDate} = require('../DateCalculations');
+const logger = require('../../middleware/loggerMiddleware');
 
 exports.expirePendingDocsAccessRequests = async () => {
   const schedule = '0 0 1 * * *'; // at 01:00:00 every day
@@ -17,7 +18,7 @@ exports.expirePendingDocsAccessRequests = async () => {
         }
       );
     } catch (error) {
-      console.log('Expired documents access cron job failed', error);
+      logger.error(error);
     }
   };
 
