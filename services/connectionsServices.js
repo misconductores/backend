@@ -342,15 +342,24 @@ module.exports = class ConnectionsServices {
 
   static async getDriverJobHistory({userId}) {
     try {
-      const history = await ConnectionsModel.find({
+      let history = [];
+      const connections = await ConnectionsModel.find({
         driverId: userId,
         status: connectionStatuses.inactive.value,
-      })
-        .populate({
-          path: 'companyId',
-          select: 'companyName contact profilePic',
-        })
-        .populate('companyReviewId');
+      }).populate({
+        path: 'companyId',
+        select: 'companyName contact profilePic',
+      });
+
+      for (const connection of connections) {
+        const driverReview = await ReviewsModel.findOne({
+          _id: connection.driverReviewId,
+          status: statusTypes.accepted.value,
+        });
+        let newObj = connection.toObject();
+        newObj.driverReviewId = driverReview;
+        history.push(newObj);
+      }
 
       return {success: true, history};
     } catch (error) {
