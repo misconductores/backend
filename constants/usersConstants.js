@@ -304,3 +304,5 @@ module.exports.connectionStatuses = {
     value: 'inactive',
   },
 };
+
+module.exports.bitAnswers = ['yes', 'no'];
