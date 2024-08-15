@@ -16,6 +16,7 @@ const {documentDeleteCronJob} = require('./utils/cron-jobs/documents');
 const {
   expirePendingDocsAccessRequests,
 } = require('./utils/cron-jobs/docAccessRequests');
+const {updateConnectionsToInactive} = require('./utils/cron-jobs/connections');
 
 const app = express();
 
@@ -60,6 +61,7 @@ app.use(finalResponseMiddleware);
 documentDeleteCronJob.start();
 
 expirePendingDocsAccessRequests();
+updateConnectionsToInactive();
 
 if (config.get('env') !== config.get('envVariables.test')) {
   const PORT = config.get('port') || 3001;
