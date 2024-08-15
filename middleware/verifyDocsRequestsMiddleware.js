@@ -6,6 +6,7 @@ const {
 const {GeneralErrorsFactory} = require('../factories');
 const {DocumentAccessModel, ConnectionsModel} = require('../models');
 const {GeneralServices} = require('../services');
+const {getCurrentDate, getDate1YearAgo} = require('../utils/DateCalculations');
 
 module.exports = async (req, res, next) => {
   try {
@@ -31,17 +32,19 @@ module.exports = async (req, res, next) => {
       return next();
     }
 
-    // If no document access, check the connection status
-    const {doc: connection} = await GeneralServices.findOne({
-      query: {
-        companyId: loggedInUserId,
-        driverId: relatedUserId,
-        status: connectionStatuses.active.value,
-      },
-      model: ConnectionsModel,
-    });
+    // if driver is disconnected then company can view its document for 1 year after disconnection
+    const connections = await ConnectionsModel.find({
+      companyId: loggedInUserId,
+      driverId: relatedUserId,
+    }).sort({createdAt: -1});
 
-    if (connection) {
+    const currentDate = getCurrentDate();
+    const dateAfter1Year = getDate1YearAgo({date: connections[0].endDate});
+
+    if (
+      connections[0].status === connectionStatuses.active.value ||
+      currentDate <= dateAfter1Year
+    ) {
       return next();
     }
 
