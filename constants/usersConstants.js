@@ -273,6 +273,9 @@ module.exports.notificationTypes = {
   driver_rejected_docs_access: {
     value: 'driver_rejected_docs_access',
   },
+  driver_removed_docs_access: {
+    value: 'driver_removed_docs_access',
+  },
 };
 
 module.exports.TIMEZONES = {

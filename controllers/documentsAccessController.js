@@ -153,4 +153,35 @@ module.exports = class DocumentsAccessController {
 
     if (error) throw error;
   }
+
+  static async removeDocumentAccess(req, res, next) {
+    const userId = req.jwtToken.user.id;
+    const {id} = req.params;
+
+    const {
+      success,
+      error,
+      doc: updatedDocsAccessRequest,
+    } = await GeneralServices.update({
+      id,
+      data: {status: statusTypes.expired.value, endDate: getCurrentDate()},
+      model: DocumentAccessModel,
+    });
+
+    if (success) {
+      await GeneralServices.create({
+        data: {
+          userId: updatedDocsAccessRequest.companyId,
+          relatedUserId: userId,
+          type: notificationTypes.driver_removed_docs_access.value,
+        },
+        model: NotificationsModel,
+      });
+      return next(
+        DocumentsAccessResponsesFactory.documentsAccessReqStatusUpdatedSuccessfully()
+      );
+    }
+
+    if (error) throw error;
+  }
 };
