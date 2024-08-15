@@ -69,3 +69,10 @@ module.exports.validateUpdateDocsRequestStatus = (data) => {
   });
   return validatorUtils.validate(schema, data);
 };
+
+module.exports.validateRemoveDocsAccessReqParams = (data) => {
+  const schema = Yup.object().shape({
+    id: Yup.string().required('Document access request id is required'),
+  });
+  return validatorUtils.validate(schema, data);
+};

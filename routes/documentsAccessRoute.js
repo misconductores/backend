@@ -71,4 +71,16 @@ router.patch(
   catchAsync(DocumentsAccessController.updateDocumentsRequestStatus)
 );
 
+router.patch(
+  '/:id/remove-access',
+  authMiddleware,
+  roleValidatorMiddleware({allowedRoles: [roles.driver.value]}),
+  validatorMiddleware(
+    documentAccessSchema.validateRemoveDocsAccessReqParams,
+    PARAMS_PROPERTY
+  ),
+  forbidResolveDocsAccessRequests,
+  catchAsync(DocumentsAccessController.removeDocumentAccess)
+);
+
 module.exports = router;
