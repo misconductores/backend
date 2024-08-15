@@ -342,7 +342,7 @@ module.exports = class ConnectionsServices {
 
   static async getDriverJobHistory({userId}) {
     try {
-      const history = await ConnectionsModel.find({
+      let connections = await ConnectionsModel.find({
         driverId: userId,
         status: connectionStatuses.inactive.value,
       })
@@ -350,7 +350,16 @@ module.exports = class ConnectionsServices {
           path: 'companyId',
           select: 'companyName contact profilePic',
         })
-        .populate('companyReviewId');
+        .populate('driverReviewId');
+
+      const history = connections.map((item) => {
+        let newObj = item.toObject();
+        newObj.driverReviewId =
+          newObj.driverReviewId.status !== statusTypes.accepted.value
+            ? null
+            : newObj.driverReviewId;
+        return newObj;
+      });
 
       return {success: true, history};
     } catch (error) {
