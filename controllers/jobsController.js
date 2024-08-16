@@ -7,6 +7,7 @@ const {
 const {JobsServices, UsersServices, GeneralServices} = require('../services');
 const JobModel = require('../models/JobModel');
 const {ApplicantsModel} = require('../models');
+const JobServices = require('../services/jobsServices');
 
 module.exports = class JobController {
   static async createJob(req, res, next) {

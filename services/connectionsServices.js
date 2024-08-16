@@ -129,8 +129,8 @@ module.exports = class ConnectionsServices {
         });
 
         if (user.driverStatus !== driverStatuses.underInspection.value) {
-          // if companyReviewId is already present then make driver to available otherwise make it to available soon
-          if (connection.companyReviewId) {
+          // if driverReviewId (company has already disconnect the driver) is already present then make driver to available otherwise make it to available soon
+          if (connection.driverReviewId) {
             updateDriverStatusData = {
               driverStatus: driverStatuses.available.value,
             };
