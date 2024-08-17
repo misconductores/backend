@@ -50,12 +50,12 @@ module.exports = class DocumentsAccessServices {
     }
   }
 
-  static async getRequestedDocuments({userId}) {
+  static async getRequestedDocuments({userId, hasAccess}) {
     try {
       const documents = await UsersModel.findById({_id: userId}).select(
-        'documents'
+        hasAccess ? 'documents' : 'documents.label'
       );
-      return {success: true, documents};
+      return {success: true, result: {documents, hasAccess: true}};
     } catch (error) {
       return {success: false, error};
     }
