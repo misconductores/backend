@@ -18,6 +18,7 @@ module.exports = async (req, res, next) => {
 
     // If the user is an admin, immediately proceed
     if (role === roles.admin.value) {
+      req.hasAccess = true;
       return next();
     }
 
@@ -32,6 +33,7 @@ module.exports = async (req, res, next) => {
     });
 
     if (documentsRequest) {
+      req.hasAccess = true;
       return next();
     }
 
@@ -41,17 +43,21 @@ module.exports = async (req, res, next) => {
       driverId: relatedUserId,
     }).sort({createdAt: -1});
 
-    const currentDate = getCurrentDate();
-    const dateAfter1Year = getDateAfter1Year({date: connections[0].endDate});
+    if (connections.length > 0) {
+      const currentDate = getCurrentDate();
+      const dateAfter1Year = getDateAfter1Year({date: connections[0].endDate});
 
-    if (
-      connections[0].status !== connectionStatuses.inactive.value ||
-      currentDate <= dateAfter1Year
-    ) {
-      return next();
+      if (
+        connections[0].status !== connectionStatuses.inactive.value ||
+        currentDate <= dateAfter1Year
+      ) {
+        req.hasAccess = true;
+        return next();
+      }
     }
 
-    return next(GeneralErrorsFactory.forbiddenRoleErr());
+    req.hasAccess = false;
+    return next();
   } catch (error) {
     return next(GeneralErrorsFactory.internalErr({error}));
   }
