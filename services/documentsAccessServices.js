@@ -55,7 +55,7 @@ module.exports = class DocumentsAccessServices {
       const documents = await UsersModel.findById({_id: userId}).select(
         hasAccess ? 'documents' : 'documents.label'
       );
-      return {success: true, result: {documents, hasAccess: true}};
+      return {success: true, documents};
     } catch (error) {
       return {success: false, error};
     }
