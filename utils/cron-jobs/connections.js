@@ -33,7 +33,7 @@ exports.updateConnectionsToInactive = async () => {
             id: connection.driverId,
             model: UsersModel,
           });
-          if (driver.driverStatus !== driverStatuses.underInspection.value) {
+          if (driver.driverStatus !== driverStatuses.waitingDecision.value) {
             await GeneralServices.update({
               id: connection.driverId,
               data: {driverStatus: driverStatuses.available.value},

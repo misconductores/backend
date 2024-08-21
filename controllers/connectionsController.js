@@ -79,10 +79,10 @@ module.exports = class ConnectionsController {
   }
 
   static async getDriverJobHistory(req, res, next) {
-    const userId = req.jwtToken.user.id;
+    const {driverId} = req.params;
 
     const {success, error, history} =
-      await ConnectionsServices.getDriverJobHistory({userId});
+      await ConnectionsServices.getDriverJobHistory({userId: driverId});
 
     if (success)
       return next(

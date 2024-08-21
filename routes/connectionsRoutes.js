@@ -2,6 +2,7 @@ const {
   roles,
   QUERY_PROPERTY,
   driverStatuses,
+  PARAMS_PROPERTY,
 } = require('../constants/usersConstants');
 const {ConnectionsController} = require('../controllers');
 const {
@@ -24,7 +25,7 @@ router.post(
     allowedDriverStatuses: [
       driverStatuses.connected.value,
       driverStatuses.availableSoon.value,
-      driverStatuses.underInspection.value,
+      driverStatuses.waitingDecision.value,
     ],
   }),
   validatorMiddleware(reviewsSchema.validateDriverDisconnectReq),
@@ -60,9 +61,15 @@ router.get(
 );
 
 router.get(
-  '/job-history',
+  '/:driverId/job-history',
   authMiddleware,
-  roleValidatorMiddleware({allowedRoles: [roles.driver.value]}),
+  roleValidatorMiddleware({
+    allowedRoles: [roles.driver.value, roles.company.value],
+  }),
+  validatorMiddleware(
+    connectionsSchema.validateGetJobHistoryParams,
+    PARAMS_PROPERTY
+  ),
   catchAsync(ConnectionsController.getDriverJobHistory)
 );
 

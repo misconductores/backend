@@ -31,11 +31,11 @@ module.exports.driverStatuses = {
   availableSoon: {
     value: 'availableSoon',
   },
+  waitingDecision: {
+    value: 'waitingDecision',
+  },
   underInspection: {
     value: 'underInspection',
-  },
-  blocked: {
-    value: 'blocked',
   },
 };
 

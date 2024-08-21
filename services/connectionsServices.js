@@ -128,7 +128,7 @@ module.exports = class ConnectionsServices {
           model: UsersModel,
         });
 
-        if (user.driverStatus !== driverStatuses.underInspection.value) {
+        if (user.driverStatus !== driverStatuses.waitingDecision.value) {
           // if driverReviewId (company has already disconnect the driver) is already present then make driver to available otherwise make it to available soon
           if (connection.driverReviewId) {
             updateDriverStatusData = {
@@ -249,7 +249,7 @@ module.exports = class ConnectionsServices {
           }
         } else {
           updateDriverStatusData = {
-            driverStatus: driverStatuses.underInspection.value,
+            driverStatus: driverStatuses.waitingDecision.value,
           };
         }
 

@@ -437,7 +437,7 @@ module.exports = class UsersServices {
 
       await UsersModel.findByIdAndUpdate(
         {_id: userId},
-        {driverStatus: driverStatuses.blocked.value},
+        {driverStatus: driverStatuses.underInspection.value},
         {session}
       );
 
@@ -473,7 +473,9 @@ module.exports = class UsersServices {
 
       let query = {};
 
-      const andConditions = [{driverStatus: driverStatuses.blocked.value}];
+      const andConditions = [
+        {driverStatus: driverStatuses.underInspection.value},
+      ];
 
       if (title) {
         title = title.trim();
