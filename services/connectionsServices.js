@@ -320,19 +320,10 @@ module.exports = class ConnectionsServices {
       const query = {companyId: userId, status: status};
       const [totalCount, data] = await Promise.all([
         ConnectionsModel.countDocuments(query),
-        ConnectionsModel.find(query, null, {skip, limit})
-          .populate({
-            path: 'driverId',
-            select: restrictedUserData,
-          })
-          .populate({
-            path: 'offerId',
-            select: 'jobId',
-            populate: {
-              path: 'jobId',
-              select: 'title',
-            },
-          }),
+        ConnectionsModel.find(query, null, {skip, limit}).populate({
+          path: 'driverId',
+          select: restrictedUserData,
+        }),
       ]);
       return {success: true, drivers: {totalCount, data}};
     } catch (error) {
