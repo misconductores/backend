@@ -16,3 +16,10 @@ module.exports.validateGetCompanyDriversReq = (data) => {
   });
   return validatorUtils.validate(schema, data);
 };
+
+module.exports.validateGetJobHistoryParams = (data) => {
+  const schema = Yup.object().shape({
+    driverId: Yup.string().required('Driver Id is required'),
+  });
+  return validatorUtils.validate(schema, data);
+};

@@ -87,7 +87,7 @@ module.exports = class UsersController {
 
     if (!userToLogin) return next(UsersErrorsFactory.wrongEmailOrPasswordErr());
 
-    if (userToLogin.driverStatus === driverStatuses.blocked.value)
+    if (userToLogin.driverStatus === driverStatuses.underInspection.value)
       return next(UsersErrorsFactory.accountBlockedErr());
 
     const {success, err} = await UsersServices.verifyUserPassword({
@@ -457,7 +457,7 @@ module.exports = class UsersController {
       model: UsersModel,
     });
 
-    if (user.driverStatus === driverStatuses.blocked.value)
+    if (user.driverStatus === driverStatuses.underInspection.value)
       return next(UsersErrorsFactory.alreadyBlockedErr());
 
     if (user.role !== roles.driver.value)
@@ -480,7 +480,7 @@ module.exports = class UsersController {
       model: UsersModel,
     });
 
-    if (user?.driverStatus === driverStatuses.blocked.value)
+    if (user?.driverStatus === driverStatuses.underInspection.value)
       return next(UsersErrorsFactory.alreadyBlockedErr());
 
     if (user?.role !== roles.driver.value)
@@ -488,7 +488,7 @@ module.exports = class UsersController {
 
     const {success, error} = await GeneralServices.update({
       id: userId,
-      data: {driverStatus: driverStatuses.blocked.value},
+      data: {driverStatus: driverStatuses.underInspection.value},
       model: UsersModel,
     });
 
@@ -527,7 +527,7 @@ module.exports = class UsersController {
       model: UsersModel,
     });
 
-    if (user.driverStatus !== driverStatuses.blocked.value)
+    if (user.driverStatus !== driverStatuses.underInspection.value)
       return next(UsersErrorsFactory.alreadyUnBlockedErr());
 
     const {success, error} = await GeneralServices.update({
