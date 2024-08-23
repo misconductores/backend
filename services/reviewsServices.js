@@ -3,6 +3,7 @@ const {
   reviewTypes,
   statusTypes,
   driverStatuses,
+  connectionStatuses,
 } = require('../constants/usersConstants');
 const {ReviewsModel, UsersModel, ConnectionsModel} = require('../models');
 const GeneralServices = require('./generalServices');
@@ -95,25 +96,35 @@ module.exports = class ReviewsServices {
     }
   }
 
-  static async getDriverReviewsForCompany({userId, page, limit}) {
+  static async getDriverReviewsForCompany({userId}) {
     try {
-      const skip = (page - 1) * limit;
-
-      const query = {
+      let connections = await ConnectionsModel.find({
         companyId: userId,
-        type: reviewTypes.company_review.value,
-        status: statusTypes.accepted.value,
-      };
-
-      const [totalCount, data] = await Promise.all([
-        ReviewsModel.countDocuments(query),
-        ReviewsModel.find(query, null, {skip, limit}).populate({
+        status: connectionStatuses.inactive.value,
+      })
+        .populate({
           path: 'driverId',
           select: 'firstName lastName profilePic',
-        }),
-      ]);
+        })
+        .populate('companyReviewId driverReviewId');
 
-      return {success: true, result: {totalCount, data}};
+      // it will returns the reviews for company when both driver and company
+      // reviews are accepted otherwise returns empty array
+      const reviews = connections.filter((item) => {
+        let newObj = item.toObject();
+        const isCompanyReviewAccepted =
+          newObj.companyReviewId.status === statusTypes.accepted.value;
+        const isDriverReviewAccepted =
+          newObj.driverReviewId.status === statusTypes.accepted.value;
+        if (isCompanyReviewAccepted && isDriverReviewAccepted) {
+          return {
+            driver: newObj.driverId,
+            ...newObj.companyReviewId,
+          };
+        }
+      });
+
+      return {success: true, reviews};
     } catch (error) {
       return {success: false, error};
     }

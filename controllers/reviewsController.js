@@ -73,20 +73,13 @@ module.exports = class ReviewsController {
   static async getDriverReviewsForCompany(req, res, next) {
     const userId = req.jwtToken.user.id;
 
-    let {page, limit} = req.query;
-    page = parseInt(page);
-    limit = parseInt(limit);
-
-    const {success, error, result} =
-      await ReviewsServices.getDriverReviewsForCompany({userId, page, limit});
+    const {success, error, reviews} =
+      await ReviewsServices.getDriverReviewsForCompany({userId});
 
     if (success)
       return next(
         ReviewsResponseFactory.reviewRetrievedSuccessfully({
-          count: result.totalCount,
-          data: result.data,
-          page,
-          perPage: limit,
+          reviews,
         })
       );
 

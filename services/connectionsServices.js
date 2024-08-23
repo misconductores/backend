@@ -341,14 +341,20 @@ module.exports = class ConnectionsServices {
           path: 'companyId',
           select: 'companyName contact profilePic',
         })
-        .populate('driverReviewId');
+        .populate('driverReviewId companyReviewId');
 
+      // it will return company review for driver if both company and driver
+      //  reviews are accepted otherwise just return the connection
       const history = connections.map((item) => {
         let newObj = item.toObject();
+        const isCompanyReviewAccepted =
+          newObj.companyReviewId.status === statusTypes.accepted.value;
+        const isDriverReviewAccepted =
+          newObj.driverReviewId.status === statusTypes.accepted.value;
         newObj.driverReviewId =
-          newObj.driverReviewId.status !== statusTypes.accepted.value
-            ? null
-            : newObj.driverReviewId;
+          isCompanyReviewAccepted && isDriverReviewAccepted
+            ? newObj.driverReviewId
+            : null;
         return newObj;
       });
 
