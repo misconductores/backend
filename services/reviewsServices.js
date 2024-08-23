@@ -1,3 +1,4 @@
+const {DateTime} = require('luxon');
 const {
   roles,
   reviewTypes,
@@ -6,6 +7,7 @@ const {
   connectionStatuses,
 } = require('../constants/usersConstants');
 const {ReviewsModel, UsersModel, ConnectionsModel} = require('../models');
+const {getCurrentDate} = require('../utils/DateCalculations');
 const GeneralServices = require('./generalServices');
 
 module.exports = class ReviewsServices {
@@ -98,6 +100,8 @@ module.exports = class ReviewsServices {
 
   static async getDriverReviewsForCompany({userId}) {
     try {
+      const currentDate = getCurrentDate();
+
       let connections = await ConnectionsModel.find({
         companyId: userId,
         status: connectionStatuses.inactive.value,
@@ -108,15 +112,35 @@ module.exports = class ReviewsServices {
         })
         .populate('companyReviewId driverReviewId');
 
-      // it will returns the reviews for company when both driver and company
-      // reviews are accepted otherwise returns empty array
-      const reviews = connections.filter((item) => {
+      const reviews = connections.map((item) => {
         let newObj = item.toObject();
+
+        // Ensure reviews are not null before checking their properties
+        const companyReview = newObj.companyReviewId || {};
+        const driverReview = newObj.driverReviewId || {};
+
+        const bothReviewsPresent = companyReview && driverReview;
+
         const isCompanyReviewAccepted =
-          newObj.companyReviewId.status === statusTypes.accepted.value;
+          companyReview.status === statusTypes.accepted.value;
         const isDriverReviewAccepted =
-          newObj.driverReviewId.status === statusTypes.accepted.value;
-        if (isCompanyReviewAccepted && isDriverReviewAccepted) {
+          driverReview.status === statusTypes.accepted.value;
+
+        const isReviewEndDateReached =
+          currentDate >= DateTime.fromJSDate(newObj.reviewEndDate);
+
+        // if both accepted reviews of driver and company are present then return company review
+        if (bothReviewsPresent) {
+          if (isCompanyReviewAccepted && isDriverReviewAccepted) {
+            return {
+              driver: newObj.driverId,
+              ...newObj.companyReviewId,
+            };
+          }
+        }
+
+        // if driver review the company (accepted review) and connection become inactive after 7 days then it will return company reviews
+        if (isReviewEndDateReached && isCompanyReviewAccepted) {
           return {
             driver: newObj.driverId,
             ...newObj.companyReviewId,

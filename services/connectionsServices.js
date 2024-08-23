@@ -16,6 +16,7 @@ const {getCurrentDate} = require('../utils/DateCalculations');
 const mongoose = require('mongoose');
 const GeneralServices = require('./generalServices');
 const {generateConnectionQuery} = require('../utils/helpers/connections');
+const {DateTime} = require('luxon');
 
 module.exports = class ConnectionsServices {
   static async findConnection({query}) {
@@ -333,6 +334,8 @@ module.exports = class ConnectionsServices {
 
   static async getDriverJobHistory({userId}) {
     try {
+      const currentDate = getCurrentDate();
+
       let connections = await ConnectionsModel.find({
         driverId: userId,
         status: connectionStatuses.inactive.value,
@@ -343,18 +346,38 @@ module.exports = class ConnectionsServices {
         })
         .populate('driverReviewId companyReviewId');
 
-      // it will return company review for driver if both company and driver
-      //  reviews are accepted otherwise just return the connection
       const history = connections.map((item) => {
         let newObj = item.toObject();
+
+        // Ensure reviews are not null before checking their properties
+        const companyReview = newObj.companyReviewId || {};
+        const driverReview = newObj.driverReviewId || {};
+
+        const bothReviewsPresent = companyReview && driverReview;
+
         const isCompanyReviewAccepted =
-          newObj.companyReviewId.status === statusTypes.accepted.value;
+          companyReview.status === statusTypes.accepted.value;
         const isDriverReviewAccepted =
-          newObj.driverReviewId.status === statusTypes.accepted.value;
-        newObj.driverReviewId =
-          isCompanyReviewAccepted && isDriverReviewAccepted
-            ? newObj.driverReviewId
-            : null;
+          driverReview.status === statusTypes.accepted.value;
+
+        const isReviewEndDateReached =
+          currentDate >= DateTime.fromJSDate(newObj.reviewEndDate);
+
+        // if both accepted reviews of driver and company are present then return job history
+        if (bothReviewsPresent) {
+          if (isCompanyReviewAccepted && isDriverReviewAccepted) {
+            return newObj;
+          }
+        }
+        // if company review the driver or driver review the company (accepted review) and connection become inactive after 7 days then it will return job history with review otherwise if these reviews are not accepted then it just return job history without review
+        if (isReviewEndDateReached) {
+          newObj.driverReviewId =
+            isDriverReviewAccepted || isCompanyReviewAccepted
+              ? newObj.driverReviewId
+              : null;
+        }
+
+        delete newObj.companyReviewId;
         return newObj;
       });
 
