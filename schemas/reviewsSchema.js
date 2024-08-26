@@ -1,8 +1,15 @@
 const Yup = require('yup');
 const {validatorUtils} = require('../utils');
-const {statusTypes, bitAnswers} = require('../constants/usersConstants');
+const {
+  statusTypes,
+  reviewYesNoOptions,
+  reasonToLeaveOptions,
+} = require('../constants/usersConstants');
 
 const statusValues = Object.values(statusTypes).map((status) => status.value);
+const reasonToLeave = Object.values(reasonToLeaveOptions).map(
+  (option) => option.value
+);
 
 module.exports.validateDriverDisconnectReq = (data) => {
   const schema = Yup.object().shape({
@@ -11,15 +18,17 @@ module.exports.validateDriverDisconnectReq = (data) => {
     type: Yup.string().required('Review type is required'),
     description: Yup.string().required('Description is required'),
     communication: Yup.string()
-      .oneOf(bitAnswers)
+      .oneOf(reviewYesNoOptions)
       .required('Communications answer is required'),
     obligationsAndDuties: Yup.string()
-      .oneOf(bitAnswers)
+      .oneOf(reviewYesNoOptions)
       .required('Obligations & Duties answer is required'),
     significantProblems: Yup.string()
-      .oneOf(bitAnswers)
+      .oneOf(reviewYesNoOptions)
       .required('Significant problems answer is required'),
-    reasonToLeave: Yup.string().required('Reason to leave answer is required'),
+    reasonToLeave: Yup.string()
+      .oneOf(reasonToLeave)
+      .required('Reason to leave answer is required'),
     personalRelations: Yup.string().required(
       'Personal relations rating is required'
     ),
@@ -41,14 +50,17 @@ module.exports.validateCompanyDisconnectReq = (data) => {
     ),
     performance: Yup.string().required('Performance rating is required'),
     obligationsAndDuties: Yup.string()
-      .oneOf(bitAnswers)
+      .oneOf(reviewYesNoOptions)
       .required('Obligations & Duties answer is required'),
     significantProblems: Yup.string()
-      .oneOf(bitAnswers)
+      .oneOf(reviewYesNoOptions)
       .required('Significant problems answer is required'),
     vehicleCondition: Yup.string()
-      .oneOf(bitAnswers)
+      .oneOf(reviewYesNoOptions)
       .required('Vehicle condition answer is required'),
+    reasonToLeave: Yup.string()
+      .oneOf(reasonToLeave)
+      .required('Reason to leave answer is required'),
   });
 
   return validatorUtils.validate(schema, data);

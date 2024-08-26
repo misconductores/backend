@@ -305,4 +305,16 @@ module.exports.connectionStatuses = {
   },
 };
 
-module.exports.bitAnswers = ['yes', 'no'];
+module.exports.reviewYesNoOptions = ['yes', 'no'];
+
+module.exports.reasonToLeaveOptions = {
+  voluntary: {
+    value: 'voluntary',
+  },
+  incident: {
+    value: 'incident',
+  },
+  other: {
+    value: 'other',
+  },
+};
