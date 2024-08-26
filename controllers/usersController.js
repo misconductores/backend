@@ -1,10 +1,5 @@
 const config = require('config');
-const {
-  UsersServices,
-  FilesServices,
-  GeneralServices,
-  ReviewsServices,
-} = require('../services');
+const {UsersServices, FilesServices, GeneralServices} = require('../services');
 const actions = require('../utils/actions');
 const {
   UsersErrorsFactory,
@@ -15,11 +10,7 @@ const {
 const {jwtUtils} = require('../utils');
 const {usersConstants} = require('../constants');
 const UsersModel = require('../models/UsersModel');
-const {
-  driverStatuses,
-  roles,
-  statusTypes,
-} = require('../constants/usersConstants');
+const {driverStatuses, roles} = require('../constants/usersConstants');
 
 module.exports = class UsersController {
   static async createUser(req, res, next) {
@@ -86,9 +77,6 @@ module.exports = class UsersController {
     });
 
     if (!userToLogin) return next(UsersErrorsFactory.wrongEmailOrPasswordErr());
-
-    if (userToLogin.driverStatus === driverStatuses.underInspection.value)
-      return next(UsersErrorsFactory.accountBlockedErr());
 
     const {success, err} = await UsersServices.verifyUserPassword({
       inputPassword: inputData.password,

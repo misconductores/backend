@@ -150,10 +150,4 @@ module.exports = class UsersErrorsFactory {
       statusCode: 403,
     });
   }
-  static accountBlockedErr() {
-    return new AppError({
-      message: 'Your account has been blocked',
-      statusCode: 400,
-    });
-  }
 };
