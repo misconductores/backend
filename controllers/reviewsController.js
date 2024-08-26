@@ -18,7 +18,7 @@ module.exports = class ReviewsController {
 
     if (success)
       return next(
-        ReviewsResponseFactory.reviewRetrievedSuccessfully({
+        ReviewsResponseFactory.reviewsForAdminRetrievedSuccessfully({
           count: reviews.totalCount,
           data: reviews.data,
           page,

@@ -8,6 +8,13 @@ module.exports = class ReviewsResponsesFactory {
       body: {reviews},
     });
   }
+  static reviewsForAdminRetrievedSuccessfully({count, data, page, perPage}) {
+    return new AppResponse({
+      message: 'Review retrieved successfully',
+      statusCode: 200,
+      body: {count, data, page, perPage},
+    });
+  }
   static ratingsRetrievedSuccessfully({ratings}) {
     return new AppResponse({
       message: 'Ratings retrieved successfully',
