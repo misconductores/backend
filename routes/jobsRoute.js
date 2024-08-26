@@ -2,6 +2,7 @@ const {
   QUERY_PROPERTY,
   PARAMS_PROPERTY,
   roles,
+  driverStatuses,
 } = require('../constants/usersConstants');
 const {JobsController} = require('../controllers');
 const {
