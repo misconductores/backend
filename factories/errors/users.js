@@ -134,7 +134,7 @@ module.exports = class UsersErrorsFactory {
   }
   static alreadyBlockedErr() {
     return new AppError({
-      message: 'You have already blocked this user',
+      message: 'This user is already blocked',
       statusCode: 400,
     });
   }

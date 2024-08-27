@@ -77,20 +77,24 @@ module.exports = class ReviewsServices {
         data: {status: status},
       });
       if (review.type === reviewTypes.driver_review.value) {
-        const {doc: connection} = await GeneralServices.findOne({
-          query: {_id: review.connectionId},
-          model: ConnectionsModel,
-        });
+        const connection = await ConnectionsModel.findOne({
+          _id: review.connectionId,
+        }).populate({path: 'driverId', select: 'driverStatus'});
 
-        await GeneralServices.update({
-          id: review.driverId,
-          data: {
-            driverStatus: connection.companyReviewId
-              ? driverStatuses.available.value
-              : driverStatuses.availableSoon.value,
-          },
-          model: UsersModel,
-        });
+        if (
+          connection.driverId.driverStatus !==
+          driverStatuses.underInspection.value
+        ) {
+          await GeneralServices.update({
+            id: review.driverId,
+            data: {
+              driverStatus: connection.companyReviewId
+                ? driverStatuses.available.value
+                : driverStatuses.availableSoon.value,
+            },
+            model: UsersModel,
+          });
+        }
       }
       return {success: true};
     } catch (error) {
