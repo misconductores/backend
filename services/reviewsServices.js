@@ -112,14 +112,11 @@ module.exports = class ReviewsServices {
         })
         .populate('companyReviewId driverReviewId');
 
-      const reviews = connections.map((item) => {
-        let newObj = item.toObject();
+      const reviews = connections.filter((item) => {
+        let connection = item.toObject();
 
-        // Ensure reviews are not null before checking their properties
-        const companyReview = newObj.companyReviewId || {};
-        const driverReview = newObj.driverReviewId || {};
-
-        const bothReviewsPresent = companyReview && driverReview;
+        const companyReview = connection.companyReviewId || {};
+        const driverReview = connection.driverReviewId || {};
 
         const isCompanyReviewAccepted =
           companyReview.status === statusTypes.accepted.value;
@@ -127,27 +124,18 @@ module.exports = class ReviewsServices {
           driverReview.status === statusTypes.accepted.value;
 
         const isReviewEndDateReached =
-          currentDate >= DateTime.fromJSDate(newObj.reviewEndDate);
+          currentDate >= DateTime.fromJSDate(connection.reviewEndDate);
 
-        // if both accepted reviews of driver and company are present then return company review
-        if (bothReviewsPresent) {
-          if (isCompanyReviewAccepted && isDriverReviewAccepted) {
-            return {
-              driver: newObj.driverId,
-              ...newObj.companyReviewId,
-            };
-          }
-        }
-
-        // if driver review the company (accepted review) and connection become inactive after 7 days then it will return company reviews
-        if (isReviewEndDateReached && isCompanyReviewAccepted) {
+        if (
+          (isCompanyReviewAccepted && isDriverReviewAccepted) ||
+          (isReviewEndDateReached && isCompanyReviewAccepted)
+        ) {
           return {
-            driver: newObj.driverId,
-            ...newObj.companyReviewId,
+            driver: connection.driverId,
+            ...connection.companyReviewId,
           };
         }
       });
-
       return {success: true, reviews};
     } catch (error) {
       return {success: false, error};

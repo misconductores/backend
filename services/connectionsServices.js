@@ -347,11 +347,11 @@ module.exports = class ConnectionsServices {
         .populate('driverReviewId companyReviewId');
 
       const history = connections.map((item) => {
-        let newObj = item.toObject();
+        let connection = item.toObject();
 
         // Ensure reviews are not null before checking their properties
-        const companyReview = newObj.companyReviewId || {};
-        const driverReview = newObj.driverReviewId || {};
+        const companyReview = connection.companyReviewId || {};
+        const driverReview = connection.driverReviewId || {};
 
         const bothReviewsPresent = companyReview && driverReview;
 
@@ -361,24 +361,21 @@ module.exports = class ConnectionsServices {
           driverReview.status === statusTypes.accepted.value;
 
         const isReviewEndDateReached =
-          currentDate >= DateTime.fromJSDate(newObj.reviewEndDate);
+          currentDate >= DateTime.fromJSDate(connection.reviewEndDate);
 
-        // if both accepted reviews of driver and company are present then return job history
-        if (bothReviewsPresent) {
-          if (isCompanyReviewAccepted && isDriverReviewAccepted) {
-            return newObj;
+        if (
+          bothReviewsPresent &&
+          (!isCompanyReviewAccepted || !isDriverReviewAccepted)
+        ) {
+          if (isReviewEndDateReached) {
+            if (!isDriverReviewAccepted) connection.driverReviewId = null;
+          } else {
+            connection.driverReviewId = null;
           }
         }
-        // if company review the driver or driver review the company (accepted review) and connection become inactive after 7 days then it will return job history with review otherwise if these reviews are not accepted then it just return job history without review
-        if (isReviewEndDateReached) {
-          newObj.driverReviewId =
-            isDriverReviewAccepted || isCompanyReviewAccepted
-              ? newObj.driverReviewId
-              : null;
-        }
 
-        delete newObj.companyReviewId;
-        return newObj;
+        connection.companyReviewId = null;
+        return connection;
       });
 
       return {success: true, history};
