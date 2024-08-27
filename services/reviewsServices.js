@@ -126,7 +126,7 @@ module.exports = class ReviewsServices {
         const isReviewEndDateReached =
           currentDate >= DateTime.fromJSDate(connection.reviewEndDate);
 
-        // if both review accepted or end date has been react and we company review is accepted then return company reviews
+        // if both review accepted or end date has been reached with accepted company review then return company reviews
         if (
           bothReviewAccepted ||
           (isReviewEndDateReached && isCompanyReviewAccepted)
