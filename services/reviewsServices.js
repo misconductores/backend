@@ -83,7 +83,8 @@ module.exports = class ReviewsServices {
 
         if (
           connection.driverId.driverStatus !==
-          driverStatuses.underInspection.value
+            driverStatuses.underInspection.value &&
+          connection.driverId.driverStatus !== driverStatuses.connected.value
         ) {
           await GeneralServices.update({
             id: review.driverId,

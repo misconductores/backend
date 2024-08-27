@@ -1,4 +1,7 @@
-const {errorCodes} = require('../../constants/usersConstants');
+const {
+  errorCodes,
+  blockedErrorTypes,
+} = require('../../constants/usersConstants');
 const AppError = require('./AppError');
 
 module.exports = class UsersErrorsFactory {
@@ -136,6 +139,18 @@ module.exports = class UsersErrorsFactory {
     return new AppError({
       message: 'This user is already blocked',
       statusCode: 400,
+      err: {
+        type: blockedErrorTypes.already_blocked_err.value,
+      },
+    });
+  }
+  static cannotBlockedErr() {
+    return new AppError({
+      message: 'You cannot blocked this driver',
+      statusCode: 400,
+      err: {
+        type: blockedErrorTypes.cannot_blocked_err.value,
+      },
     });
   }
   static alreadyUnBlockedErr() {
