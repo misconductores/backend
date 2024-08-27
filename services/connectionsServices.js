@@ -349,31 +349,24 @@ module.exports = class ConnectionsServices {
       const history = connections.map((item) => {
         let connection = item.toObject();
 
-        // Ensure reviews are not null before checking their properties
-        const companyReview = connection.companyReviewId || {};
-        const driverReview = connection.driverReviewId || {};
-
-        const bothReviewsPresent = companyReview && driverReview;
-
         const isCompanyReviewAccepted =
-          companyReview.status === statusTypes.accepted.value;
+          connection?.companyReviewId?.status === statusTypes.accepted.value;
         const isDriverReviewAccepted =
-          driverReview.status === statusTypes.accepted.value;
+          connection?.driverReviewId?.status === statusTypes.accepted.value;
 
-        const isReviewEndDateReached =
-          currentDate >= DateTime.fromJSDate(connection.reviewEndDate);
+        const isReviewEndDateNotReached =
+          currentDate < DateTime.fromJSDate(connection.reviewEndDate);
 
-        if (
-          bothReviewsPresent &&
-          (!isCompanyReviewAccepted || !isDriverReviewAccepted)
-        ) {
-          if (isReviewEndDateReached) {
-            if (!isDriverReviewAccepted) connection.driverReviewId = null;
-          } else {
-            connection.driverReviewId = null;
-          }
-        }
+        const oneReviewNotAccepted =
+          !isDriverReviewAccepted || !isCompanyReviewAccepted;
 
+        if (!isDriverReviewAccepted) connection.driverReviewId = null;
+
+        // when one is pending and we are still in the 7 days, company review for driver (driver review) should be hidden
+        if (oneReviewNotAccepted && isReviewEndDateNotReached)
+          connection.driverReviewId = null;
+
+        // driver review for company  (company review) always remain hidden
         connection.companyReviewId = null;
         return connection;
       });

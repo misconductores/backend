@@ -115,19 +115,20 @@ module.exports = class ReviewsServices {
       const reviews = connections.filter((item) => {
         let connection = item.toObject();
 
-        const companyReview = connection.companyReviewId || {};
-        const driverReview = connection.driverReviewId || {};
-
         const isCompanyReviewAccepted =
-          companyReview.status === statusTypes.accepted.value;
+          connection?.companyReviewId?.status === statusTypes.accepted.value;
         const isDriverReviewAccepted =
-          driverReview.status === statusTypes.accepted.value;
+          connection?.driverReviewId?.status === statusTypes.accepted.value;
+
+        const bothReviewAccepted =
+          isCompanyReviewAccepted && isDriverReviewAccepted;
 
         const isReviewEndDateReached =
           currentDate >= DateTime.fromJSDate(connection.reviewEndDate);
 
+        // if both review accepted or end date has been react and we company review is accepted then return company reviews
         if (
-          (isCompanyReviewAccepted && isDriverReviewAccepted) ||
+          bothReviewAccepted ||
           (isReviewEndDateReached && isCompanyReviewAccepted)
         ) {
           return {
