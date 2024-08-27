@@ -85,14 +85,6 @@ router.patch(
   '/:id/remove-access',
   authMiddleware,
   roleValidatorMiddleware({allowedRoles: [roles.driver.value]}),
-  checkDriverStatusMiddleware({
-    allowedDriverStatuses: [
-      driverStatuses.available.value,
-      driverStatuses.availableSoon.value,
-      driverStatuses.waitingDecision.value,
-      driverStatuses.connected.value,
-    ],
-  }),
   validatorMiddleware(
     documentAccessSchema.validateRemoveDocsAccessReqParams,
     PARAMS_PROPERTY
