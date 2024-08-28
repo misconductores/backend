@@ -51,12 +51,14 @@ const usersSchema = new Schema(
       {
         federalLicenseNo: {type: String, maxlength: 15},
         federalLicenseType: {type: String, enum: federalLicenseTypes},
+        expiryDate: {type: String},
       },
     ],
     stateLicenses: [
       {
         stateLicenseNo: {type: String, maxlength: 15},
         stateLicenseType: {type: String, enum: stateLicenseTypes},
+        expiryDate: {type: String},
       },
     ],
     experience: {type: String},
