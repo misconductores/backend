@@ -79,6 +79,11 @@ exports.updateDriverSchema = {
         then: () => Yup.string().required('Federal license type is required'),
         otherwise: () => Yup.string(),
       }),
+      expiryDate: Yup.string().when('federalLicenseNo', {
+        is: (val) => val !== '',
+        then: () => Yup.string().required('Expiry date is required'),
+        otherwise: () => Yup.string(),
+      }),
     })
   ),
   stateLicenses: Yup.array().of(
@@ -90,6 +95,11 @@ exports.updateDriverSchema = {
       stateLicenseType: Yup.string().when('stateLicenseNo', {
         is: (val) => val !== '',
         then: () => Yup.string().required('State license type is required'),
+        otherwise: () => Yup.string(),
+      }),
+      expiryDate: Yup.string().when('stateLicenseNo', {
+        is: (val) => val !== '',
+        then: () => Yup.string().required('Expiry date is required'),
         otherwise: () => Yup.string(),
       }),
     })
