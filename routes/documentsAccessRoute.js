@@ -2,6 +2,7 @@ const {
   roles,
   QUERY_PROPERTY,
   PARAMS_PROPERTY,
+  driverStatuses,
 } = require('../constants/usersConstants');
 const {DocumentsAccessController} = require('../controllers');
 const {
@@ -11,6 +12,7 @@ const {
   isDocumentAccessRequestExist,
   verifyDocsRequestsMiddleware,
   forbidResolveDocsAccessRequests,
+  checkDriverStatusMiddleware,
 } = require('../middleware');
 const {documentAccessSchema} = require('../schemas');
 const {catchAsync} = require('../utils');
@@ -66,6 +68,14 @@ router.patch(
   '/:id/status',
   authMiddleware,
   roleValidatorMiddleware({allowedRoles: [roles.driver.value]}),
+  checkDriverStatusMiddleware({
+    allowedDriverStatuses: [
+      driverStatuses.available.value,
+      driverStatuses.availableSoon.value,
+      driverStatuses.waitingDecision.value,
+      driverStatuses.connected.value,
+    ],
+  }),
   validatorMiddleware(documentAccessSchema.validateUpdateDocsRequestStatus),
   forbidResolveDocsAccessRequests,
   catchAsync(DocumentsAccessController.updateDocumentsRequestStatus)

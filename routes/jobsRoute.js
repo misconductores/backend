@@ -2,6 +2,7 @@ const {
   QUERY_PROPERTY,
   PARAMS_PROPERTY,
   roles,
+  driverStatuses,
 } = require('../constants/usersConstants');
 const {JobsController} = require('../controllers');
 const {
@@ -10,6 +11,7 @@ const {
   isApplicantExist,
   roleValidatorMiddleware,
   isCompanyJobCheckMiddleware,
+  checkDriverStatusMiddleware,
 } = require('../middleware');
 const {jobsSchema, othersSchema} = require('../schemas');
 const {catchAsync} = require('../utils');
@@ -60,6 +62,14 @@ router.post(
   '/:id/apply-job',
   authMiddleware,
   roleValidatorMiddleware({allowedRoles: [roles.driver.value]}),
+  checkDriverStatusMiddleware({
+    allowedDriverStatuses: [
+      driverStatuses.available.value,
+      driverStatuses.availableSoon.value,
+      driverStatuses.waitingDecision.value,
+      driverStatuses.connected.value,
+    ],
+  }),
   validatorMiddleware(jobsSchema.validateJobIdParams, PARAMS_PROPERTY),
   isApplicantExist,
   catchAsync(JobsController.applyForJob)
