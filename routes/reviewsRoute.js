@@ -9,7 +9,7 @@ const {
   roleValidatorMiddleware,
   validatorMiddleware,
 } = require('../middleware');
-const {reviewsSchema, othersSchema} = require('../schemas');
+const {reviewsSchema} = require('../schemas');
 const {catchAsync} = require('../utils');
 const router = require('express').Router();
 
@@ -40,7 +40,6 @@ router.get(
   '/reviews-for-company',
   authMiddleware,
   roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
-  validatorMiddleware(othersSchema.validatePaginationParams, QUERY_PROPERTY),
   catchAsync(ReviewsController.getDriverReviewsForCompany)
 );
 

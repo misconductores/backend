@@ -16,6 +16,7 @@ const {getCurrentDate} = require('../utils/DateCalculations');
 const mongoose = require('mongoose');
 const GeneralServices = require('./generalServices');
 const {generateConnectionQuery} = require('../utils/helpers/connections');
+const {DateTime} = require('luxon');
 
 module.exports = class ConnectionsServices {
   static async findConnection({query}) {
@@ -333,6 +334,8 @@ module.exports = class ConnectionsServices {
 
   static async getDriverJobHistory({userId}) {
     try {
+      const currentDate = getCurrentDate();
+
       let connections = await ConnectionsModel.find({
         driverId: userId,
         status: connectionStatuses.inactive.value,
@@ -341,15 +344,31 @@ module.exports = class ConnectionsServices {
           path: 'companyId',
           select: 'companyName contact profilePic',
         })
-        .populate('driverReviewId');
+        .populate('driverReviewId companyReviewId');
 
       const history = connections.map((item) => {
-        let newObj = item.toObject();
-        newObj.driverReviewId =
-          newObj.driverReviewId.status !== statusTypes.accepted.value
-            ? null
-            : newObj.driverReviewId;
-        return newObj;
+        let connection = item.toObject();
+
+        const isCompanyReviewAccepted =
+          connection?.companyReviewId?.status === statusTypes.accepted.value;
+        const isDriverReviewAccepted =
+          connection?.driverReviewId?.status === statusTypes.accepted.value;
+
+        const isReviewEndDateNotReached =
+          currentDate < DateTime.fromJSDate(connection.reviewEndDate);
+
+        const oneReviewNotAccepted =
+          !isDriverReviewAccepted || !isCompanyReviewAccepted;
+
+        if (!isDriverReviewAccepted) connection.driverReviewId = null;
+
+        // when one is pending and we are still in the 7 days, company review for driver (driver review) should be hidden
+        if (oneReviewNotAccepted && isReviewEndDateNotReached)
+          connection.driverReviewId = null;
+
+        // driver review for company  (company review) always remain hidden
+        connection.companyReviewId = null;
+        return connection;
       });
 
       return {success: true, history};

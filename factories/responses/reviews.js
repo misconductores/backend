@@ -1,7 +1,14 @@
 const AppResponse = require('./AppResponse');
 
 module.exports = class ReviewsResponsesFactory {
-  static reviewRetrievedSuccessfully({count, data, page, perPage}) {
+  static reviewRetrievedSuccessfully({reviews}) {
+    return new AppResponse({
+      message: 'Review retrieved successfully',
+      statusCode: 200,
+      body: {reviews},
+    });
+  }
+  static reviewsForAdminRetrievedSuccessfully({count, data, page, perPage}) {
     return new AppResponse({
       message: 'Review retrieved successfully',
       statusCode: 200,

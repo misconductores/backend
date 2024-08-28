@@ -1,10 +1,13 @@
+const {DateTime} = require('luxon');
 const {
   roles,
   reviewTypes,
   statusTypes,
   driverStatuses,
+  connectionStatuses,
 } = require('../constants/usersConstants');
 const {ReviewsModel, UsersModel, ConnectionsModel} = require('../models');
+const {getCurrentDate} = require('../utils/DateCalculations');
 const GeneralServices = require('./generalServices');
 
 module.exports = class ReviewsServices {
@@ -95,25 +98,46 @@ module.exports = class ReviewsServices {
     }
   }
 
-  static async getDriverReviewsForCompany({userId, page, limit}) {
+  static async getDriverReviewsForCompany({userId}) {
     try {
-      const skip = (page - 1) * limit;
+      const currentDate = getCurrentDate();
 
-      const query = {
+      let connections = await ConnectionsModel.find({
         companyId: userId,
-        type: reviewTypes.company_review.value,
-        status: statusTypes.accepted.value,
-      };
-
-      const [totalCount, data] = await Promise.all([
-        ReviewsModel.countDocuments(query),
-        ReviewsModel.find(query, null, {skip, limit}).populate({
+        status: connectionStatuses.inactive.value,
+      })
+        .populate({
           path: 'driverId',
           select: 'firstName lastName profilePic',
-        }),
-      ]);
+        })
+        .populate('companyReviewId driverReviewId');
 
-      return {success: true, result: {totalCount, data}};
+      const reviews = connections.filter((item) => {
+        let connection = item.toObject();
+
+        const isCompanyReviewAccepted =
+          connection?.companyReviewId?.status === statusTypes.accepted.value;
+        const isDriverReviewAccepted =
+          connection?.driverReviewId?.status === statusTypes.accepted.value;
+
+        const bothReviewAccepted =
+          isCompanyReviewAccepted && isDriverReviewAccepted;
+
+        const isReviewEndDateReached =
+          currentDate >= DateTime.fromJSDate(connection.reviewEndDate);
+
+        // if both review accepted or end date has been reached with accepted company review then return company reviews
+        if (
+          bothReviewAccepted ||
+          (isReviewEndDateReached && isCompanyReviewAccepted)
+        ) {
+          return {
+            driver: connection.driverId,
+            ...connection.companyReviewId,
+          };
+        }
+      });
+      return {success: true, reviews};
     } catch (error) {
       return {success: false, error};
     }
