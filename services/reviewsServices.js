@@ -76,22 +76,7 @@ module.exports = class ReviewsServices {
         model: ReviewsModel,
         data: {status: status},
       });
-      if (review.type === reviewTypes.driver_review.value) {
-        const {doc: connection} = await GeneralServices.findOne({
-          query: {_id: review.connectionId},
-          model: ConnectionsModel,
-        });
 
-        await GeneralServices.update({
-          id: review.driverId,
-          data: {
-            driverStatus: connection.companyReviewId
-              ? driverStatuses.available.value
-              : driverStatuses.availableSoon.value,
-          },
-          model: UsersModel,
-        });
-      }
       return {success: true};
     } catch (error) {
       return {success: false, error};

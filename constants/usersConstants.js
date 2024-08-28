@@ -318,3 +318,12 @@ module.exports.reasonToLeaveOptions = {
     value: 'other',
   },
 };
+
+module.exports.blockedErrorTypes = {
+  already_blocked_err: {
+    value: 'already_blocked_err',
+  },
+  cannot_blocked_err: {
+    value: 'cannot_blocked_err',
+  },
+};

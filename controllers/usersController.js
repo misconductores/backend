@@ -445,6 +445,9 @@ module.exports = class UsersController {
       model: UsersModel,
     });
 
+    if (user?.driverStatus === driverStatuses.connected.value)
+      return next(UsersErrorsFactory.cannotBlockedErr());
+
     if (user.driverStatus === driverStatuses.underInspection.value)
       return next(UsersErrorsFactory.alreadyBlockedErr());
 
@@ -467,6 +470,9 @@ module.exports = class UsersController {
       query: {_id: userId},
       model: UsersModel,
     });
+
+    if (user?.driverStatus === driverStatuses.connected.value)
+      return next(UsersErrorsFactory.cannotBlockedErr());
 
     if (user?.driverStatus === driverStatuses.underInspection.value)
       return next(UsersErrorsFactory.alreadyBlockedErr());
