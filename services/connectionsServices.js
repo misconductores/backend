@@ -178,7 +178,7 @@ module.exports = class ConnectionsServices {
     }
   }
 
-  static async disconnectByCompany({data, userId}) {
+  static async disconnectByCompany({data, userId, isIncidentThreeTimesRow}) {
     const session = await mongoose.startSession();
 
     try {
@@ -237,17 +237,18 @@ module.exports = class ConnectionsServices {
 
         let updateDriverStatusData = {};
 
-        // if driverReviewId is already present then make driver to available otherwise make it to available soon
-        if (averageRating >= 2) {
-          if (connection.companyReviewId) {
-            updateDriverStatusData = {
-              driverStatus: driverStatuses.available.value,
-            };
-          } else {
-            updateDriverStatusData = {
-              driverStatus: driverStatuses.availableSoon.value,
-            };
-          }
+        // if company review driver for 3rd time in a row with incident reason then driver will be underInspection
+        //if driverReviewId is already present then make driver to available otherwise make it to available soon
+        if (isIncidentThreeTimesRow) {
+          updateDriverStatusData = {
+            driverStatus: driverStatuses.underInspection.value,
+          };
+        } else if (averageRating >= 2) {
+          updateDriverStatusData = {
+            driverStatus: connection.companyReviewId
+              ? driverStatuses.available.value
+              : driverStatuses.availableSoon.value,
+          };
         } else {
           updateDriverStatusData = {
             driverStatus: driverStatuses.waitingDecision.value,

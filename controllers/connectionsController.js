@@ -20,10 +20,12 @@ module.exports = class ConnectionsController {
   static async disconnectByCompany(req, res, next) {
     const userId = req.jwtToken.user.id;
     const data = req.body;
+    const isIncidentThreeTimesRow = req.isIncidentThreeTimesRow;
 
     const {success, error} = await ConnectionsServices.disconnectByCompany({
       data,
       userId,
+      isIncidentThreeTimesRow,
     });
 
     if (success)

@@ -16,6 +16,7 @@ const isDocumentAccessRequestExist = require('./isDocumentAccessRequestExist');
 const verifyDocsRequestsMiddleware = require('./verifyDocsRequestsMiddleware');
 const forbidResolveDocsAccessRequests = require('./forbidResolveDocsAccessRequests');
 const isApplicantExist = require('./isApplicantExist');
+const checkThreeInRowIncident = require('./checkThreeInRowIncident');
 
 module.exports = {
   authMiddleware,
@@ -36,4 +37,5 @@ module.exports = {
   verifyDocsRequestsMiddleware,
   forbidResolveDocsAccessRequests,
   isApplicantExist,
+  checkThreeInRowIncident,
 };
