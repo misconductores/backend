@@ -197,12 +197,13 @@ module.exports = class JobController {
   static async getApplicantsByJobId(req, res, next) {
     const {jobId} = req.params;
 
-    let {page, limit} = req.query;
+    let {page, limit, searchTerm} = req.query;
 
     const {success, error, result} = await JobServices.getApplicantsByJobId({
       jobId,
       page,
       limit,
+      searchTerm,
     });
 
     if (success)

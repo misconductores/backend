@@ -14,6 +14,7 @@ const mongoose = require('mongoose');
 const ConnectionsServices = require('./connectionsServices');
 const GeneralServices = require('./generalServices');
 const NotificationsServices = require('./notificationsServices');
+const {searchDriverData} = require('../utils/helpers/jobs');
 
 module.exports = class OffersServices {
   static async sendOffer({
@@ -130,13 +131,21 @@ module.exports = class OffersServices {
     }
   }
 
-  static async getOffersByJobId({page, limit, jobId}) {
+  static async getOffersByJobId({page, limit, jobId, searchTerm}) {
     try {
       const skip = (page - 1) * limit;
 
-      const query = {
-        jobId: jobId,
-      };
+      let driverIds = await searchDriverData({searchTerm});
+
+      const query = {jobId};
+
+      // If driverIds were found, add them to the query
+      if (driverIds.length > 0) {
+        query.driverId = {$in: driverIds};
+      } else if (searchTerm) {
+        // If a searchTerm was provided but no drivers matched, return empty result
+        return {success: true, result: {totalCount: 0, data: []}};
+      }
 
       const [totalCount, data] = await Promise.all([
         OffersModel.countDocuments(query),

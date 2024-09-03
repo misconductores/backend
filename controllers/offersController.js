@@ -78,7 +78,7 @@ module.exports = class OffersController {
   static async getOffersByJobId(req, res, next) {
     const {jobId} = req.params;
 
-    let {page, limit} = req.query;
+    let {page, limit, searchTerm} = req.query;
     page = parseInt(page);
     limit = parseInt(limit);
 
@@ -86,6 +86,7 @@ module.exports = class OffersController {
       page,
       limit,
       jobId,
+      searchTerm,
     });
 
     if (success)

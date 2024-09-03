@@ -1,7 +1,10 @@
 const {restrictedUserData} = require('../constants/usersConstants');
-const {ApplicantsModel, OffersModel} = require('../models');
+const {ApplicantsModel, OffersModel, UsersModel} = require('../models');
 const JobModel = require('../models/JobModel');
-const {addGetJobsConditions} = require('../utils/helpers/jobs');
+const {
+  addGetJobsConditions,
+  searchDriverData,
+} = require('../utils/helpers/jobs');
 const {getJobsPipeline} = require('../utils/pipelines/jobs');
 const GeneralServices = require('./generalServices');
 const mongoose = require('mongoose');
@@ -101,13 +104,25 @@ module.exports = class JobServices {
     }
   }
 
-  static async getApplicantsByJobId({jobId, limit, page}) {
+  static async getApplicantsByJobId({jobId, limit, page, searchTerm}) {
     try {
       const skip = (page - 1) * limit;
 
+      let driverIds = await searchDriverData({searchTerm});
+
+      const query = {jobId};
+
+      // If driverIds were found, add them to the query
+      if (driverIds.length > 0) {
+        query.driverId = {$in: driverIds};
+      } else if (searchTerm) {
+        // If a searchTerm was provided but no drivers matched, return empty result
+        return {success: true, result: {totalCount: 0, data: []}};
+      }
+
       const [totalCount, data] = await Promise.all([
-        ApplicantsModel.countDocuments({jobId: jobId}),
-        ApplicantsModel.find({jobId: jobId}, null, {skip, limit}).populate({
+        ApplicantsModel.countDocuments(query),
+        ApplicantsModel.find(query, null, {skip, limit}).populate({
           path: 'driverId',
           select: restrictedUserData,
         }),
