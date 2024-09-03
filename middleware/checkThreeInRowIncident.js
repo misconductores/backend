@@ -12,6 +12,12 @@ module.exports = async (req, res, next) => {
     const isIncidentReason =
       reasonToLeave === reasonToLeaveOptions.incident.value;
 
+    // if not a incident reason just move on
+    if (!isIncidentReason) {
+      req.isIncidentThreeTimesRow = false;
+      return next();
+    }
+
     // find those connections of driver which is disconnected by company so driverReviewId should not be null
     const connections = await ConnectionsModel.find({
       driverId,
@@ -34,8 +40,8 @@ module.exports = async (req, res, next) => {
     );
 
     // if already driver got incident review for two times and third time if it is again incident
-    if (isIncidentTwoTimesRow && isIncidentReason) {
-      req.isIncidentThreeTimesRow = true;
+    if (isIncidentTwoTimesRow) {
+      req.isIncidentThreeTimesRow = isIncidentTwoTimesRow;
       return next();
     }
   } catch (error) {

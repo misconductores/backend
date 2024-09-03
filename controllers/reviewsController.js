@@ -75,11 +75,10 @@ module.exports = class ReviewsController {
           _id: review.connectionId,
         }).populate({path: 'driverId', select: 'driverStatus'});
 
-        if (
-          connection.driverId.driverStatus !==
-            driverStatuses.underInspection.value &&
-          connection.driverId.driverStatus !== driverStatuses.connected.value
-        ) {
+        const isDriverNotConnected =
+          connection.driverId.driverStatus !== driverStatuses.connected.value;
+
+        if (isDriverNotConnected) {
           await GeneralServices.update({
             id: review.driverId,
             data: {

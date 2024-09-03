@@ -104,9 +104,9 @@ module.exports = class ConnectionsServices {
 
       finalData.averageRating = averageRating;
 
-      // if average rating is less than 2 then review will be pending for admin otherwise accepted
+      // if average rating is less than or equal to 2 then review will be pending for admin otherwise accepted
       finalData.status =
-        averageRating < 2
+        averageRating <= 2
           ? statusTypes.pending.value
           : statusTypes.accepted.value;
 
@@ -217,11 +217,17 @@ module.exports = class ConnectionsServices {
 
       finalData.averageRating = averageRating;
 
-      // if average rating is less than 2 then review will be pending for admin otherwise accepted
-      finalData.status =
-        averageRating < 2
-          ? statusTypes.pending.value
-          : statusTypes.accepted.value;
+      // if incident three times are row for particular driver then make the review pending whether greater than 2 or less than 2
+      // if average rating is less than or equal to 2 then review will be pending for admin otherwise accepted
+      if (isIncidentThreeTimesRow) {
+        finalData.status = statusTypes.pending.value;
+        finalData.isThirdIncidentInARow = true;
+      } else {
+        finalData.status =
+          averageRating <= 2
+            ? statusTypes.pending.value
+            : statusTypes.accepted.value;
+      }
 
       // create review when company disconnect from driver
       const newReview = await ReviewsModel.create([finalData], {session});
@@ -241,9 +247,9 @@ module.exports = class ConnectionsServices {
         //if driverReviewId is already present then make driver to available otherwise make it to available soon
         if (isIncidentThreeTimesRow) {
           updateDriverStatusData = {
-            driverStatus: driverStatuses.underInspection.value,
+            driverStatus: driverStatuses.waitingDecision.value,
           };
-        } else if (averageRating >= 2) {
+        } else if (averageRating > 2) {
           updateDriverStatusData = {
             driverStatus: connection.companyReviewId
               ? driverStatuses.available.value

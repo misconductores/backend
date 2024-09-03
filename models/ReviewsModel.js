@@ -58,6 +58,10 @@ const ReviewsSchema = new Schema(
       type: String,
       default: '0.0',
     },
+    isThirdIncidentInARow: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

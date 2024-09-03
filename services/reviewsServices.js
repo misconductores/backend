@@ -3,10 +3,9 @@ const {
   roles,
   reviewTypes,
   statusTypes,
-  driverStatuses,
   connectionStatuses,
 } = require('../constants/usersConstants');
-const {ReviewsModel, UsersModel, ConnectionsModel} = require('../models');
+const {ReviewsModel, ConnectionsModel} = require('../models');
 const {getCurrentDate} = require('../utils/DateCalculations');
 const GeneralServices = require('./generalServices');
 
@@ -14,7 +13,11 @@ module.exports = class ReviewsServices {
   static async getReviewsForAdmin({page, limit, status, reviewType}) {
     try {
       const skip = (page - 1) * limit;
-      const query = {status, type: reviewType, averageRating: {$lt: '2'}};
+      const query = {
+        status,
+        type: reviewType,
+        $or: [{averageRating: {$lte: '2'}}, {isThirdIncidentInARow: true}],
+      };
       const [totalCount, data] = await Promise.all([
         ReviewsModel.countDocuments(query),
         ReviewsModel.find(query, null, {skip, limit})
