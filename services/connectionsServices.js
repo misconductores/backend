@@ -104,9 +104,9 @@ module.exports = class ConnectionsServices {
 
       finalData.averageRating = averageRating;
 
-      // if average rating is less than 2 then review will be pending for admin otherwise accepted
+      // if average rating is less than or equal to 2 then review will be pending for admin otherwise accepted
       finalData.status =
-        averageRating < 2
+        averageRating <= 2
           ? statusTypes.pending.value
           : statusTypes.accepted.value;
 
@@ -178,7 +178,7 @@ module.exports = class ConnectionsServices {
     }
   }
 
-  static async disconnectByCompany({data, userId}) {
+  static async disconnectByCompany({data, userId, isIncidentThreeTimesRow}) {
     const session = await mongoose.startSession();
 
     try {
@@ -217,11 +217,17 @@ module.exports = class ConnectionsServices {
 
       finalData.averageRating = averageRating;
 
-      // if average rating is less than 2 then review will be pending for admin otherwise accepted
-      finalData.status =
-        averageRating < 2
-          ? statusTypes.pending.value
-          : statusTypes.accepted.value;
+      // if incident three times are row for particular driver then make the review pending whether greater than 2 or less than 2
+      // if average rating is less than or equal to 2 then review will be pending for admin otherwise accepted
+      if (isIncidentThreeTimesRow) {
+        finalData.status = statusTypes.pending.value;
+        finalData.isThirdIncidentInARow = true;
+      } else {
+        finalData.status =
+          averageRating <= 2
+            ? statusTypes.pending.value
+            : statusTypes.accepted.value;
+      }
 
       // create review when company disconnect from driver
       const newReview = await ReviewsModel.create([finalData], {session});
@@ -237,17 +243,18 @@ module.exports = class ConnectionsServices {
 
         let updateDriverStatusData = {};
 
-        // if driverReviewId is already present then make driver to available otherwise make it to available soon
-        if (averageRating >= 2) {
-          if (connection.companyReviewId) {
-            updateDriverStatusData = {
-              driverStatus: driverStatuses.available.value,
-            };
-          } else {
-            updateDriverStatusData = {
-              driverStatus: driverStatuses.availableSoon.value,
-            };
-          }
+        // if company review driver for 3rd time in a row with incident reason then driver will be underInspection
+        //if driverReviewId is already present then make driver to available otherwise make it to available soon
+        if (isIncidentThreeTimesRow) {
+          updateDriverStatusData = {
+            driverStatus: driverStatuses.waitingDecision.value,
+          };
+        } else if (averageRating > 2) {
+          updateDriverStatusData = {
+            driverStatus: connection.companyReviewId
+              ? driverStatuses.available.value
+              : driverStatuses.availableSoon.value,
+          };
         } else {
           updateDriverStatusData = {
             driverStatus: driverStatuses.waitingDecision.value,

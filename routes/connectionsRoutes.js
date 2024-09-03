@@ -11,6 +11,7 @@ const {
   isAlreadyDisconnectedMiddleware,
   validatorMiddleware,
   checkDriverStatusMiddleware,
+  checkThreeInRowIncident,
 } = require('../middleware');
 const {reviewsSchema, connectionsSchema} = require('../schemas');
 const {catchAsync} = require('../utils');
@@ -39,6 +40,7 @@ router.post(
   roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
   validatorMiddleware(reviewsSchema.validateCompanyDisconnectReq),
   isAlreadyDisconnectedMiddleware,
+  checkThreeInRowIncident,
   catchAsync(ConnectionsController.disconnectByCompany)
 );
 
