@@ -9,6 +9,7 @@ module.exports = class OffersController {
     const userId = req.jwtToken.user.id;
 
     const {driverId, jobId} = req.body;
+    const {isOfferSendToApplicant} = req.query;
 
     const findOffer = await OffersModel.findOne({
       jobId: jobId,
@@ -24,7 +25,12 @@ module.exports = class OffersController {
       success: response,
       error,
       offer,
-    } = await OffersServices.sendOffer({userId, driverId, jobId});
+    } = await OffersServices.sendOffer({
+      userId,
+      driverId,
+      jobId,
+      isOfferSendToApplicant,
+    });
 
     if (response) {
       return next(OffersResponsesFactory.offerSendSuccessfully({offer}));

@@ -4,14 +4,24 @@ const {
   driverStatuses,
   restrictedUserData,
 } = require('../constants/usersConstants');
-const {OffersModel, NotificationsModel, UsersModel} = require('../models');
+const {
+  OffersModel,
+  NotificationsModel,
+  UsersModel,
+  ApplicantsModel,
+} = require('../models');
 const mongoose = require('mongoose');
 const ConnectionsServices = require('./connectionsServices');
 const GeneralServices = require('./generalServices');
 const NotificationsServices = require('./notificationsServices');
 
 module.exports = class OffersServices {
-  static async sendOffer({userId, driverId, jobId}) {
+  static async sendOffer({
+    userId,
+    driverId,
+    jobId,
+    isOfferSendToApplicant = null,
+  }) {
     try {
       const {success: response, doc: offer} = await GeneralServices.create({
         data: {companyId: userId, driverId, jobId},
@@ -19,6 +29,13 @@ module.exports = class OffersServices {
       });
 
       if (response) {
+        // if offer was sent to applicant then update the applicant collection
+        if (isOfferSendToApplicant)
+          await ApplicantsModel.updateOne(
+            {$and: [{jobId: jobId}, {driverId: driverId}]},
+            {isOfferSent: true}
+          );
+
         await NotificationsServices.createNotification({
           userId: driverId,
           relatedUserId: userId,

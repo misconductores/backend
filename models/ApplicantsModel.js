@@ -14,6 +14,10 @@ const applicantsSchema = new Schema(
       ref: 'Users',
       required: true,
     },
+    isOfferSent: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
