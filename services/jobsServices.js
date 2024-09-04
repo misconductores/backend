@@ -56,14 +56,20 @@ module.exports = class JobServices {
     }
   }
 
-  static async getCompanyJobList({page, limit, id}) {
+  static async getCompanyJobList({page, limit, id, title}) {
     try {
       const skip = (page - 1) * limit;
       let data = [];
 
-      const jobCount = await JobModel.countDocuments({companyId: id});
+      let query = {companyId: id};
 
-      const jobs = await JobModel.find({companyId: id}, null, {skip, limit})
+      if (title) {
+        query.title = {$regex: title, $options: 'i'};
+      }
+
+      const jobCount = await JobModel.countDocuments(query);
+
+      const jobs = await JobModel.find(query, null, {skip, limit})
         .sort({createdAt: -1})
         .populate({path: 'companyId', select: 'companyName profilePic'});
 

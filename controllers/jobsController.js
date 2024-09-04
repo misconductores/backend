@@ -92,7 +92,7 @@ module.exports = class JobController {
   static async getCompanyJobList(req, res, next) {
     const userId = req.jwtToken.user.id;
 
-    let {page, limit} = req.query;
+    let {page, limit, searchTerm} = req.query;
     page = parseInt(page);
     limit = parseInt(limit);
     const {
@@ -103,6 +103,7 @@ module.exports = class JobController {
       page,
       limit,
       id: userId,
+      title: searchTerm,
     });
     if (response)
       return next(
