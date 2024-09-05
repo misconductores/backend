@@ -22,7 +22,6 @@ const {getWithoutMatchCountPipeline} = require('../utils/pipelines/common');
 
 module.exports = class OffersServices {
   static async sendOffer({userId, driverId, jobId, applicantId = null}) {
-    console.log(applicantId);
     try {
       const {success: response, doc: offer} = await GeneralServices.create({
         data: {companyId: userId, driverId, jobId},
