@@ -9,7 +9,7 @@ module.exports = class OffersController {
     const userId = req.jwtToken.user.id;
 
     const {driverId, jobId} = req.body;
-    const {isOfferSendToApplicant} = req.query;
+    const {applicantId} = req.query;
 
     const findOffer = await OffersModel.findOne({
       jobId: jobId,
@@ -29,7 +29,7 @@ module.exports = class OffersController {
       userId,
       driverId,
       jobId,
-      isOfferSendToApplicant,
+      applicantId,
     });
 
     if (response) {

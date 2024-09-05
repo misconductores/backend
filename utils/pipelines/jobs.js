@@ -72,6 +72,9 @@ exports.getWithoutMatchApplicantsPipeline = ({jobId, skip, limit}) => {
       $project: {
         'driverDetails.firstName': 1,
         'driverDetails.lastName': 1,
+        'driverDetails.experience': 1,
+        'driverDetails.postalCode': 1,
+        'driverDetails.city': 1,
         'driverDetails._id': 1,
         jobId: 1,
         isOfferSent: 1,
@@ -88,6 +91,9 @@ exports.getMatchApplicantsPipeline = ({searchTerm, jobId, limit, skip}) => [
     $project: {
       'driverDetails.firstName': 1,
       'driverDetails.lastName': 1,
+      'driverDetails.experience': 1,
+      'driverDetails.postalCode': 1,
+      'driverDetails.city': 1,
       'driverDetails._id': 1,
       jobId: 1,
       isOfferSent: 1,

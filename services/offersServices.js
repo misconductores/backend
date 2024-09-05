@@ -21,12 +21,8 @@ const {
 const {getWithoutMatchCountPipeline} = require('../utils/pipelines/common');
 
 module.exports = class OffersServices {
-  static async sendOffer({
-    userId,
-    driverId,
-    jobId,
-    isOfferSendToApplicant = null,
-  }) {
+  static async sendOffer({userId, driverId, jobId, applicantId = null}) {
+    console.log(applicantId);
     try {
       const {success: response, doc: offer} = await GeneralServices.create({
         data: {companyId: userId, driverId, jobId},
@@ -35,9 +31,9 @@ module.exports = class OffersServices {
 
       if (response) {
         // if offer was sent to applicant then update the applicant collection
-        if (isOfferSendToApplicant)
+        if (applicantId)
           await ApplicantsModel.updateOne(
-            {$and: [{jobId: jobId}, {driverId: driverId}]},
+            {_id: applicantId},
             {isOfferSent: true}
           );
 

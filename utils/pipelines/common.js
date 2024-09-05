@@ -33,8 +33,13 @@ exports.getCommonJobPipeline = ({searchTerm, jobId}) => [
     },
   },
   {
+    $addFields: {
+      driverDetails: {$arrayElemAt: ['$driverDetails', 0]}, // Extract the first element of the array
+    },
+  },
+  {
     $match: {
-      driverDetails: {$ne: []}, // Ensure there is at least one matching driverDetail
+      driverDetails: {$ne: null}, // Ensure there is at least one matching driverDetail
       jobId: new mongoose.Types.ObjectId(jobId),
     },
   },
