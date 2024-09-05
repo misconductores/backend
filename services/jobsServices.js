@@ -1,11 +1,13 @@
-const {restrictedUserData} = require('../constants/usersConstants');
-const {ApplicantsModel, OffersModel, UsersModel} = require('../models');
+const {ApplicantsModel, OffersModel} = require('../models');
 const JobModel = require('../models/JobModel');
+const {addGetJobsConditions} = require('../utils/helpers/jobs');
 const {
-  addGetJobsConditions,
-  searchDriverData,
-} = require('../utils/helpers/jobs');
-const {getJobsPipeline} = require('../utils/pipelines/jobs');
+  getJobsPipeline,
+  getWithoutMatchApplicantsPipeline,
+  getWithoutMatchApplicantsCountPipeline,
+  getMatchApplicantsPipeline,
+  getMatchApplicantsCountPipeline,
+} = require('../utils/pipelines/jobs');
 const GeneralServices = require('./generalServices');
 const mongoose = require('mongoose');
 
@@ -114,31 +116,31 @@ module.exports = class JobServices {
     try {
       const skip = (page - 1) * limit;
 
-      let driverIds = await searchDriverData({searchTerm});
+      // Choose pipelines based on the presence of searchTerm
+      const pipeline = searchTerm
+        ? getMatchApplicantsPipeline({limit, skip, jobId, searchTerm})
+        : getWithoutMatchApplicantsPipeline({limit, skip, jobId});
 
-      const query = {jobId};
+      const countPipeline = searchTerm
+        ? getMatchApplicantsCountPipeline({jobId, searchTerm})
+        : getWithoutMatchApplicantsCountPipeline({jobId});
 
-      // If driverIds were found, add them to the query
-      if (driverIds.length > 0) {
-        query.driverId = {$in: driverIds};
-      } else if (searchTerm) {
-        // If a searchTerm was provided but no drivers matched, return empty result
-        return {success: true, result: {totalCount: 0, data: []}};
-      }
-
-      const [totalCount, data] = await Promise.all([
-        ApplicantsModel.countDocuments(query),
-        ApplicantsModel.find(query, null, {skip, limit}).populate({
-          path: 'driverId',
-          select: restrictedUserData,
-        }),
+      const [data, totalCountResult] = await Promise.all([
+        ApplicantsModel.aggregate(pipeline),
+        ApplicantsModel.aggregate(countPipeline),
       ]);
 
-      return {success: true, result: {totalCount, data}};
+      const totalCount = totalCountResult[0]?.count || 0;
+
+      return {
+        success: true,
+        result: {totalCount, data},
+      };
     } catch (error) {
       return {success: false, error};
     }
   }
+
   static async deleteJobById({jobId}) {
     const session = await mongoose.startSession();
     session.startTransaction();
