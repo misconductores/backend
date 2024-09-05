@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const {getCommonJobPipeline} = require('./common');
 
 exports.getJobsPipeline = ({query, postalCode, userCity, skip, limit}) => {
   if (postalCode && !query.city) {
@@ -71,7 +72,7 @@ exports.getWithoutMatchApplicantsPipeline = ({jobId, skip, limit}) => {
       $project: {
         'driverDetails.firstName': 1,
         'driverDetails.lastName': 1,
-        'driverDetails._id': 1, // Include the driver's _id
+        'driverDetails._id': 1,
         jobId: 1,
         isOfferSent: 1,
       },
@@ -81,74 +82,22 @@ exports.getWithoutMatchApplicantsPipeline = ({jobId, skip, limit}) => {
   ];
 };
 
-exports.getMatchApplicantsPipeline = ({searchTerm, jobId, limit, skip}) => {
-  return [
-    {
-      $lookup: {
-        from: 'users',
-        let: {driverId: '$driverId'},
-        pipeline: [
-          {
-            $match: {
-              $expr: {$eq: ['$_id', '$$driverId']},
-              $or: [
-                {firstName: {$regex: searchTerm, $options: 'i'}},
-                {lastName: {$regex: searchTerm, $options: 'i'}},
-              ],
-            },
-          },
-        ],
-        as: 'driverDetails',
-      },
+exports.getMatchApplicantsPipeline = ({searchTerm, jobId, limit, skip}) => [
+  ...getCommonJobPipeline({searchTerm, jobId}),
+  {
+    $project: {
+      'driverDetails.firstName': 1,
+      'driverDetails.lastName': 1,
+      'driverDetails._id': 1,
+      jobId: 1,
+      isOfferSent: 1,
     },
-    {
-      $match: {
-        driverDetails: {$ne: []}, // Ensure there is at least one matching driverDetail
-        jobId: new mongoose.Types.ObjectId(jobId),
-      },
-    },
-    {
-      $project: {
-        'driverDetails.firstName': 1,
-        'driverDetails.lastName': 1,
-        'driverDetails._id': 1, // Include the driver's _id
-        jobId: 1,
-        isOfferSent: 1,
-      },
-    },
-    {$skip: parseInt(skip)},
-    {$limit: parseInt(limit)},
-  ];
-};
+  },
+  {$skip: parseInt(skip)},
+  {$limit: parseInt(limit)},
+];
 
-exports.getMatchApplicantsCountPipeline = ({searchTerm, jobId}) => {
-  return [
-    {
-      $lookup: {
-        from: 'users',
-        let: {driverId: '$driverId'},
-        pipeline: [
-          {
-            $match: {
-              $expr: {$eq: ['$_id', '$$driverId']},
-              $or: [
-                {firstName: {$regex: searchTerm, $options: 'i'}},
-                {lastName: {$regex: searchTerm, $options: 'i'}},
-              ],
-            },
-          },
-        ],
-        as: 'driverDetails',
-      },
-    },
-    {
-      $match: {
-        driverDetails: {$ne: []}, // Ensure there is at least one matching driverDetail
-        jobId: new mongoose.Types.ObjectId(jobId),
-      },
-    },
-    {
-      $count: 'count',
-    },
-  ];
-};
+exports.getMatchApplicantsCountPipeline = ({searchTerm, jobId}) => [
+  ...getCommonJobPipeline({searchTerm, jobId}),
+  {$count: 'count'},
+];
