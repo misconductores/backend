@@ -118,6 +118,14 @@ module.exports = class OffersServices {
         data: {status: statusTypes.rejected.value},
       });
       if (updatedOffer) {
+        // if driver reject the offer then it will be removed from the applicants of that job
+        await ApplicantsModel.deleteOne({
+          $and: [
+            {driverId: updatedOffer.driverId},
+            {jobId: updatedOffer.jobId},
+          ],
+        });
+
         await NotificationsServices.createNotification({
           userId: offer.companyId,
           relatedUserId: userId,
