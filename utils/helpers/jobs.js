@@ -48,23 +48,3 @@ exports.addGetJobsConditions = ({
 
   return query;
 };
-
-exports.searchDriverData = async ({searchTerm}) => {
-  let driverIds = [];
-
-  if (searchTerm) {
-    const matchedDrivers = await UsersModel.find(
-      {
-        $or: [
-          {firstName: {$regex: searchTerm, $options: 'i'}},
-          {lastName: {$regex: searchTerm, $options: 'i'}},
-        ],
-      },
-      '_id' // Only select the _id field
-    );
-
-    driverIds = matchedDrivers.map((driver) => driver._id);
-  }
-
-  return driverIds;
-};

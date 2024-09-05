@@ -1,10 +1,10 @@
 const {ApplicantsModel, OffersModel} = require('../models');
 const JobModel = require('../models/JobModel');
 const {addGetJobsConditions} = require('../utils/helpers/jobs');
+const {getWithoutMatchCountPipeline} = require('../utils/pipelines/common');
 const {
   getJobsPipeline,
   getWithoutMatchApplicantsPipeline,
-  getWithoutMatchApplicantsCountPipeline,
   getMatchApplicantsPipeline,
   getMatchApplicantsCountPipeline,
 } = require('../utils/pipelines/jobs');
@@ -123,7 +123,7 @@ module.exports = class JobServices {
 
       const countPipeline = searchTerm
         ? getMatchApplicantsCountPipeline({jobId, searchTerm})
-        : getWithoutMatchApplicantsCountPipeline({jobId});
+        : getWithoutMatchCountPipeline({jobId});
 
       const [data, totalCountResult] = await Promise.all([
         ApplicantsModel.aggregate(pipeline),

@@ -2,7 +2,6 @@ const {
   statusTypes,
   notificationTypes,
   driverStatuses,
-  restrictedUserData,
 } = require('../constants/usersConstants');
 const {
   OffersModel,
@@ -14,7 +13,12 @@ const mongoose = require('mongoose');
 const ConnectionsServices = require('./connectionsServices');
 const GeneralServices = require('./generalServices');
 const NotificationsServices = require('./notificationsServices');
-const {searchDriverData} = require('../utils/helpers/jobs');
+const {
+  getMatchOffersPipeline,
+  getWithoutMatchOffersPipeline,
+  getMatchOffersCountPipeline,
+} = require('../utils/pipelines/offers');
+const {getWithoutMatchCountPipeline} = require('../utils/pipelines/common');
 
 module.exports = class OffersServices {
   static async sendOffer({
@@ -135,31 +139,22 @@ module.exports = class OffersServices {
     try {
       const skip = (page - 1) * limit;
 
-      let driverIds = await searchDriverData({searchTerm});
+      // Choose pipelines based on the presence of searchTerm
+      const pipeline = searchTerm
+        ? getMatchOffersPipeline({limit, skip, jobId, searchTerm})
+        : getWithoutMatchOffersPipeline({limit, skip, jobId});
 
-      const query = {jobId};
+      const countPipeline = searchTerm
+        ? getMatchOffersCountPipeline({jobId, searchTerm})
+        : getWithoutMatchCountPipeline({jobId});
 
-      // If driverIds were found, add them to the query
-      if (driverIds.length > 0) {
-        query.driverId = {$in: driverIds};
-      } else if (searchTerm) {
-        // If a searchTerm was provided but no drivers matched, return empty result
-        return {success: true, result: {totalCount: 0, data: []}};
-      }
-
-      const [totalCount, data] = await Promise.all([
-        OffersModel.countDocuments(query),
-        OffersModel.find(query, null, {skip, limit})
-          .populate({
-            path: 'companyId',
-            select: 'companyName profilePic contact',
-          })
-          .populate({
-            path: 'driverId',
-            select: restrictedUserData,
-          })
-          .populate({path: 'jobId', select: 'title'}),
+      const [data, totalCountResult] = await Promise.all([
+        OffersModel.aggregate(pipeline),
+        OffersModel.aggregate(countPipeline),
       ]);
+
+      const totalCount = totalCountResult[0]?.count || 0;
+
       return {success: true, offers: {totalCount, data}};
     } catch (err) {
       return {success: false, err};

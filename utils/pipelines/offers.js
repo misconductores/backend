@@ -1,52 +1,6 @@
 const mongoose = require('mongoose');
 
-exports.getJobsPipeline = ({query, postalCode, userCity, skip, limit}) => {
-  if (postalCode && !query.city) {
-    return [
-      {$match: query},
-      {
-        $addFields: {
-          postalCodeMatch: postalCode
-            ? {$cond: [{$eq: ['$postalCode', postalCode]}, 1, 0]}
-            : 0,
-          userCityMatch: userCity
-            ? {$cond: [{$eq: ['$city', userCity]}, 1, 0]}
-            : 0,
-        },
-      },
-      {$sort: {postalCodeMatch: -1, userCityMatch: -1, createdAt: -1}},
-      {$skip: skip},
-      {$limit: limit},
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'companyId',
-          foreignField: '_id',
-          as: 'company',
-        },
-      },
-      {$unwind: '$company'},
-    ];
-  } else {
-    return [
-      {$match: query},
-      {$sort: {createdAt: -1}},
-      {$skip: skip},
-      {$limit: limit},
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'companyId',
-          foreignField: '_id',
-          as: 'company',
-        },
-      },
-      {$unwind: '$company'},
-    ];
-  }
-};
-
-exports.getWithoutMatchApplicantsPipeline = ({jobId, skip, limit}) => {
+exports.getWithoutMatchOffersPipeline = ({jobId, skip, limit}) => {
   return [
     {
       $lookup: {
@@ -68,12 +22,27 @@ exports.getWithoutMatchApplicantsPipeline = ({jobId, skip, limit}) => {
       },
     },
     {
+      $lookup: {
+        from: 'jobs',
+        localField: 'jobId',
+        foreignField: '_id',
+        as: 'jobDetails',
+      },
+    },
+    {
+      $unwind: {
+        path: '$jobDetails',
+        preserveNullAndEmptyArrays: false, // Ensures that documents with no matches are not included
+      },
+    },
+    {
       $project: {
         'driverDetails.firstName': 1,
         'driverDetails.lastName': 1,
         'driverDetails._id': 1, // Include the driver's _id
         jobId: 1,
-        isOfferSent: 1,
+        'jobDetails.title': 1,
+        status: 1,
       },
     },
     {$skip: parseInt(skip)},
@@ -81,7 +50,7 @@ exports.getWithoutMatchApplicantsPipeline = ({jobId, skip, limit}) => {
   ];
 };
 
-exports.getMatchApplicantsPipeline = ({searchTerm, jobId, limit, skip}) => {
+exports.getMatchOffersPipeline = ({searchTerm, jobId, limit, skip}) => {
   return [
     {
       $lookup: {
@@ -108,12 +77,27 @@ exports.getMatchApplicantsPipeline = ({searchTerm, jobId, limit, skip}) => {
       },
     },
     {
+      $lookup: {
+        from: 'jobs',
+        localField: 'jobId',
+        foreignField: '_id',
+        as: 'jobDetails',
+      },
+    },
+    {
+      $unwind: {
+        path: '$jobDetails',
+        preserveNullAndEmptyArrays: false, // Ensures that documents with no matches are not included
+      },
+    },
+    {
       $project: {
         'driverDetails.firstName': 1,
         'driverDetails.lastName': 1,
         'driverDetails._id': 1, // Include the driver's _id
         jobId: 1,
-        isOfferSent: 1,
+        'jobDetails.title': 1,
+        status: 1,
       },
     },
     {$skip: parseInt(skip)},
@@ -121,7 +105,7 @@ exports.getMatchApplicantsPipeline = ({searchTerm, jobId, limit, skip}) => {
   ];
 };
 
-exports.getMatchApplicantsCountPipeline = ({searchTerm, jobId}) => {
+exports.getMatchOffersCountPipeline = ({searchTerm, jobId}) => {
   return [
     {
       $lookup: {
