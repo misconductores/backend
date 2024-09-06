@@ -55,6 +55,11 @@ exports.getMatchOffersPipeline = ({searchTerm, jobId, limit, skip}) => {
         jobId: new mongoose.Types.ObjectId(jobId),
       },
     },
+    {
+      $addFields: {
+        driverDetails: {$arrayElemAt: ['$driverDetails', 0]}, // Convert driverDetails array to object
+      },
+    },
     ...getJobLookupAndProjectStages({skip, limit}),
   ];
 };

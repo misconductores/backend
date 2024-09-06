@@ -33,7 +33,7 @@ module.exports = class OffersServices {
         if (applicantId)
           await ApplicantsModel.updateOne(
             {_id: applicantId},
-            {isOfferSent: true}
+            {offerId: offer.id, isOfferSent: true}
           );
 
         await NotificationsServices.createNotification({
@@ -119,12 +119,15 @@ module.exports = class OffersServices {
       });
       if (updatedOffer) {
         // if driver reject the offer then it will be removed from the applicants of that job
-        await ApplicantsModel.deleteOne({
-          $and: [
-            {driverId: updatedOffer.driverId},
-            {jobId: updatedOffer.jobId},
-          ],
-        });
+        await ApplicantsModel.updateOne(
+          {
+            $and: [
+              {driverId: updatedOffer.driverId},
+              {jobId: updatedOffer.jobId},
+            ],
+          },
+          {$set: {isOfferReject: true}}
+        );
 
         await NotificationsServices.createNotification({
           userId: offer.companyId,
