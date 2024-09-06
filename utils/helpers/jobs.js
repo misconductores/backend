@@ -1,3 +1,5 @@
+const {UsersModel} = require('../../models');
+
 exports.addGetJobsConditions = ({
   title,
   location,

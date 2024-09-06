@@ -9,6 +9,7 @@ module.exports = class OffersController {
     const userId = req.jwtToken.user.id;
 
     const {driverId, jobId} = req.body;
+    const {applicantId} = req.query;
 
     const findOffer = await OffersModel.findOne({
       jobId: jobId,
@@ -24,7 +25,12 @@ module.exports = class OffersController {
       success: response,
       error,
       offer,
-    } = await OffersServices.sendOffer({userId, driverId, jobId});
+    } = await OffersServices.sendOffer({
+      userId,
+      driverId,
+      jobId,
+      applicantId,
+    });
 
     if (response) {
       return next(OffersResponsesFactory.offerSendSuccessfully({offer}));
@@ -72,7 +78,7 @@ module.exports = class OffersController {
   static async getOffersByJobId(req, res, next) {
     const {jobId} = req.params;
 
-    let {page, limit} = req.query;
+    let {page, limit, searchTerm} = req.query;
     page = parseInt(page);
     limit = parseInt(limit);
 
@@ -80,6 +86,7 @@ module.exports = class OffersController {
       page,
       limit,
       jobId,
+      searchTerm,
     });
 
     if (success)

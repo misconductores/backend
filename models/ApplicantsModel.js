@@ -14,6 +14,19 @@ const applicantsSchema = new Schema(
       ref: 'Users',
       required: true,
     },
+    offerId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'offers',
+      default: null,
+    },
+    isOfferReject: {
+      type: Boolean,
+      default: false,
+    },
+    isOfferSent: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

@@ -2,16 +2,26 @@ const {
   statusTypes,
   notificationTypes,
   driverStatuses,
-  restrictedUserData,
 } = require('../constants/usersConstants');
-const {OffersModel, NotificationsModel, UsersModel} = require('../models');
+const {
+  OffersModel,
+  NotificationsModel,
+  UsersModel,
+  ApplicantsModel,
+} = require('../models');
 const mongoose = require('mongoose');
 const ConnectionsServices = require('./connectionsServices');
 const GeneralServices = require('./generalServices');
 const NotificationsServices = require('./notificationsServices');
+const {
+  getMatchOffersPipeline,
+  getWithoutMatchOffersPipeline,
+  getMatchOffersCountPipeline,
+} = require('../utils/pipelines/offers');
+const {getWithoutMatchCountPipeline} = require('../utils/pipelines/common');
 
 module.exports = class OffersServices {
-  static async sendOffer({userId, driverId, jobId}) {
+  static async sendOffer({userId, driverId, jobId, applicantId = null}) {
     try {
       const {success: response, doc: offer} = await GeneralServices.create({
         data: {companyId: userId, driverId, jobId},
@@ -19,6 +29,13 @@ module.exports = class OffersServices {
       });
 
       if (response) {
+        // if offer was sent to applicant then update the applicant collection
+        if (applicantId)
+          await ApplicantsModel.updateOne(
+            {_id: applicantId},
+            {offerId: offer.id, isOfferSent: true}
+          );
+
         await NotificationsServices.createNotification({
           userId: driverId,
           relatedUserId: userId,
@@ -101,6 +118,17 @@ module.exports = class OffersServices {
         data: {status: statusTypes.rejected.value},
       });
       if (updatedOffer) {
+        // if driver reject the offer then it will be removed from the applicants of that job
+        await ApplicantsModel.updateOne(
+          {
+            $and: [
+              {driverId: updatedOffer.driverId},
+              {jobId: updatedOffer.jobId},
+            ],
+          },
+          {$set: {isOfferReject: true}}
+        );
+
         await NotificationsServices.createNotification({
           userId: offer.companyId,
           relatedUserId: userId,
@@ -113,27 +141,26 @@ module.exports = class OffersServices {
     }
   }
 
-  static async getOffersByJobId({page, limit, jobId}) {
+  static async getOffersByJobId({page, limit, jobId, searchTerm}) {
     try {
       const skip = (page - 1) * limit;
 
-      const query = {
-        jobId: jobId,
-      };
+      // Choose pipelines based on the presence of searchTerm
+      const pipeline = searchTerm
+        ? getMatchOffersPipeline({limit, skip, jobId, searchTerm})
+        : getWithoutMatchOffersPipeline({limit, skip, jobId});
 
-      const [totalCount, data] = await Promise.all([
-        OffersModel.countDocuments(query),
-        OffersModel.find(query, null, {skip, limit})
-          .populate({
-            path: 'companyId',
-            select: 'companyName profilePic contact',
-          })
-          .populate({
-            path: 'driverId',
-            select: restrictedUserData,
-          })
-          .populate({path: 'jobId', select: 'title'}),
+      const countPipeline = searchTerm
+        ? getMatchOffersCountPipeline({jobId, searchTerm})
+        : getWithoutMatchCountPipeline({jobId});
+
+      const [data, totalCountResult] = await Promise.all([
+        OffersModel.aggregate(pipeline),
+        OffersModel.aggregate(countPipeline),
       ]);
+
+      const totalCount = totalCountResult[0]?.count || 0;
+
       return {success: true, offers: {totalCount, data}};
     } catch (err) {
       return {success: false, err};

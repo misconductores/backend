@@ -1,8 +1,13 @@
-const {restrictedUserData} = require('../constants/usersConstants');
 const {ApplicantsModel, OffersModel} = require('../models');
 const JobModel = require('../models/JobModel');
 const {addGetJobsConditions} = require('../utils/helpers/jobs');
-const {getJobsPipeline} = require('../utils/pipelines/jobs');
+const {
+  getJobsPipeline,
+  getWithoutMatchApplicantsPipeline,
+  getMatchApplicantsPipeline,
+  getMatchApplicantsCountPipeline,
+  getWithoutMatchApplicantsCountPipeline,
+} = require('../utils/pipelines/jobs');
 const GeneralServices = require('./generalServices');
 const mongoose = require('mongoose');
 
@@ -53,14 +58,20 @@ module.exports = class JobServices {
     }
   }
 
-  static async getCompanyJobList({page, limit, id}) {
+  static async getCompanyJobList({page, limit, id, title}) {
     try {
       const skip = (page - 1) * limit;
       let data = [];
 
-      const jobCount = await JobModel.countDocuments({companyId: id});
+      let query = {companyId: id};
 
-      const jobs = await JobModel.find({companyId: id}, null, {skip, limit})
+      if (title) {
+        query.title = {$regex: title, $options: 'i'};
+      }
+
+      const jobCount = await JobModel.countDocuments(query);
+
+      const jobs = await JobModel.find(query, null, {skip, limit})
         .sort({createdAt: -1})
         .populate({path: 'companyId', select: 'companyName profilePic'});
 
@@ -68,6 +79,7 @@ module.exports = class JobServices {
         const offers = await OffersModel.countDocuments({jobId: job._id});
         const applicants = await ApplicantsModel.countDocuments({
           jobId: job._id,
+          isOfferReject: false,
         });
         let jobObj = job.toObject();
 
@@ -101,23 +113,35 @@ module.exports = class JobServices {
     }
   }
 
-  static async getApplicantsByJobId({jobId, limit, page}) {
+  static async getApplicantsByJobId({jobId, limit, page, searchTerm}) {
     try {
       const skip = (page - 1) * limit;
 
-      const [totalCount, data] = await Promise.all([
-        ApplicantsModel.countDocuments({jobId: jobId}),
-        ApplicantsModel.find({jobId: jobId}, null, {skip, limit}).populate({
-          path: 'driverId',
-          select: restrictedUserData,
-        }),
+      // Choose pipelines based on the presence of searchTerm
+      const pipeline = searchTerm
+        ? getMatchApplicantsPipeline({limit, skip, jobId, searchTerm})
+        : getWithoutMatchApplicantsPipeline({limit, skip, jobId});
+
+      const countPipeline = searchTerm
+        ? getMatchApplicantsCountPipeline({jobId, searchTerm})
+        : getWithoutMatchApplicantsCountPipeline({jobId});
+
+      const [data, totalCountResult] = await Promise.all([
+        ApplicantsModel.aggregate(pipeline),
+        ApplicantsModel.aggregate(countPipeline),
       ]);
 
-      return {success: true, result: {totalCount, data}};
+      const totalCount = totalCountResult[0]?.count || 0;
+
+      return {
+        success: true,
+        result: {totalCount, data},
+      };
     } catch (error) {
       return {success: false, error};
     }
   }
+
   static async deleteJobById({jobId}) {
     const session = await mongoose.startSession();
     session.startTransaction();
