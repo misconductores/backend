@@ -351,7 +351,8 @@ module.exports = class ConnectionsServices {
           path: 'companyId',
           select: 'companyName contact profilePic',
         })
-        .populate('driverReviewId companyReviewId');
+        .populate('driverReviewId companyReviewId')
+        .sort({endDate: -1});
 
       const history = connections.map((item) => {
         let connection = item.toObject();
