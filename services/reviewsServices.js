@@ -125,7 +125,14 @@ module.exports = class ReviewsServices {
           };
         }
       });
-      return {success: true, reviews};
+
+      const sortedReviews = reviews.toSorted(
+        (a, b) =>
+          new Date(b.driverReviewId.createdAt) -
+          new Date(a.driverReviewId.createdAt)
+      );
+
+      return {success: true, reviews: sortedReviews};
     } catch (error) {
       return {success: false, error};
     }
