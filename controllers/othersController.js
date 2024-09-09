@@ -1,7 +1,7 @@
 const {OthersResponsesFactory} = require('../factories');
 const OthersErrorFactory = require('../factories/errors/others');
 const PostalCodeModel = require('../models/PostalCodeModel');
-const {GeneralServices} = require('../services');
+const {GeneralServices, OthersServices} = require('../services');
 
 module.exports = class OthersController {
   static async getCitiesList(req, res, next) {
@@ -24,5 +24,22 @@ module.exports = class OthersController {
         data,
       })
     );
+  }
+
+  static async getCounters(req, res, next) {
+    const role = req.jwtToken.user.role;
+    const userId = req.jwtToken.user.id;
+
+    const {success, counters, error} = await OthersServices.getCounters({
+      role,
+      userId,
+    });
+
+    if (success)
+      return next(
+        OthersResponsesFactory.countersRetrieveSuccessfully({counters})
+      );
+
+    if (error) throw error;
   }
 };

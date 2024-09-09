@@ -7,6 +7,7 @@ const OffersServices = require('./offersServices');
 const ConnectionsServices = require('./connectionsServices');
 const ReviewsServices = require('./reviewsServices');
 const DocumentsAccessServices = require('./documentsAccessServices');
+const OthersServices = require('./othersServices');
 
 module.exports = {
   UsersServices,
@@ -18,4 +19,5 @@ module.exports = {
   ConnectionsServices,
   ReviewsServices,
   DocumentsAccessServices,
+  OthersServices,
 };
