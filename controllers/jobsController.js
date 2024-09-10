@@ -219,4 +219,19 @@ module.exports = class JobController {
 
     if (error) throw error;
   }
+
+  static async getAppliedJobs(req, res, next) {
+    const userId = req.jwtToken.user.id;
+
+    const {success, appliedJobs, error} = await JobsServices.getAppliedJobs({
+      driverId: userId,
+    });
+
+    if (success)
+      return next(
+        JobResponsesFactory.appliedJobsRetrievedSuccessfully({appliedJobs})
+      );
+
+    if (error) throw error;
+  }
 };

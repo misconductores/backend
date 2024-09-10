@@ -33,6 +33,13 @@ router.get(
 );
 
 router.get(
+  '/applied-jobs',
+  authMiddleware,
+  roleValidatorMiddleware({allowedRoles: [roles.driver.value]}),
+  catchAsync(JobsController.getAppliedJobs)
+);
+
+router.get(
   '/:id',
   authMiddleware,
   validatorMiddleware(jobsSchema.validateJobIdParams, PARAMS_PROPERTY),
