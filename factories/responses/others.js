@@ -8,4 +8,11 @@ module.exports = class OthersResponsesFactory {
       body: {data},
     });
   }
+  static countersRetrieveSuccessfully({counters}) {
+    return new AppResponse({
+      message: 'Counters retrieved successfully',
+      statusCode: 200,
+      body: {counters},
+    });
+  }
 };
