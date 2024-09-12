@@ -1,18 +1,26 @@
+const {statusTypes} = require('../constants/usersConstants');
 const {GeneralErrorsFactory, JobErrors} = require('../factories');
 const {ApplicantsModel} = require('../models');
-const {GeneralServices} = require('../services');
 
 module.exports = async (req, res, next) => {
   try {
     const {id: jobId} = req.params;
     const driverId = req.jwtToken.user.id;
 
-    const {doc: applicant} = await GeneralServices.findOne({
-      query: {driverId, jobId},
-      model: ApplicantsModel,
-    });
+    const applicant = await ApplicantsModel.findOne({
+      driverId,
+      jobId,
+    }).populate({path: 'offerId', select: 'status'});
 
-    if (applicant) return next(JobErrors.applicantAlreadyExist());
+    // if offer is not present or if it is present then it should not be accepted or rejected
+    // it means if offer is accepted or rejected then driver can apply for job again
+    const isOfferPresentOrNot =
+      !applicant.offerId ||
+      (applicant.offerId.status !== statusTypes.accepted.value &&
+        applicant.offerId.status !== statusTypes.rejected.value);
+
+    if (applicant && isOfferPresentOrNot)
+      return next(JobErrors.applicantAlreadyExist());
 
     next();
   } catch (error) {

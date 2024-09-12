@@ -162,4 +162,15 @@ module.exports = class JobServices {
       return {success: false, error};
     }
   }
+
+  static async getAppliedJobs({driverId}) {
+    try {
+      const appliedJobs = await ApplicantsModel.find({
+        driverId: driverId,
+      }).populate({path: 'offerId', select: 'status'});
+      return {success: true, appliedJobs};
+    } catch (error) {
+      return {success: false, error};
+    }
+  }
 };

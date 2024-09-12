@@ -47,9 +47,16 @@ module.exports = class JobResponsesFactory {
 
   static applicantsRetrievedSuccessfully({count, data, page, perPage}) {
     return new AppResponse({
-      message: 'Job list retrieved successfully',
+      message: 'Applicants retrieved successfully',
       statusCode: 200,
       body: {count, data, page, perPage},
+    });
+  }
+  static appliedJobsRetrievedSuccessfully({appliedJobs}) {
+    return new AppResponse({
+      message: 'Applied jobs retrieved successfully',
+      statusCode: 200,
+      body: {appliedJobs},
     });
   }
 };
