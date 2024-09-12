@@ -7,7 +7,7 @@ module.exports = async (req, res, next) => {
     const {id: jobId} = req.params;
     const driverId = req.jwtToken.user.id;
 
-    const findApplicant = await ApplicantsModel.findOne({
+    const applicant = await ApplicantsModel.findOne({
       driverId,
       jobId,
     }).populate({path: 'offerId', select: 'status'});
@@ -15,11 +15,11 @@ module.exports = async (req, res, next) => {
     // if offer is not present or if it is present then it should not be accepted or rejected
     // it means if offer is accepted or rejected then driver can apply for job again
     const isOfferPresentOrNot =
-      !findApplicant.offerId ||
-      (findApplicant.offerId.status !== statusTypes.accepted.value &&
-        findApplicant.offerId.status !== statusTypes.rejected.value);
+      !applicant.offerId ||
+      (applicant.offerId.status !== statusTypes.accepted.value &&
+        applicant.offerId.status !== statusTypes.rejected.value);
 
-    if (findApplicant && isOfferPresentOrNot)
+    if (applicant && isOfferPresentOrNot)
       return next(JobErrors.applicantAlreadyExist());
 
     next();
