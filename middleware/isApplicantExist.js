@@ -12,6 +12,9 @@ module.exports = async (req, res, next) => {
       jobId,
     }).populate({path: 'offerId', select: 'status'});
 
+    // if not applicant found the simply move toward controller
+    if (!applicant) return next();
+
     // if offer is not present or if it is present then it should not be accepted or rejected
     // it means if offer is accepted or rejected then driver can apply for job again
     const isOfferPresentOrNot =
