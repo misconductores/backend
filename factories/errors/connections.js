@@ -13,10 +13,4 @@ module.exports = class ConnectionErrorsFactory {
       statusCode: 400,
     });
   }
-  static noConnectionErr() {
-    return new AppError({
-      message: 'You are not connected',
-      statusCode: 403,
-    });
-  }
 };

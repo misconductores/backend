@@ -312,11 +312,7 @@ module.exports = class ConnectionsServices {
         select: 'contact profilePic companyName',
       });
 
-      if (connection) {
-        return {success: true, connection};
-      } else {
-        return {success: false};
-      }
+      return {success: true, connection};
     } catch (error) {
       return {success: false, error};
     }
