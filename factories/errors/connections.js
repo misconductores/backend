@@ -1,4 +1,3 @@
-const {errorCodes} = require('../../constants/usersConstants');
 const AppError = require('./AppError');
 
 module.exports = class ConnectionErrorsFactory {
