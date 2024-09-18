@@ -1,3 +1,4 @@
+const {errorCodes} = require('../../constants/usersConstants');
 const AppError = require('./AppError');
 
 module.exports = class ConnectionErrorsFactory {
@@ -16,7 +17,10 @@ module.exports = class ConnectionErrorsFactory {
   static noConnectionErr() {
     return new AppError({
       message: 'You are not connected',
-      statusCode: 403,
+      statusCode: 400,
+      err: {
+        type: errorCodes.NOT_CONNECTED,
+      },
     });
   }
 };

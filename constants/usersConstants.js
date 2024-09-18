@@ -156,6 +156,7 @@ module.exports.errorCodes = {
   INVALID_TOKEN_ERR: 'INVALID_TOKEN_ERR',
   USER_NOT_VERIFIED: 'USER_NOT_VERIFIED',
   ONLY_COMPANY_ALLOWED: 'ONLY_COMPANY_ALLOWED',
+  NOT_CONNECTED: 'NOT_CONNECTED',
 };
 
 module.exports.restrictedUserData =
