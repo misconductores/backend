@@ -10,6 +10,7 @@ const {
   reviewsRoute,
   documentsAccessRoute,
   notificationsRoute,
+  subscriptionsRoute,
 } = require(`../routes`);
 
 const apiPrefix = '/api/v1/';
@@ -22,6 +23,7 @@ const prepareV1Routes = (app) => {
   app.use(`${apiPrefix}reviews`, reviewsRoute);
   app.use(`${apiPrefix}documents-access`, documentsAccessRoute);
   app.use(`${apiPrefix}notifications`, notificationsRoute);
+  app.use(`${apiPrefix}subscriptions`, subscriptionsRoute);
   app.use(`${apiPrefix}public`, publicRoute);
   app.use(`${apiPrefix}private`, authMiddleware, privateRoute);
 };

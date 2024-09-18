@@ -327,3 +327,27 @@ module.exports.blockedErrorTypes = {
     value: 'cannot_blocked_err',
   },
 };
+
+module.exports.subscriptionStatuses = {
+  active: {
+    value: 'active',
+  },
+  expired: {
+    value: 'expired',
+  },
+  inactive: {
+    value: 'inactive',
+  },
+};
+
+module.exports.subscriptionModes = {
+  free: {
+    value: 'free',
+  },
+  monthly: {
+    value: 'monthly',
+  },
+  yearly: {
+    value: 'yearly',
+  },
+};

@@ -8,6 +8,7 @@ const connectionsRoute = require('./connectionsRoutes.js');
 const reviewsRoute = require('./reviewsRoute.js');
 const documentsAccessRoute = require('./documentsAccessRoute.js');
 const notificationsRoute = require('./notificationsRoute.js');
+const subscriptionsRoute = require('./subscriptionsRoute.js');
 
 module.exports = {
   usersRoute,
@@ -20,4 +21,5 @@ module.exports = {
   reviewsRoute,
   documentsAccessRoute,
   notificationsRoute,
+  subscriptionsRoute,
 };
