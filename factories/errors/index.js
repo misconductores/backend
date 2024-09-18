@@ -8,6 +8,7 @@ const OffersErrors = require('./offers');
 const ConnectionErrors = require('./connections');
 const ReviewsErrors = require('./reviews');
 const DocumentsAccessErrors = require('./documentsAccess');
+const SubscriptionsErrors = require('./subscriptions');
 
 module.exports = {
   AppError,
@@ -20,4 +21,5 @@ module.exports = {
   ConnectionErrors,
   ReviewsErrors,
   DocumentsAccessErrors,
+  SubscriptionsErrors,
 };
