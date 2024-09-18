@@ -363,3 +363,15 @@ module.exports.subscriptionTypes = {
     value: 'yearly',
   },
 };
+
+module.exports.subscriptionStatusEnums = Object.values(
+  this.subscriptionStatuses
+).map((status) => status.value);
+
+module.exports.subscriptionModeEnums = Object.values(
+  this.subscriptionModes
+).map((mode) => mode.value);
+
+module.exports.subscriptionTypeEnums = Object.values(
+  this.subscriptionTypes
+).map((type) => type.value);

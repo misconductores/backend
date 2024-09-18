@@ -1,29 +1,20 @@
 const mongoose = require('mongoose');
 const {
-  subscriptionModes,
-  subscriptionTypes,
+  subscriptionModeEnums,
+  subscriptionTypeEnums,
 } = require('../constants/usersConstants');
 
 const Schema = mongoose.Schema;
 
-const subscriptionModeEnums = Object.values(subscriptionModes).map(
-  (mode) => mode.value
-);
-
-const subscriptionTypeEnums = Object.values(subscriptionTypes).map(
-  (type) => type.value
-);
-
 const SubscriptionHistorySchema = new Schema(
   {
     subscriptionId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
       ref: 'subscriptions',
       required: true,
     },
     transactionId: {
       type: String,
-      required: true,
     },
     amount: {
       type: Number,
