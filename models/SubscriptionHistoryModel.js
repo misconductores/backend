@@ -1,17 +1,10 @@
 const mongoose = require('mongoose');
 const {
-  subscriptionStatuses,
   subscriptionModes,
-  subscriptionProviders,
   subscriptionTypes,
-  roles,
 } = require('../constants/usersConstants');
 
 const Schema = mongoose.Schema;
-
-const subscriptionStatusEnums = Object.values(subscriptionStatuses).map(
-  (status) => status.value
-);
 
 const subscriptionModeEnums = Object.values(subscriptionModes).map(
   (mode) => mode.value
@@ -21,29 +14,19 @@ const subscriptionTypeEnums = Object.values(subscriptionTypes).map(
   (type) => type.value
 );
 
-const SubscriptionsSchema = new Schema(
+const SubscriptionHistorySchema = new Schema(
   {
-    userId: {
+    subscriptionId: {
       type: String,
-      ref: 'Users',
+      ref: 'subscriptions',
       required: true,
     },
-    userType: {
+    transactionId: {
       type: String,
       required: true,
-      default: roles.company.value,
     },
-    providerSubscriptionId: {
-      type: String,
-    },
-    subscriptionProviders: {
-      type: String,
-      default: subscriptionProviders.stripe.value,
-    },
-    status: {
-      type: String,
-      default: subscriptionStatuses.active.value,
-      enum: subscriptionStatusEnums,
+    amount: {
+      type: Number,
       required: true,
     },
     startDate: {
@@ -74,4 +57,7 @@ const SubscriptionsSchema = new Schema(
   }
 );
 
-module.exports = mongoose.model('subscriptions', SubscriptionsSchema);
+module.exports = mongoose.model(
+  'subscriptions_history',
+  SubscriptionHistorySchema
+);

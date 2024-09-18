@@ -9,6 +9,7 @@ const ReviewsModel = require('./ReviewsModel');
 const DocumentAccessModel = require('./DocumentAccessModel');
 const ApplicantsModel = require('./ApplicantsModel');
 const SubscriptionsModel = require('./SubscriptionsModel');
+const SubscriptionHistoryModel = require('./SubscriptionHistoryModel');
 
 module.exports = {
   mongoose,
@@ -22,4 +23,5 @@ module.exports = {
   DocumentAccessModel,
   ApplicantsModel,
   SubscriptionsModel,
+  SubscriptionHistoryModel,
 };
