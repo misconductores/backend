@@ -344,6 +344,18 @@ module.exports.subscriptionModes = {
   free: {
     value: 'free',
   },
+  paid: {
+    value: 'paid',
+  },
+};
+
+module.exports.subscriptionProviders = {
+  stripe: {
+    value: 'stripe',
+  },
+};
+
+module.exports.subscriptionTypes = {
   monthly: {
     value: 'monthly',
   },
