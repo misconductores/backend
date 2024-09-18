@@ -40,14 +40,12 @@ module.exports = class ConnectionsController {
     const {success, connection, error} =
       await ConnectionsServices.getConnectedCompany({userId});
 
-    if (success && connection)
+    if (success)
       return next(
         ConnectionsResponsesFactory.connectionRetrievedSuccessfully({
           connection,
         })
       );
-
-    if (!success) return next(ConnectionErrors.noConnectionErr());
 
     if (error) throw error;
   }
