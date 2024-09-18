@@ -327,3 +327,51 @@ module.exports.blockedErrorTypes = {
     value: 'cannot_blocked_err',
   },
 };
+
+module.exports.subscriptionStatuses = {
+  active: {
+    value: 'active',
+  },
+  expired: {
+    value: 'expired',
+  },
+  inactive: {
+    value: 'inactive',
+  },
+};
+
+module.exports.subscriptionModes = {
+  free: {
+    value: 'free',
+  },
+  paid: {
+    value: 'paid',
+  },
+};
+
+module.exports.subscriptionProviders = {
+  stripe: {
+    value: 'stripe',
+  },
+};
+
+module.exports.subscriptionTypes = {
+  monthly: {
+    value: 'monthly',
+  },
+  yearly: {
+    value: 'yearly',
+  },
+};
+
+module.exports.subscriptionStatusEnums = Object.values(
+  this.subscriptionStatuses
+).map((status) => status.value);
+
+module.exports.subscriptionModeEnums = Object.values(
+  this.subscriptionModes
+).map((mode) => mode.value);
+
+module.exports.subscriptionTypeEnums = Object.values(
+  this.subscriptionTypes
+).map((type) => type.value);
