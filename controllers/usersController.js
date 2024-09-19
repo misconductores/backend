@@ -1,5 +1,10 @@
 const config = require('config');
-const {UsersServices, FilesServices, GeneralServices} = require('../services');
+const {
+  UsersServices,
+  FilesServices,
+  GeneralServices,
+  SubscriptionServices,
+} = require('../services');
 const actions = require('../utils/actions');
 const {
   UsersErrorsFactory,
@@ -94,10 +99,15 @@ module.exports = class UsersController {
       user: userToLogin,
     });
 
+    const {subscription} = await SubscriptionServices.getSubscriptionByUserId({
+      userId: user.id,
+    });
+
     return next(
       UsersResponsesFactory.userLoggedInSuccessfully({
         user,
         isLoginRequest: true,
+        subscription,
       })
     );
   }
