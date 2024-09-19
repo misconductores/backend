@@ -17,7 +17,7 @@ const verifyDocsRequestsMiddleware = require('./verifyDocsRequestsMiddleware');
 const forbidResolveDocsAccessRequests = require('./forbidResolveDocsAccessRequests');
 const isApplicantExist = require('./isApplicantExist');
 const checkThreeInRowIncident = require('./checkThreeInRowIncident');
-const isSubscriptionExist = require('./isSubscriptionExist');
+const blockExistingSubscribers = require('./blockExistingSubscribers');
 
 module.exports = {
   authMiddleware,
@@ -39,5 +39,5 @@ module.exports = {
   forbidResolveDocsAccessRequests,
   isApplicantExist,
   checkThreeInRowIncident,
-  isSubscriptionExist,
+  blockExistingSubscribers,
 };

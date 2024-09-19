@@ -3,7 +3,7 @@ const {SubscriptionsController} = require('../controllers');
 const {
   authMiddleware,
   roleValidatorMiddleware,
-  isSubscriptionExist,
+  blockExistingSubscribers,
 } = require('../middleware');
 const {catchAsync} = require('../utils');
 const router = require('express').Router();
@@ -12,7 +12,7 @@ router.post(
   '/free',
   authMiddleware,
   roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
-  isSubscriptionExist,
+  blockExistingSubscribers,
   catchAsync(SubscriptionsController.activateFreeSubscription)
 );
 
