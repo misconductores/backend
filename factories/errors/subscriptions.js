@@ -1,9 +1,9 @@
 const AppError = require('./AppError');
 
 module.exports = class SubscriptionsErrorsFactory {
-  static subscriptionActivationFailed() {
+  static subscriptionAlreadyExistErr() {
     return new AppError({
-      message: 'Subscription activation failed',
+      message: 'Subscription already exist',
       statusCode: 400,
     });
   }
