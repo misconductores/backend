@@ -13,11 +13,11 @@ module.exports = class UsersResponsesFactory {
     });
   }
 
-  static userLoggedInSuccessfully({user, isLoginRequest}) {
+  static userLoggedInSuccessfully({user, isLoginRequest, subscription = null}) {
     return new AppResponse({
       message: 'User logged in successfully',
       statusCode: 200,
-      body: {user, isLoginRequest},
+      body: {user, isLoginRequest, subscription},
     });
   }
 
