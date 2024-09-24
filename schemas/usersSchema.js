@@ -163,3 +163,10 @@ module.exports.validateCheckEmailRequest = (data) => {
   });
   return validatorUtils.validate(schema, data);
 };
+
+module.exports.validateBlockUnblockUserReq = (data) => {
+  const schema = Yup.object().shape({
+    userId: Yup.string().required('User id is required'),
+  });
+  return validatorUtils.validate(schema, data);
+};

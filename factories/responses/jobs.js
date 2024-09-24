@@ -36,4 +36,27 @@ module.exports = class JobResponsesFactory {
       body: {},
     });
   }
+
+  static applyForJobSuccessfully() {
+    return new AppResponse({
+      message: 'You have been successfully applied for this job',
+      statusCode: 200,
+      body: {},
+    });
+  }
+
+  static applicantsRetrievedSuccessfully({count, data, page, perPage}) {
+    return new AppResponse({
+      message: 'Applicants retrieved successfully',
+      statusCode: 200,
+      body: {count, data, page, perPage},
+    });
+  }
+  static appliedJobsRetrievedSuccessfully({appliedJobs}) {
+    return new AppResponse({
+      message: 'Applied jobs retrieved successfully',
+      statusCode: 200,
+      body: {appliedJobs},
+    });
+  }
 };

@@ -14,9 +14,6 @@ const jobSchema = new Schema(
     postalCode: {type: String},
     description: {type: String},
     responsibility: {type: String},
-    applicants: [
-      {type: mongoose.Schema.Types.ObjectId, ref: 'Users', default: []},
-    ],
     companyId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Users',

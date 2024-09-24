@@ -31,4 +31,10 @@ module.exports = class JobErrorsFactory {
       statusCode: 400,
     });
   }
+  static applicantAlreadyExist() {
+    return new AppError({
+      message: 'Applicant already exist',
+      statusCode: 400,
+    });
+  }
 };

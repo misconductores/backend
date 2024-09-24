@@ -1,4 +1,7 @@
-const {errorCodes} = require('../../constants/usersConstants');
+const {
+  errorCodes,
+  blockedErrorTypes,
+} = require('../../constants/usersConstants');
 const AppError = require('./AppError');
 
 module.exports = class UsersErrorsFactory {
@@ -17,7 +20,7 @@ module.exports = class UsersErrorsFactory {
   }
   static forbiddenCompanyErr() {
     return new AppError({
-      message: 'Only company profile allowed!',
+      message: 'Only company profiles are allowed to proceed this request',
       statusCode: 403,
       err: {
         type: errorCodes.ONLY_COMPANY_ALLOWED,
@@ -130,6 +133,36 @@ module.exports = class UsersErrorsFactory {
     return new AppError({
       message: 'Email is already exist',
       statusCode: 400,
+    });
+  }
+  static alreadyBlockedErr() {
+    return new AppError({
+      message: 'This user is already blocked',
+      statusCode: 400,
+      err: {
+        type: blockedErrorTypes.already_blocked_err.value,
+      },
+    });
+  }
+  static cannotBlockedErr() {
+    return new AppError({
+      message: 'You cannot blocked this driver',
+      statusCode: 400,
+      err: {
+        type: blockedErrorTypes.cannot_blocked_err.value,
+      },
+    });
+  }
+  static alreadyUnBlockedErr() {
+    return new AppError({
+      message: 'You have already unblocked this user',
+      statusCode: 400,
+    });
+  }
+  static roleOtherThanDriverBlockErr() {
+    return new AppError({
+      message: 'You are not allowed to block others except drivers',
+      statusCode: 403,
     });
   }
 };
