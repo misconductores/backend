@@ -1,0 +1,79 @@
+const {
+  PARAMS_PROPERTY,
+  roles,
+  driverStatuses,
+  QUERY_PROPERTY,
+} = require('../constants/usersConstants');
+const {OffersController} = require('../controllers');
+const {
+  authMiddleware,
+  validatorMiddleware,
+  roleValidatorMiddleware,
+  checkDriverStatusMiddleware,
+  isCompanyJobCheckMiddleware,
+  forbidResolvedOffers,
+  forbidConnectedDrivers,
+  isCompanyDriverCheckMiddleware,
+} = require('../middleware');
+const {offersSchema, othersSchema} = require('../schemas');
+const {catchAsync} = require('../utils');
+const router = require('express').Router();
+
+router.get(
+  '/driver',
+  authMiddleware,
+  validatorMiddleware(othersSchema.validatePaginationParams, QUERY_PROPERTY),
+  roleValidatorMiddleware({allowedRoles: [roles.driver.value]}),
+  catchAsync(OffersController.getOffersByDriverId)
+);
+
+router.post(
+  '/',
+  authMiddleware,
+  roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
+  validatorMiddleware(offersSchema.validateCreateOfferReq),
+  isCompanyDriverCheckMiddleware,
+  catchAsync(OffersController.sendOffer)
+);
+
+router.patch(
+  '/:id/accept',
+  authMiddleware,
+  validatorMiddleware(offersSchema.validateOfferParams, PARAMS_PROPERTY),
+  roleValidatorMiddleware({allowedRoles: [roles.driver.value]}),
+  checkDriverStatusMiddleware({
+    allowedDriverStatuses: [driverStatuses.available.value],
+  }),
+  forbidResolvedOffers,
+  forbidConnectedDrivers,
+  catchAsync(OffersController.acceptOffer)
+);
+
+router.patch(
+  '/:id/reject',
+  authMiddleware,
+  validatorMiddleware(offersSchema.validateOfferParams, PARAMS_PROPERTY),
+  roleValidatorMiddleware({allowedRoles: [roles.driver.value]}),
+  forbidResolvedOffers,
+  catchAsync(OffersController.rejectOffer)
+);
+
+router.get(
+  '/:jobId',
+  authMiddleware,
+  validatorMiddleware(othersSchema.validatePaginationParams, QUERY_PROPERTY),
+  roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
+  isCompanyJobCheckMiddleware,
+  catchAsync(OffersController.getOffersByJobId)
+);
+
+router.patch(
+  '/:id/withdraw',
+  authMiddleware,
+  validatorMiddleware(offersSchema.validateOfferParams, PARAMS_PROPERTY),
+  roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
+  forbidResolvedOffers,
+  catchAsync(OffersController.withdrawOfferById)
+);
+
+module.exports = router;

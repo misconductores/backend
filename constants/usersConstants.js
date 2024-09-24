@@ -31,6 +31,9 @@ module.exports.driverStatuses = {
   availableSoon: {
     value: 'availableSoon',
   },
+  waitingDecision: {
+    value: 'waitingDecision',
+  },
   underInspection: {
     value: 'underInspection',
   },
@@ -156,7 +159,7 @@ module.exports.errorCodes = {
 };
 
 module.exports.restrictedUserData =
-  '-federalLicenses.federalLicenseNo -stateLicenses.stateLicenseNo -visaNumber -fastNumber -password';
+  '-federalLicenses.federalLicenseNo -stateLicenses.stateLicenseNo -visaNumber -fastNumber -password -verificationToken -documents';
 
 module.exports.experienceTypes = {
   student: {
@@ -219,5 +222,108 @@ module.exports.equipmentTypes = {
   others: {
     label: 'Others',
     value: 'others',
+  },
+};
+
+module.exports.statusTypes = {
+  pending: {
+    value: 'pending',
+    label: 'Pending',
+  },
+  accepted: {
+    value: 'accepted',
+    label: 'Accepted',
+  },
+  rejected: {
+    value: 'rejected',
+    label: 'Rejected',
+  },
+  expired: {
+    value: 'expired',
+    label: 'Expired',
+  },
+  withdrawn: {
+    value: 'withdrawn',
+    label: 'Withdrawn',
+  },
+};
+
+module.exports.notificationTypes = {
+  send_offer: {
+    value: 'send_offer',
+  },
+  accept_offer: {
+    value: 'accept_offer',
+  },
+  reject_offer: {
+    value: 'reject_offer',
+  },
+  company_disconnect: {
+    value: 'company_disconnect',
+  },
+  driver_disconnect: {
+    value: 'driver_disconnect',
+  },
+  company_document_access: {
+    value: 'company_document_access',
+  },
+  driver_accepted_docs_access: {
+    value: 'driver_accepted_docs_access',
+  },
+  driver_rejected_docs_access: {
+    value: 'driver_rejected_docs_access',
+  },
+  driver_removed_docs_access: {
+    value: 'driver_removed_docs_access',
+  },
+};
+
+module.exports.TIMEZONES = {
+  'Central Time': {
+    value: 'America/Mexico_City',
+  },
+};
+
+module.exports.reviewTypes = {
+  company_review: {
+    value: 'company_review',
+  },
+  driver_review: {
+    value: 'driver_review',
+  },
+};
+
+module.exports.connectionStatuses = {
+  active: {
+    value: 'active',
+  },
+  pending: {
+    value: 'pending',
+  },
+  inactive: {
+    value: 'inactive',
+  },
+};
+
+module.exports.reviewYesNoOptions = ['yes', 'no'];
+
+module.exports.reasonToLeaveOptions = {
+  voluntary: {
+    value: 'voluntary',
+  },
+  incident: {
+    value: 'incident',
+  },
+  other: {
+    value: 'other',
+  },
+};
+
+module.exports.blockedErrorTypes = {
+  already_blocked_err: {
+    value: 'already_blocked_err',
+  },
+  cannot_blocked_err: {
+    value: 'cannot_blocked_err',
   },
 };

@@ -10,6 +10,7 @@ const {
 const {jwtUtils} = require('../utils');
 const {usersConstants} = require('../constants');
 const UsersModel = require('../models/UsersModel');
+const {driverStatuses, roles} = require('../constants/usersConstants');
 
 module.exports = class UsersController {
   static async createUser(req, res, next) {
@@ -50,25 +51,22 @@ module.exports = class UsersController {
   }
 
   static async getUserInformation(req, res, next) {
-    const {id} = req.params;
-    const {
-      success,
-      error,
-      doc: user,
-    } = await GeneralServices.findById({
-      id: id,
-      model: UsersModel,
+    const {id: userId} = req.params;
+
+    const {success, error, user} = await UsersServices.getRestrictedUserById({
+      userId,
     });
 
     if (!user) return next(UsersErrorsFactory.userNotFoundErr());
 
-    if (!success) throw error;
+    if (success)
+      return next(
+        UsersResponsesFactory.singleUserInfoRetrievedRes({
+          user,
+        })
+      );
 
-    return next(
-      UsersResponsesFactory.singleUserInfoRetrievedRes({
-        user,
-      })
-    );
+    if (error) throw error;
   }
 
   static async loginUser(req, res, next) {
@@ -437,5 +435,103 @@ module.exports = class UsersController {
     });
     if (doc) return next(UsersErrorsFactory.emailAlreadyExistErr());
     if (!doc) return next(UsersResponsesFactory.emailAvailable());
+  }
+  static async rejectAndBlockDriver(req, res, next) {
+    const {userId} = req.params;
+    const {reviewId} = req.body;
+
+    const {doc: user} = await GeneralServices.findOne({
+      query: {_id: userId},
+      model: UsersModel,
+    });
+
+    if (user?.driverStatus === driverStatuses.connected.value)
+      return next(UsersErrorsFactory.cannotBlockedErr());
+
+    if (user.driverStatus === driverStatuses.underInspection.value)
+      return next(UsersErrorsFactory.alreadyBlockedErr());
+
+    if (user.role !== roles.driver.value)
+      return next(UsersErrorsFactory.roleOtherThanDriverBlockErr());
+
+    const {success, error} = await UsersServices.rejectAndBlockDriver({
+      userId,
+      reviewId,
+    });
+
+    if (success) return next(UsersResponsesFactory.userBlockedSuccessfully());
+
+    if (error) throw error;
+  }
+  static async blockDriver(req, res, next) {
+    const {userId} = req.params;
+
+    const {doc: user} = await GeneralServices.findOne({
+      query: {_id: userId},
+      model: UsersModel,
+    });
+
+    if (user?.driverStatus === driverStatuses.connected.value)
+      return next(UsersErrorsFactory.cannotBlockedErr());
+
+    if (user?.driverStatus === driverStatuses.underInspection.value)
+      return next(UsersErrorsFactory.alreadyBlockedErr());
+
+    if (user?.role !== roles.driver.value)
+      return next(UsersErrorsFactory.roleOtherThanDriverBlockErr());
+
+    const {success, error} = await GeneralServices.update({
+      id: userId,
+      data: {driverStatus: driverStatuses.underInspection.value},
+      model: UsersModel,
+    });
+
+    if (success) return next(UsersResponsesFactory.userBlockedSuccessfully());
+
+    if (error) throw error;
+  }
+  static async getBlockedDrivers(req, res, next) {
+    let {limit, page, title} = req.query;
+    page = parseInt(page);
+    limit = parseInt(limit);
+
+    const {success, error, result} = await UsersServices.getBlockedDrivers({
+      page,
+      limit,
+      title,
+    });
+
+    if (success)
+      return next(
+        UsersResponsesFactory.driversRetrievedSuccessfully({
+          count: result.totalCount,
+          data: result.data,
+          page: page,
+          perPage: limit,
+        })
+      );
+
+    if (error) throw error;
+  }
+  static async unBlockDriver(req, res, next) {
+    const {userId} = req.params;
+
+    const {doc: user} = await GeneralServices.findOne({
+      query: {_id: userId},
+      model: UsersModel,
+    });
+
+    if (user.driverStatus !== driverStatuses.underInspection.value)
+      return next(UsersErrorsFactory.alreadyUnBlockedErr());
+
+    const {success, error} = await GeneralServices.update({
+      id: userId,
+      data: {driverStatus: driverStatuses.available.value},
+      model: UsersModel,
+    });
+
+    if (success) return next(UsersResponsesFactory.userUnBlockedSuccessfully());
+
+    if (error) throw error;
   }
 };

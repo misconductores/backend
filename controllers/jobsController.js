@@ -6,6 +6,8 @@ const {
 } = require('../factories');
 const {JobsServices, UsersServices, GeneralServices} = require('../services');
 const JobModel = require('../models/JobModel');
+const {ApplicantsModel} = require('../models');
+const JobServices = require('../services/jobsServices');
 
 module.exports = class JobController {
   static async createJob(req, res, next) {
@@ -88,12 +90,9 @@ module.exports = class JobController {
     if (error) throw error;
   }
   static async getCompanyJobList(req, res, next) {
-    const {success, err, user} = await UsersServices.getUserById({
-      id: req.jwtToken.user.id,
-    });
-    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
-    if (!success) throw err;
-    let {page, limit} = req.query;
+    const userId = req.jwtToken.user.id;
+
+    let {page, limit, searchTerm} = req.query;
     page = parseInt(page);
     limit = parseInt(limit);
     const {
@@ -103,7 +102,8 @@ module.exports = class JobController {
     } = await JobsServices.getCompanyJobList({
       page,
       limit,
-      id: user.id,
+      id: userId,
+      title: searchTerm,
     });
     if (response)
       return next(
@@ -171,25 +171,67 @@ module.exports = class JobController {
     if (error) throw next(JobErrors.jobUpdateErr());
   }
   static async deleteJobById(req, res, next) {
-    const {success, err, user} = await UsersServices.getUserById({
-      id: req.jwtToken.user.id,
-    });
-    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
-    if (!success) throw err;
-    if (user?.role !== roles.company.value)
-      return next(UsersErrorsFactory.forbiddenCompanyErr());
-    if (!success) throw err;
-    const {id} = req.params;
-    const {
-      success: response,
-      doc: deletedData,
-      error,
-    } = await GeneralServices.delete({
-      id,
-      model: JobModel,
-    });
-    if (response && deletedData)
-      return next(JobResponsesFactory.jobDeletedSuccessfully());
+    const {id: jobId} = req.params;
+
+    const {success, error} = await JobServices.deleteJobById({jobId});
+
+    if (success) return next(JobResponsesFactory.jobDeletedSuccessfully());
+
     if (error) throw next(JobErrors.jobDeleteErr());
+  }
+
+  static async applyForJob(req, res, next) {
+    const driverId = req.jwtToken.user.id;
+
+    const {id: jobId} = req.params;
+
+    const {success, error} = await GeneralServices.create({
+      data: {driverId, jobId},
+      model: ApplicantsModel,
+    });
+
+    if (success) return next(JobResponsesFactory.applyForJobSuccessfully());
+
+    if (error) throw error;
+  }
+
+  static async getApplicantsByJobId(req, res, next) {
+    const {jobId} = req.params;
+
+    let {page, limit, searchTerm} = req.query;
+
+    const {success, error, result} = await JobServices.getApplicantsByJobId({
+      jobId,
+      page,
+      limit,
+      searchTerm,
+    });
+
+    if (success)
+      return next(
+        JobResponsesFactory.applicantsRetrievedSuccessfully({
+          count: result.totalCount,
+          data: result.data,
+          page,
+          perPage: limit,
+        })
+      );
+
+    if (error) throw error;
+  }
+
+  static async getAppliedJobs(req, res, next) {
+    const userId = req.jwtToken.user.id;
+
+    const {success, appliedJobs, error} = await JobsServices.getAppliedJobs({
+      driverId: userId,
+    });
+
+    if (success)
+      return next(
+        JobResponsesFactory.appliedJobsRetrievedSuccessfully({appliedJobs})
+      );
+
+    if (error) throw error;
   }
 };
