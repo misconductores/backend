@@ -36,3 +36,9 @@ module.exports.getDateAfterOneMonth = () => {
   const dateAfterOneMonth = currentDate.plus({months: 1});
   return dateAfterOneMonth;
 };
+
+module.exports.getDateAfterOneYear = () => {
+  const currentDate = DateTime.now();
+  const dateAfterOneYear = currentDate.plus({years: 1});
+  return dateAfterOneYear;
+};

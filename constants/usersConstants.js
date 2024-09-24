@@ -1,3 +1,5 @@
+const config = require('config');
+
 module.exports.ACCESS_LEVELS = {
   create: 'CREATE',
   read: 'READ',
@@ -358,9 +360,11 @@ module.exports.subscriptionProviders = {
 module.exports.subscriptionTypes = {
   monthly: {
     value: 'monthly',
+    stripeValue: 'month',
   },
   yearly: {
     value: 'yearly',
+    stripeValue: 'year',
   },
 };
 
@@ -375,3 +379,12 @@ module.exports.subscriptionModeEnums = Object.values(
 module.exports.subscriptionTypeEnums = Object.values(
   this.subscriptionTypes
 ).map((type) => type.value);
+
+module.exports.stripeEvents = {
+  invoicePaid: {
+    value: 'invoice.paid',
+  },
+};
+
+module.exports.checkoutSuccessUrl = `${config.get('frontendURL')}`;
+module.exports.checkoutCancelUrl = `${config.get('frontendURL')}`;

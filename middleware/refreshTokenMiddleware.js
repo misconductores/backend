@@ -3,6 +3,7 @@ const config = require('config');
 const {AppError} = require('../factories');
 const {jwtUtils, isEnvDev} = require('../utils');
 const {generalConstant} = require('../constants');
+const {roles} = require('../constants/usersConstants');
 
 module.exports = (data, req, res, next) => {
   if (data instanceof AppError) return next(data);
@@ -16,7 +17,15 @@ module.exports = (data, req, res, next) => {
 
   // Prepare the jwt token
   const payload = {
-    user: {id: userObj.id, role: userObj.role},
+    user: {
+      id: userObj.id,
+      role: userObj.role,
+      fullName:
+        userObj.role === roles.driver.value
+          ? `${userObj.firstName} ${userObj.lastName}`
+          : userObj.companyName,
+      email: userObj.email,
+    },
   };
   const token = jwtUtils.generateToken({payload});
 

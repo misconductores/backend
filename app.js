@@ -33,6 +33,8 @@ Sentry.init({
 app.use(Sentry.Handlers.requestHandler());
 app.use(Sentry.Handlers.tracingHandler());
 
+app.use('/api/v1/subscriptions/webhook', express.raw({type: '*/*'}));
+
 app.use(express.json());
 
 app.use(cookieParser());

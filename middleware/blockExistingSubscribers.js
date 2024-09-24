@@ -1,3 +1,4 @@
+const {subscriptionStatuses} = require('../constants/usersConstants');
 const {GeneralErrorsFactory, SubscriptionsErrors} = require('../factories');
 const {SubscriptionsModel} = require('../models');
 const {GeneralServices} = require('../services');
@@ -7,7 +8,7 @@ module.exports = async (req, res, next) => {
     const userId = req.jwtToken.user.id;
 
     const {doc: subscription} = await GeneralServices.findOne({
-      query: {userId},
+      query: {userId, status: subscriptionStatuses.active.value},
       model: SubscriptionsModel,
     });
 
