@@ -8,7 +8,7 @@ const {SubscriptionsModel, SubscriptionHistoryModel} = require('../models');
 const {
   getCurrentDate,
   getDateAfterOneMonth,
-  getDateAfterOneYear,
+  getDateAfter1Year,
 } = require('../utils/DateCalculations');
 const StripeUtils = require('../utils/stripeUtils');
 const GeneralServices = require('./generalServices');
@@ -161,7 +161,7 @@ module.exports = class SubscriptionsServices {
       });
 
       const isMonthlySubscription =
-        data.lines.data[0].plan.interval ===
+        data.lines?.data[0]?.plan?.interval ===
         subscriptionTypes.monthly.stripeValue;
 
       // prepare data for subscription model
@@ -171,7 +171,7 @@ module.exports = class SubscriptionsServices {
         startDate: getCurrentDate(),
         endDate: isMonthlySubscription
           ? getDateAfterOneMonth()
-          : getDateAfterOneYear(),
+          : getDateAfter1Year(),
         subscriptionMode: subscriptionModes.paid.value,
         subscriptionType: isMonthlySubscription
           ? subscriptionTypes.monthly.value
@@ -185,7 +185,8 @@ module.exports = class SubscriptionsServices {
           {
             providerSubscriptionId: existedSubscription.providerSubscriptionId,
           },
-          finalData
+          {$set: finalData},
+          {new: true}
         );
       } else {
         const {doc: newSubscription} = await GeneralServices.create({

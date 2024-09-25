@@ -16,17 +16,24 @@ module.exports = (data, req, res, next) => {
   const userObj = jwtData ? jwtData.user : data.body.user;
 
   // Prepare the jwt token
-  const payload = {
+  let payload = {
     user: {
       id: userObj.id,
       role: userObj.role,
-      fullName:
-        userObj.role === roles.driver.value
-          ? `${userObj.firstName} ${userObj.lastName}`
-          : userObj.companyName,
       email: userObj.email,
+      fullName:
+        userObj.fullName ||
+        (userObj.role === roles.driver.value
+          ? `${userObj.firstName} ${userObj.lastName}`
+          : userObj.companyName),
     },
   };
+
+  // Remove fullName  if user is an admin
+  if (userObj.role === roles.admin.value) {
+    delete payload.user.fullName;
+  }
+
   const token = jwtUtils.generateToken({payload});
 
   // Setting cookies
