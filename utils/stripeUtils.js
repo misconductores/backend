@@ -19,10 +19,30 @@ module.exports = class StripeUtils {
     }
   }
 
-  static async getProducts({...args}) {
+  static async getProducts() {
     try {
-      const products = await Stripe.products.list({...args});
-      return {success: true, products: products.data};
+      const products = await Stripe.products.list();
+
+      const productsWithPrices = await Promise.all(
+        products.data.map(async (product) => {
+          if (product.default_price) {
+            const price = await Stripe.prices.retrieve(product.default_price);
+            return {...product, price: price.unit_amount};
+          }
+          return product;
+        })
+      );
+
+      const finalResponse = productsWithPrices.map((product) => ({
+        id: product.id,
+        active: product.active,
+        priceId: product.default_price,
+        price: product.price,
+        description: product.description,
+        metadata: product.metadata,
+      }));
+
+      return {success: true, products: finalResponse};
     } catch (err) {
       return {success: false, err};
     }
@@ -78,16 +98,6 @@ module.exports = class StripeUtils {
     try {
       const session = await Stripe.checkout.sessions.create({...args});
       return {success: true, checkoutUrl: session.url};
-    } catch (err) {
-      return {success: false, err};
-    }
-  }
-
-  static async getShipmentRate({shippingId}) {
-    try {
-      const shippingRate = await Stripe.shippingRates.retrieve(shippingId);
-
-      return {success: true, shippingRate};
     } catch (err) {
       return {success: false, err};
     }

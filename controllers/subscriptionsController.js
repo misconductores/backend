@@ -1,6 +1,7 @@
 const {stripeEvents} = require('../constants/usersConstants');
 const {SubscriptionsResponsesFactory, AuthErrors} = require('../factories');
-const {SubscriptionServices} = require('../services');
+const {SubscriptionsModel} = require('../models');
+const {SubscriptionServices, GeneralServices} = require('../services');
 const StripeUtils = require('../utils/stripeUtils');
 
 module.exports = class SubscriptionsController {
@@ -51,5 +52,40 @@ module.exports = class SubscriptionsController {
         subscription: prepareSubscription.subscription,
       })
     );
+  }
+
+  static async getSubscriptionByUserId(req, res, next) {
+    const userId = req.jwtToken.user.id;
+
+    const {
+      doc: subscription,
+      success,
+      error,
+    } = await GeneralServices.findOne({
+      query: {userId},
+      model: SubscriptionsModel,
+    });
+
+    if (success)
+      return next(
+        SubscriptionsResponsesFactory.subscriptionRetrievedSuccessfully({
+          subscription,
+        })
+      );
+
+    if (error) throw error;
+  }
+
+  static async getPlans(req, res, next) {
+    const {success, err, products} = await StripeUtils.getProducts();
+
+    if (success)
+      return next(
+        SubscriptionsResponsesFactory.plansRetrievedSuccessfully({
+          plans: products,
+        })
+      );
+
+    if (err) throw err;
   }
 };

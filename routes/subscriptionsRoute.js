@@ -1,4 +1,4 @@
-const {roles} = require('../constants/usersConstants');
+const {roles, subscriptionModes} = require('../constants/usersConstants');
 const {SubscriptionsController} = require('../controllers');
 const {
   authMiddleware,
@@ -10,11 +10,25 @@ const {subscriptionsSchema} = require('../schemas');
 const {catchAsync} = require('../utils');
 const router = require('express').Router();
 
+router.get(
+  '/',
+  authMiddleware,
+  roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
+  catchAsync(SubscriptionsController.getSubscriptionByUserId)
+);
+
+router.get(
+  '/plans',
+  authMiddleware,
+  roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
+  catchAsync(SubscriptionsController.getPlans)
+);
+
 router.post(
   '/free',
   authMiddleware,
   roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
-  blockExistingSubscribers,
+  blockExistingSubscribers({subscriptionMode: subscriptionModes.free.value}),
   catchAsync(SubscriptionsController.activateFreeSubscription)
 );
 
@@ -25,7 +39,7 @@ router.post(
   authMiddleware,
   roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
   validatorMiddleware(subscriptionsSchema.validatePrepareSubscriptionReq),
-  blockExistingSubscribers,
+  blockExistingSubscribers({subscriptionMode: subscriptionModes.paid.value}),
   catchAsync(SubscriptionsController.prepareSubscription)
 );
 

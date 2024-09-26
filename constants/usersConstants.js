@@ -387,4 +387,6 @@ module.exports.stripeEvents = {
 };
 
 module.exports.checkoutSuccessUrl = `${config.get('frontendURL')}`;
-module.exports.checkoutCancelUrl = `${config.get('frontendURL')}`;
+module.exports.checkoutCancelUrl = `${config.get(
+  'frontendURL'
+)}/dashboard/subscription`;
