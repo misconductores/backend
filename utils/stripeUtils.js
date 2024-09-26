@@ -29,7 +29,7 @@ module.exports = class StripeUtils {
         id: product.id,
         active: product.active,
         priceId: product.default_price?.id,
-        price: product.default_price?.unit_amount,
+        price: product.default_price?.unit_amount / 100,
         description: product.description,
         metadata: product.metadata,
       }));
