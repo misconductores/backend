@@ -21,28 +21,20 @@ module.exports = class StripeUtils {
 
   static async getProducts() {
     try {
-      const products = await Stripe.products.list();
+      const products = await Stripe.products.list({
+        expand: ['data.default_price'],
+      });
 
-      const productsWithPrices = await Promise.all(
-        products.data.map(async (product) => {
-          if (product.default_price) {
-            const price = await Stripe.prices.retrieve(product.default_price);
-            return {...product, price: price.unit_amount};
-          }
-          return product;
-        })
-      );
-
-      const finalResponse = productsWithPrices.map((product) => ({
+      const preparedData = products.data.map((product) => ({
         id: product.id,
         active: product.active,
-        priceId: product.default_price,
-        price: product.price,
+        priceId: product.default_price?.id,
+        price: product.default_price?.unit_amount,
         description: product.description,
         metadata: product.metadata,
       }));
 
-      return {success: true, products: finalResponse};
+      return {success: true, products: preparedData};
     } catch (err) {
       return {success: false, err};
     }
