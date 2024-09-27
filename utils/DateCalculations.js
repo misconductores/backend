@@ -36,3 +36,10 @@ module.exports.getDateAfterOneMonth = () => {
   const dateAfterOneMonth = currentDate.plus({months: 1});
   return dateAfterOneMonth;
 };
+
+module.exports.calculateAge = ({dateOfBirth}) => {
+  const dob = DateTime.fromISO(dateOfBirth);
+  const now = DateTime.now();
+  const age = now.diff(dob, 'years').years;
+  return age;
+};

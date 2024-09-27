@@ -158,10 +158,18 @@ module.exports.errorCodes = {
   INVALID_TOKEN_ERR: 'INVALID_TOKEN_ERR',
   USER_NOT_VERIFIED: 'USER_NOT_VERIFIED',
   ONLY_COMPANY_ALLOWED: 'ONLY_COMPANY_ALLOWED',
+  ONLY_ONE_JOB_ALLOWED: 'ONLY_ONE_JOB_ALLOWED',
+  DOCS_ACCESS_REQ_NOT_ALLOWED: 'DOCS_ACCESS_REQ_NOT_ALLOWED',
+  JOB_HISTORY_NOT_ALLOWED: 'JOB_HISTORY_NOT_ALLOWED',
 };
 
+// restricted user data without subscription
 module.exports.restrictedUserData =
   '-federalLicenses.federalLicenseNo -stateLicenses.stateLicenseNo -visaNumber -fastNumber -password -verificationToken -documents';
+
+// selected user data with free subscription
+module.exports.freeSubscriptionSelectedData =
+  'firstName role dateOfBirth lastName companyName vehicleType handleEquipment postalCode experience federalLicenses.federalLicenseType stateLicenses.stateLicenseType profilePic';
 
 module.exports.experienceTypes = {
   student: {
@@ -390,3 +398,18 @@ module.exports.checkoutSuccessUrl = `${config.get('frontendURL')}`;
 module.exports.checkoutCancelUrl = `${config.get(
   'frontendURL'
 )}/dashboard/subscription`;
+
+module.exports.requestTypes = {
+  jobPost: {
+    value: 'jobPost',
+  },
+  docAccess: {
+    value: 'docAccess',
+  },
+  reviewsAccess: {
+    value: 'reviewsAccess',
+  },
+  userData: {
+    value: 'userData',
+  },
+};

@@ -3,6 +3,7 @@ const {
   subscriptionTypes,
   checkoutSuccessUrl,
   checkoutCancelUrl,
+  subscriptionStatuses,
 } = require('../constants/usersConstants');
 const {SubscriptionsModel, SubscriptionHistoryModel} = require('../models');
 const {
@@ -93,20 +94,40 @@ module.exports = class SubscriptionsServices {
 
   static async activateFreeSubscription({userId}) {
     try {
+      const {doc: existedSubscription} = await GeneralServices.findOne({
+        query: {userId: userId},
+        model: SubscriptionsModel,
+      });
+
       const data = {
         userId,
         providerSubscriptionId: null,
         subscriptionProviders: null,
+        status: subscriptionStatuses.active.value,
         startDate: getCurrentDate(),
         endDate: getDateAfterOneMonth(),
         subscriptionMode: subscriptionModes.free.value,
         subscriptionType: subscriptionTypes.monthly.value,
       };
 
-      const {doc: subscription} = await GeneralServices.create({
-        data,
-        model: SubscriptionsModel,
-      });
+      // if Pro user has degrade to free then it will update the existing one to free otherwise new subscription created if it is not present
+      let subscription;
+      if (existedSubscription) {
+        subscription = await SubscriptionsModel.findOneAndUpdate(
+          {
+            userId: userId,
+          },
+          {$set: data},
+          {new: true}
+        );
+      } else {
+        const {doc: newSubscription} = await GeneralServices.create({
+          data,
+          model: SubscriptionsModel,
+        });
+        subscription = newSubscription;
+      }
+
       if (subscription) {
         await SubscriptionsServices.createFreeSubscriptionHistory({
           subscription,
@@ -168,6 +189,7 @@ module.exports = class SubscriptionsServices {
       let finalData = {
         userId: user.id,
         providerSubscriptionId: data.subscription,
+        status: subscriptionStatuses.active.value,
         startDate: getCurrentDate(),
         endDate: isMonthlySubscription
           ? getDateAfterOneMonth()
