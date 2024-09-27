@@ -20,6 +20,7 @@ module.exports =
     try {
       const {id: userId, role} = req.jwtToken.user;
       const isCompanyUser = role === roles.company.value;
+      const isDriverUser = role === roles.driver.value;
 
       req.isFreeSubscription = false;
 
@@ -29,7 +30,10 @@ module.exports =
         status: subscriptionStatuses.active.value,
       });
 
-      if (!subscription) return next();
+      if (!subscription && isDriverUser) return next();
+
+      if (!subscription && isCompanyUser)
+        return next(GeneralErrorsFactory.forbiddenRoleErr());
 
       const isFreeSubscription =
         subscription.subscriptionMode === subscriptionModes.free.value;
@@ -41,33 +45,33 @@ module.exports =
         isProSubscription &&
         subscription.status === subscriptionStatuses.expired.value;
 
+      const hasNoActiveProSubscription =
+        isFreeSubscription || isProSubscriptionExpired;
+
       // subscription validation for job posting
       if (requestType === requestTypes.jobPost.value) {
-        const jobs = await JobModel.find({companyId: userId});
-        const isOneOrMoreJobs = jobs.length >= 1;
+        const jobCount = await JobModel.countDocuments({companyId: userId});
+        const isOneOrMoreJobs = jobCount >= 1;
 
-        if (
-          (isFreeSubscription || isProSubscriptionExpired) &&
-          isOneOrMoreJobs
-        ) {
+        if (hasNoActiveProSubscription && isOneOrMoreJobs) {
           return next(JobErrors.forbiddenJobPostErr());
         }
       }
 
       // subscription validation for document request
       if (requestType === requestTypes.docAccess.value) {
-        if (isFreeSubscription || isProSubscriptionExpired)
+        if (hasNoActiveProSubscription)
           return next(DocumentsAccessErrors.forbiddenDocRequestErr());
       }
 
       // subscription validation for document request
       if (requestType === requestTypes.reviewsAccess.value) {
-        if (isCompanyUser && (isFreeSubscription || isProSubscriptionExpired))
+        if (isCompanyUser && hasNoActiveProSubscription)
           return next(ReviewsErrors.forbiddenReviewsErr());
       }
 
       if (requestType === requestTypes.userData.value) {
-        if (isCompanyUser && (isFreeSubscription || isProSubscriptionExpired))
+        if (isCompanyUser && hasNoActiveProSubscription)
           req.isFreeSubscription = true;
       }
 
