@@ -7,6 +7,7 @@ const {
   federalLicenseTypes,
   stateLicenseTypes,
 } = require('../constants/usersConstants');
+const {calculateAge} = require('../utils/DateCalculations');
 
 const Schema = mongoose.Schema;
 
@@ -103,6 +104,12 @@ const usersSchema = new Schema(
     },
   }
 );
+
+usersSchema.virtual('age').get(function () {
+  if (!this.dateOfBirth) return null;
+  const age = calculateAge({dateOfBirth: this.dateOfBirth});
+  return parseInt(age);
+});
 
 usersSchema.pre('save', async function (next) {
   // Only run this function if password was actually modified
