@@ -14,7 +14,7 @@ router.get(
   '/',
   authMiddleware,
   roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
-  catchAsync(SubscriptionsController.getSubscriptionByUserId)
+  catchAsync(SubscriptionsController.getUserSubscription)
 );
 
 router.get(

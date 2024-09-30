@@ -36,11 +36,11 @@ module.exports = class SubscriptionsController {
 
   static async prepareSubscription(req, res, next) {
     const {fullName, email} = req.jwtToken.user;
-    const {providerSubscriptionId} = req.body;
+    const {subscriptionPlanId} = req.body;
 
     const prepareSubscription =
       await SubscriptionServices.activateProSubscription({
-        providerSubscriptionId,
+        subscriptionPlanId,
         email,
         name: fullName,
       });
@@ -54,7 +54,7 @@ module.exports = class SubscriptionsController {
     );
   }
 
-  static async getSubscriptionByUserId(req, res, next) {
+  static async getUserSubscription(req, res, next) {
     const userId = req.jwtToken.user.id;
 
     const {
