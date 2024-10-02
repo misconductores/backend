@@ -348,6 +348,15 @@ module.exports.subscriptionStatuses = {
   inactive: {
     value: 'inactive',
   },
+  all: {
+    value: 'all',
+  },
+  incomplete: {
+    value: 'incomplete',
+  },
+  pastDue: {
+    value: 'past_due',
+  },
 };
 
 module.exports.subscriptionModes = {
@@ -391,6 +400,9 @@ module.exports.subscriptionTypeEnums = Object.values(
 module.exports.stripeEvents = {
   invoicePaid: {
     value: 'invoice.paid',
+  },
+  paymentFailed: {
+    value: 'invoice.payment_failed',
   },
 };
 

@@ -39,31 +39,11 @@ module.exports = class SubscriptionsServices {
     session,
   }) {
     try {
-      // Find the user's last subscription history (check for both free and paid)
-      const lastHistory = await SubscriptionHistoryModel.findOne({
-        subscriptionId: subscription.subscriptionId,
-        endDate: {$gte: getCurrentDate()},
-      })
-        .sort({startDate: -1})
-        .session(session);
-
-      // If the last subscription exists, update its endDate
-      if (lastHistory) {
-        lastHistory.endDate = subscription.startDate;
-        await lastHistory.save({session});
-      }
-
       // Common data for both free and paid subscriptions
       const data = {
         subscriptionId: subscription.subscriptionId,
-        transactionId:
-          subscriptionMode === subscriptionModes.free.value
-            ? null
-            : subscription.transactionId, // transaction Id is actually subscription id of stripe
-        amount:
-          subscriptionMode === subscriptionModes.free.value
-            ? 0
-            : subscription.amount,
+        transactionId: subscription.transactionId, // transaction Id is actually subscription id of stripe
+        amount: subscription.amount,
         startDate: subscription.startDate,
         endDate: subscription.endDate,
         subscriptionMode,
@@ -80,13 +60,10 @@ module.exports = class SubscriptionsServices {
   }
 
   static async activateFreeSubscription({userId}) {
-    const session = await mongoose.startSession(); // start a transaction session
-    session.startTransaction();
-
     try {
       const existedSubscription = await SubscriptionsModel.findOne({
         userId: userId,
-      }).session(session);
+      });
 
       const data = {
         userId,
@@ -111,31 +88,12 @@ module.exports = class SubscriptionsServices {
           {session}
         );
       } else {
-        const newSubscription = await SubscriptionsModel.create([data], {
-          session,
-        });
-        subscription = newSubscription[0].toObject();
+        const newSubscription = await SubscriptionsModel.create(data);
+        subscription = newSubscription;
       }
 
-      if (subscription) {
-        let finalData = {
-          ...subscription,
-          subscriptionId: subscription.id, // this is added to make same data format for creating history free and pro mode
-        };
-        const {error} = await SubscriptionsServices.createSubscriptionHistory({
-          subscription: finalData,
-          subscriptionMode: subscriptionModes.free.value,
-          session,
-        });
-        if (error) throw error;
-      }
-
-      await session.commitTransaction();
-      session.endSession();
       return {success: true, subscription};
     } catch (error) {
-      await session.abortTransaction();
-      session.endSession();
       return {success: false, error};
     }
   }
@@ -143,6 +101,22 @@ module.exports = class SubscriptionsServices {
   static async activateProSubscription({subscriptionPlanId, email, name}) {
     try {
       const findCustomer = await StripeUtils.getCustomers({email});
+
+      // will check the subscription if subscription creation failed
+      const {subscription: incompleteSubscription} =
+        await StripeUtils.getSubscriptionByCustomerId({
+          customerId: findCustomer?.customers[0]?.id,
+          status: subscriptionStatuses.incomplete.value,
+        });
+
+      // will check the subscription which is paused due too unpaid
+      const {subscription: unpaidSubscription} =
+        await StripeUtils.getSubscriptionByCustomerId({
+          customerId: findCustomer?.customers[0]?.id,
+          status: subscriptionStatuses.pastDue.value,
+        });
+
+      const subscription = incompleteSubscription || unpaidSubscription;
 
       let customer;
       if (!findCustomer?.customers[0]) {
@@ -155,17 +129,52 @@ module.exports = class SubscriptionsServices {
       const successUrl = checkoutSuccessUrl;
       const cancelUrl = checkoutCancelUrl;
 
-      const processCheckoutSession = await StripeUtils.createCheckout({
-        customer: customer.id,
-        line_items: [{price: subscriptionPlanId, quantity: 1}],
-        mode: 'subscription',
-        success_url: successUrl,
-        cancel_url: cancelUrl,
-      });
+      let processCheckoutSession;
+
+      if (subscription) {
+        // this will check whether same plan is updating or not
+        const isNewPlan = subscription?.plan?.id !== subscriptionPlanId;
+
+        // if there is new plan then cancel old subscription and create new subscription for new plan
+        // if there is not a new plan but need to resume pause subscription
+        if (isNewPlan) {
+          await StripeUtils.cancelSubscription({
+            subscriptionId: subscription?.id,
+          });
+
+          processCheckoutSession = await StripeUtils.createCheckout({
+            customer: customer.id,
+            line_items: [{price: subscriptionPlanId, quantity: 1}],
+            mode: 'subscription',
+            success_url: successUrl,
+            cancel_url: cancelUrl,
+          });
+        } else {
+          const latestInvoice = await StripeUtils.getInvoiceByInvoiceId({
+            invoiceId: subscription.latest_invoice,
+          });
+
+          return {
+            success: true,
+            subscription: latestInvoice.invoice.hosted_invoice_url,
+          };
+        }
+      } else {
+        processCheckoutSession = await StripeUtils.createCheckout({
+          customer: customer.id,
+          line_items: [{price: subscriptionPlanId, quantity: 1}],
+          mode: 'subscription',
+          success_url: successUrl,
+          cancel_url: cancelUrl,
+        });
+      }
 
       if (!processCheckoutSession?.success) throw processCheckoutSession.err;
 
-      return {success: true, subscription: processCheckoutSession.checkoutUrl};
+      return {
+        success: true,
+        subscription: processCheckoutSession.checkoutUrl,
+      };
     } catch (err) {
       return {success: false, err};
     }
@@ -185,10 +194,9 @@ module.exports = class SubscriptionsServices {
       }).session(session);
 
       const isMonthlySubscription =
-        data.lines?.data[0]?.plan?.interval ===
-        subscriptionTypes.monthly.stripeValue;
+        data?.plan?.interval === subscriptionTypes.monthly.stripeValue;
 
-      // prepare data for subscription model
+      // Prepare data for the new pro subscription
       let finalData = {
         userId: user.id,
         providerSubscriptionId: data.subscription,
@@ -204,40 +212,124 @@ module.exports = class SubscriptionsServices {
           : subscriptionTypes.yearly.value,
       };
 
-      let subscription;
-
+      // Scenario 1: Existing subscription
       if (existedSubscription) {
-        subscription = await SubscriptionsModel.findOneAndUpdate(
-          {
-            providerSubscriptionId: existedSubscription.providerSubscriptionId,
-          },
-          {$set: finalData},
-          {new: true},
-          {session}
-        );
-      } else {
-        const newSubscription = await SubscriptionsModel.create([finalData], {
-          session,
-        });
-        subscription = newSubscription[0];
-      }
+        const isFreeSubscriptionMode =
+          existedSubscription.subscriptionMode === subscriptionModes.free.value;
 
-      // prepare data for subscription history model
-      if (subscription) {
         let historyData = {
-          ...finalData,
-          subscriptionId: subscription.id,
-          amount: data.amount_paid / 100,
-          transactionId: data.subscription,
+          subscriptionId: existedSubscription.id,
+          userId: user.id,
+          startDate: existedSubscription.startDate,
+          endDate: getCurrentDate(),
+          subscriptionType: isMonthlySubscription
+            ? subscriptionTypes.monthly.value
+            : subscriptionTypes.yearly.value,
+          amount: isFreeSubscriptionMode ? 0 : data.plan.amount / 100,
+          subscriptionMode: subscriptionModes.free.value,
         };
 
-        const {error} = await SubscriptionsServices.createSubscriptionHistory({
+        await SubscriptionsServices.createSubscriptionHistory({
           subscription: historyData,
-          subscriptionMode: subscriptionModes.paid.value,
+          subscriptionMode: subscriptionModes.free.value,
           session,
         });
 
-        if (error) throw error;
+        // resume the subscription if paused
+        await StripeUtils.updateSubscription({
+          subscriptionId: data.subscription,
+          data: {
+            pause_collection: null,
+            billing_cycle_anchor: 'now',
+            proration_behavior: 'none',
+          },
+        });
+
+        // Update subscription data
+        await SubscriptionsModel.findOneAndUpdate(
+          {providerSubscriptionId: existedSubscription.providerSubscriptionId},
+          {$set: finalData},
+          {new: true, session}
+        );
+      } else {
+        // Scenario 2: First-time pro subscription (no history needed)
+        await SubscriptionsModel.create([finalData], {
+          session,
+        });
+      }
+
+      // this will attach payment card to customer every time if it use different cards on expired subscription payment
+      await StripeUtils.attachPaymentMethodToCustomer({data});
+
+      await session.commitTransaction();
+      session.endSession();
+      return {success: true};
+    } catch (error) {
+      await session.abortTransaction();
+      session.endSession();
+      return {success: false, error};
+    }
+  }
+
+  static async changeUserSubscriptionToFree({data}) {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+      const user = await UsersModel.findOne({
+        email: data.customer_email,
+      }).session(session);
+
+      const subscription = await SubscriptionsModel.findOne({
+        userId: user.id,
+      }).session(session);
+
+      // if subscription update failed then pause the subscription and update subscription to free and history
+      if (subscription) {
+        await StripeUtils.updateSubscription({
+          subscriptionId: subscription.providerSubscriptionId,
+          data: {
+            pause_collection: {
+              behavior: 'mark_uncollectible',
+            },
+          },
+        });
+
+        const data = {
+          userId: user?.id,
+          providerSubscriptionId: null,
+          subscriptionProviders: null,
+          status: subscriptionStatuses.active.value,
+          startDate: getCurrentDate(),
+          endDate: getDateAfterOneMonth(),
+          subscriptionMode: subscriptionModes.free.value,
+          subscriptionType: subscriptionTypes.monthly.value,
+        };
+
+        await SubscriptionsModel.findByIdAndUpdate(
+          {_id: subscription.id},
+          {$set: data},
+          {new: true, session}
+        );
+
+        let historyData = {
+          subscriptionId: subscription.id,
+          userId: user.id,
+          startDate: subscription.startDate,
+          amount: 0,
+          endDate: getCurrentDate(),
+          subscriptionType: subscription.subscriptionType,
+          subscriptionMode: subscription.subscriptionMode,
+        };
+
+        await SubscriptionsServices.createSubscriptionHistory({
+          subscription: historyData,
+          subscriptionMode: subscription.subscriptionMode,
+          session,
+        });
+      } else {
+        await session.abortTransaction();
+        session.endSession();
       }
 
       await session.commitTransaction();

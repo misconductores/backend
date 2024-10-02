@@ -1,5 +1,9 @@
 const {stripeEvents} = require('../constants/usersConstants');
-const {SubscriptionsResponsesFactory, AuthErrors} = require('../factories');
+const {
+  SubscriptionsResponsesFactory,
+  AuthErrors,
+  SubscriptionsErrors,
+} = require('../factories');
 const {SubscriptionsModel} = require('../models');
 const {SubscriptionServices, GeneralServices} = require('../services');
 const StripeUtils = require('../utils/stripeUtils');
@@ -26,11 +30,23 @@ module.exports = class SubscriptionsController {
 
     if (!success) return next(AuthErrors.unauthorized());
 
-    if (event.type === stripeEvents.invoicePaid.value)
-      await SubscriptionServices.handleInvoicePaidEvent({
-        data: event.data.object,
-      });
-
+    switch (event.type) {
+      case stripeEvents.paymentFailed.value:
+        const attemptCount = event.data.object.attempt_count;
+        if (attemptCount === 2) {
+          await SubscriptionServices.changeUserSubscriptionToFree({
+            data: event.data.object,
+          });
+        }
+        break;
+      case stripeEvents.invoicePaid.value:
+        await SubscriptionServices.handleInvoicePaidEvent({
+          data: event.data.object,
+        });
+        break;
+      default:
+        return next(SubscriptionsErrors.unhandledEventErr());
+    }
     return next(SubscriptionsResponsesFactory.eventCallSuccessfully());
   }
 

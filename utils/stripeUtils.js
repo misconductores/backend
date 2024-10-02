@@ -1,4 +1,5 @@
 const config = require('config');
+const {subscriptionStatuses} = require('../constants/usersConstants');
 const Stripe = require('stripe')(config.get('stripeSecretKey'));
 
 module.exports = class StripeUtils {
@@ -40,16 +41,6 @@ module.exports = class StripeUtils {
     }
   }
 
-  static async getProductsBySearch({query}) {
-    try {
-      const products = await Stripe.products.search({query});
-
-      return {success: true, products: products.data};
-    } catch (err) {
-      return {success: false, err};
-    }
-  }
-
   static async getCustomers({...args}) {
     try {
       const customers = await Stripe.customers.list({...args});
@@ -77,6 +68,23 @@ module.exports = class StripeUtils {
     }
   }
 
+  static async getSubscriptionByCustomerId({customerId, status}) {
+    try {
+      const subscriptions = await Stripe.subscriptions.list({
+        customer: customerId,
+        status: subscriptionStatuses.all.value,
+      });
+
+      const filteredSubscription = subscriptions.data.filter(
+        (sub) => sub.status === status
+      )[0];
+
+      return {success: true, subscription: filteredSubscription};
+    } catch (err) {
+      return {success: false, err};
+    }
+  }
+
   static async getSubscriptions({...args}) {
     try {
       const subscriptions = await Stripe.subscriptions.list({...args});
@@ -92,6 +100,49 @@ module.exports = class StripeUtils {
       return {success: true, checkoutUrl: session.url};
     } catch (err) {
       return {success: false, err};
+    }
+  }
+
+  static async attachPaymentMethodToCustomer({data}) {
+    try {
+      const customerId = data?.customer;
+      const paymentIntentId = data?.payment_intent;
+      const paymentIntent = await Stripe.paymentIntents.retrieve(
+        paymentIntentId
+      );
+      await Stripe.customers.update(customerId, {
+        invoice_settings: {
+          default_payment_method: paymentIntent?.payment_method,
+        },
+      });
+      return {success: true};
+    } catch (error) {
+      return {success: false, error};
+    }
+  }
+
+  static async getInvoiceByInvoiceId({invoiceId}) {
+    try {
+      const latestInvoice = await Stripe.invoices.retrieve(invoiceId);
+      return {success: true, invoice: latestInvoice};
+    } catch (error) {
+      return {success: false, error};
+    }
+  }
+  static async updateSubscription({subscriptionId, data}) {
+    try {
+      await Stripe.subscriptions.update(subscriptionId, data);
+      return {success: true};
+    } catch (error) {
+      return {success: false, error};
+    }
+  }
+  static async cancelSubscription({subscriptionId}) {
+    try {
+      await Stripe.subscriptions.cancel(subscriptionId);
+      return {success: true};
+    } catch (error) {
+      return {success: false, error};
     }
   }
 };

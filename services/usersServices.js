@@ -518,6 +518,7 @@ module.exports = class UsersServices {
       let finalUser = {
         ...user,
         age: parseInt(age),
+        id: user?._id,
       };
 
       if (isFreeSubscription) delete finalUser.dateOfBirth;
