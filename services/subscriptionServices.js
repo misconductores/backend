@@ -84,8 +84,7 @@ module.exports = class SubscriptionsServices {
             userId: userId,
           },
           {$set: data},
-          {new: true},
-          {session}
+          {new: true}
         );
       } else {
         const newSubscription = await SubscriptionsModel.create(data);
@@ -330,6 +329,7 @@ module.exports = class SubscriptionsServices {
       } else {
         await session.abortTransaction();
         session.endSession();
+        return {success: false};
       }
 
       await session.commitTransaction();

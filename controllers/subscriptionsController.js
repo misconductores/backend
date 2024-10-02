@@ -31,7 +31,7 @@ module.exports = class SubscriptionsController {
     if (!success) return next(AuthErrors.unauthorized());
 
     switch (event.type) {
-      case stripeEvents.paymentFailed.value:
+      case stripeEvents.paymentFailed.value: {
         const attemptCount = event.data.object.attempt_count;
         if (attemptCount === 2) {
           await SubscriptionServices.changeUserSubscriptionToFree({
@@ -39,6 +39,7 @@ module.exports = class SubscriptionsController {
           });
         }
         break;
+      }
       case stripeEvents.invoicePaid.value:
         await SubscriptionServices.handleInvoicePaidEvent({
           data: event.data.object,
