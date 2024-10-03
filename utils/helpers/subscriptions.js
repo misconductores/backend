@@ -26,7 +26,8 @@ exports.prepareFreeSubscriptionData = ({userId}) => {
 
 exports.prepareProSubscriptionData = ({eventData, userId}) => {
   const isMonthlySubscription =
-    eventData?.plan?.interval === subscriptionTypes.monthly.stripeValue;
+    eventData?.lines?.data[0]?.plan?.interval ===
+    subscriptionTypes.monthly.stripeValue;
 
   let data = {
     userId,

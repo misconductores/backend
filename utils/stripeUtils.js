@@ -145,4 +145,14 @@ module.exports = class StripeUtils {
       return {success: false, error};
     }
   }
+  static async resumeSubscription({subscriptionId}) {
+    try {
+      await Stripe.subscriptions.resume(subscriptionId, {
+        billing_cycle_anchor: 'now',
+      });
+      return {success: true};
+    } catch (error) {
+      return {success: false, error};
+    }
+  }
 };

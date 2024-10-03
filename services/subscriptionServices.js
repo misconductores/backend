@@ -202,15 +202,16 @@ module.exports = class SubscriptionsServices {
           session,
         });
 
+        const existedStripeSubscription = await StripeUtils.getSubscriptionById(
+          {subscriptionId: data.subscription}
+        );
+
         // resume the subscription if paused
-        await StripeUtils.updateSubscription({
-          subscriptionId: data.subscription,
-          data: {
-            pause_collection: null,
-            billing_cycle_anchor: 'now',
-            proration_behavior: 'none',
-          },
-        });
+        if (!!existedStripeSubscription.pause_collection) {
+          await StripeUtils.resumeSubscription({
+            subscriptionId: data.subscription,
+          });
+        }
 
         // Update subscription data
         await SubscriptionsModel.findOneAndUpdate(
