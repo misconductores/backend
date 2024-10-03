@@ -25,7 +25,7 @@ module.exports.dateAfterSevenDays = () => {
   return after7Days;
 };
 
-module.exports.getDateAfter1Year = ({date = null}) => {
+module.exports.getDateAfter1Year = ({date = null} = {}) => {
   const formattedDate = date ? DateTime.fromJSDate(date) : DateTime.now();
   const dateAfter1Year = formattedDate.plus({years: 1});
   return dateAfter1Year;

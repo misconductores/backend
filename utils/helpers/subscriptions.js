@@ -47,7 +47,8 @@ exports.prepareProSubscriptionData = ({eventData, userId}) => {
 
 exports.prepareHistoryData = ({eventData, subscription, userId}) => {
   const isMonthlySubscription =
-    eventData?.plan?.interval === subscriptionTypes.monthly.stripeValue;
+    eventData.lines?.data[0]?.plan?.interval ===
+    subscriptionTypes.monthly.stripeValue;
   const isFreeSubscriptionMode =
     subscription.subscriptionMode === subscriptionModes.free.value;
 
@@ -59,7 +60,7 @@ exports.prepareHistoryData = ({eventData, subscription, userId}) => {
     subscriptionType: isMonthlySubscription
       ? subscriptionTypes.monthly.value
       : subscriptionTypes.yearly.value,
-    amount: isFreeSubscriptionMode ? 0 : eventData.plan.amount / 100,
+    amount: isFreeSubscriptionMode ? 0 : eventData.total / 100,
     subscriptionMode: subscriptionModes.free.value,
   };
   return data;
