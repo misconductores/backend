@@ -4,7 +4,10 @@ const {
 } = require('../../constants/usersConstants');
 const {CronJob} = require('cron');
 const logger = require('../../middleware/loggerMiddleware');
-const {getCurrentDate, getDateAfterOneMonth} = require('../DateCalculations');
+const {
+  getCurrentDate,
+  calculateOneMonthAheadDate,
+} = require('../DateCalculations');
 const {SubscriptionsModel, SubscriptionHistoryModel} = require('../../models');
 
 exports.updateFreeSubscriptions = async () => {
@@ -28,8 +31,10 @@ exports.updateFreeSubscriptions = async () => {
         });
 
         // Update subscription with new startDate and endDate
-        subscription.startDate = getCurrentDate();
-        subscription.endDate = getDateAfterOneMonth();
+        subscription.startDate = subscription.endDate;
+        subscription.endDate = calculateOneMonthAheadDate({
+          date: subscription.startDate,
+        });
         await subscription.save();
       }
     } catch (error) {

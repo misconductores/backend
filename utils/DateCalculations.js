@@ -43,3 +43,7 @@ module.exports.calculateAge = ({dateOfBirth}) => {
   const age = now.diff(dob, 'years').years;
   return age;
 };
+
+module.exports.calculateOneMonthAheadDate = ({date}) => {
+  return DateTime.fromJSDate(date).plus({months: 1}).toJSDate();
+};
