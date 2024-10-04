@@ -9,6 +9,7 @@ const {
   getDateAfterOneMonth,
   convertTimestampsToDate,
   calculateOneMonthAheadDate,
+  calculateOneYearAheadDate,
 } = require('../DateCalculations');
 
 exports.prepareFreeSubscriptionData = ({userId}) => {
@@ -40,7 +41,9 @@ exports.prepareProSubscriptionData = ({eventData, userId}) => {
     subscriptionProviders: subscriptionProviders.stripe.value,
     status: subscriptionStatuses.active.value,
     startDate,
-    endDate: calculateOneMonthAheadDate({date: startDate}),
+    endDate: isMonthlySubscription
+      ? calculateOneMonthAheadDate({date: startDate})
+      : calculateOneYearAheadDate({date: startDate}),
     subscriptionMode: subscriptionModes.paid.value,
     subscriptionType: isMonthlySubscription
       ? subscriptionTypes.monthly.value
@@ -70,7 +73,9 @@ exports.prepareHistoryData = ({eventData, subscription, userId}) => {
       ? subscriptionTypes.monthly.value
       : subscriptionTypes.yearly.value,
     amount: isFreeSubscriptionMode ? 0 : eventData.total / 100,
-    subscriptionMode: subscriptionModes.free.value,
+    subscriptionMode: isFreeSubscriptionMode
+      ? subscriptionModes.free.value
+      : subscriptionModes.paid.value,
   };
   return data;
 };

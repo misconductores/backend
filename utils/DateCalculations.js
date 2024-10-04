@@ -52,3 +52,7 @@ module.exports.convertTimestampsToDate = ({timestamps}) => {
 module.exports.calculateOneMonthAheadDate = ({date}) => {
   return DateTime.fromJSDate(date).plus({months: 1}).toJSDate();
 };
+
+module.exports.calculateOneYearAheadDate = ({date}) => {
+  return DateTime.fromJSDate(date).plus({years: 1}).toJSDate();
+};
