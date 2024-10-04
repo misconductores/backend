@@ -7,7 +7,8 @@ const {
 const {
   getCurrentDate,
   getDateAfterOneMonth,
-  getDateAfter1Year,
+  convertTimestampsToDate,
+  calculateOneMonthAheadDate,
 } = require('../DateCalculations');
 
 exports.prepareFreeSubscriptionData = ({userId}) => {
@@ -29,15 +30,17 @@ exports.prepareProSubscriptionData = ({eventData, userId}) => {
     eventData?.lines?.data[0]?.plan?.interval ===
     subscriptionTypes.monthly.stripeValue;
 
+  const startDate = convertTimestampsToDate({
+    timestamps: eventData.period_start,
+  });
+
   let data = {
     userId,
     providerSubscriptionId: eventData.subscription,
     subscriptionProviders: subscriptionProviders.stripe.value,
     status: subscriptionStatuses.active.value,
-    startDate: getCurrentDate(),
-    endDate: isMonthlySubscription
-      ? getDateAfterOneMonth()
-      : getDateAfter1Year(),
+    startDate,
+    endDate: calculateOneMonthAheadDate({date: startDate}),
     subscriptionMode: subscriptionModes.paid.value,
     subscriptionType: isMonthlySubscription
       ? subscriptionTypes.monthly.value
@@ -50,14 +53,19 @@ exports.prepareHistoryData = ({eventData, subscription, userId}) => {
   const isMonthlySubscription =
     eventData.lines?.data[0]?.plan?.interval ===
     subscriptionTypes.monthly.stripeValue;
+
   const isFreeSubscriptionMode =
     subscription.subscriptionMode === subscriptionModes.free.value;
+
+  const endDate = convertTimestampsToDate({
+    timestamps: eventData.period_start,
+  });
 
   let data = {
     subscriptionId: subscription.id,
     userId,
     startDate: subscription.startDate,
-    endDate: getCurrentDate(),
+    endDate,
     subscriptionType: isMonthlySubscription
       ? subscriptionTypes.monthly.value
       : subscriptionTypes.yearly.value,
@@ -73,7 +81,7 @@ exports.prepareFreeModeHistoryData = ({subscription, userId}) => {
     userId,
     startDate: subscription.startDate,
     amount: 0,
-    endDate: getCurrentDate(),
+    endDate: subscription.endDate,
     subscriptionType: subscription.subscriptionType,
     subscriptionMode: subscription.subscriptionMode,
   };
