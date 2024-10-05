@@ -1,10 +1,8 @@
 const {
   subscriptionModes,
-  subscriptionTypes,
   checkoutSuccessUrl,
   checkoutCancelUrl,
   subscriptionStatuses,
-  subscriptionProviders,
 } = require('../constants/usersConstants');
 const {
   SubscriptionsModel,
@@ -12,10 +10,11 @@ const {
   UsersModel,
 } = require('../models');
 const {
-  getCurrentDate,
-  getDateAfterOneMonth,
-  getDateAfter1Year,
-} = require('../utils/DateCalculations');
+  prepareFreeSubscriptionData,
+  prepareProSubscriptionData,
+  prepareHistoryData,
+  prepareFreeModeHistoryData,
+} = require('../utils/helpers/subscriptions');
 const StripeUtils = require('../utils/stripeUtils');
 const GeneralServices = require('./generalServices');
 const mongoose = require('mongoose');
@@ -65,16 +64,7 @@ module.exports = class SubscriptionsServices {
         userId: userId,
       });
 
-      const data = {
-        userId,
-        providerSubscriptionId: null,
-        subscriptionProviders: null,
-        status: subscriptionStatuses.active.value,
-        startDate: getCurrentDate(),
-        endDate: getDateAfterOneMonth(),
-        subscriptionMode: subscriptionModes.free.value,
-        subscriptionType: subscriptionTypes.monthly.value,
-      };
+      const data = prepareFreeSubscriptionData({userId});
 
       // if Pro user has degrade to free then it will update the existing one to free otherwise new subscription created if it is not present
       let subscription;
@@ -189,44 +179,22 @@ module.exports = class SubscriptionsServices {
       }).session(session);
 
       const existedSubscription = await SubscriptionsModel.findOne({
-        userId: user.id,
+        userId: user?.id,
       }).session(session);
 
-      const isMonthlySubscription =
-        data?.plan?.interval === subscriptionTypes.monthly.stripeValue;
-
       // Prepare data for the new pro subscription
-      let finalData = {
-        userId: user.id,
-        providerSubscriptionId: data.subscription,
-        subscriptionProviders: subscriptionProviders.stripe.value,
-        status: subscriptionStatuses.active.value,
-        startDate: getCurrentDate(),
-        endDate: isMonthlySubscription
-          ? getDateAfterOneMonth()
-          : getDateAfter1Year(),
-        subscriptionMode: subscriptionModes.paid.value,
-        subscriptionType: isMonthlySubscription
-          ? subscriptionTypes.monthly.value
-          : subscriptionTypes.yearly.value,
-      };
+      let finalData = prepareProSubscriptionData({
+        eventData: data,
+        userId: user?.id,
+      });
 
       // Scenario 1: Existing subscription
       if (existedSubscription) {
-        const isFreeSubscriptionMode =
-          existedSubscription.subscriptionMode === subscriptionModes.free.value;
-
-        let historyData = {
-          subscriptionId: existedSubscription.id,
-          userId: user.id,
-          startDate: existedSubscription.startDate,
-          endDate: getCurrentDate(),
-          subscriptionType: isMonthlySubscription
-            ? subscriptionTypes.monthly.value
-            : subscriptionTypes.yearly.value,
-          amount: isFreeSubscriptionMode ? 0 : data.plan.amount / 100,
-          subscriptionMode: subscriptionModes.free.value,
-        };
+        let historyData = prepareHistoryData({
+          eventData: data,
+          subscription: existedSubscription,
+          userId: user?.id,
+        });
 
         await SubscriptionsServices.createSubscriptionHistory({
           subscription: historyData,
@@ -234,15 +202,16 @@ module.exports = class SubscriptionsServices {
           session,
         });
 
+        const existedStripeSubscription = await StripeUtils.getSubscriptionById(
+          {subscriptionId: data.subscription}
+        );
+
         // resume the subscription if paused
-        await StripeUtils.updateSubscription({
-          subscriptionId: data.subscription,
-          data: {
-            pause_collection: null,
-            billing_cycle_anchor: 'now',
-            proration_behavior: 'none',
-          },
-        });
+        if (!!existedStripeSubscription.pause_collection) {
+          await StripeUtils.resumeSubscription({
+            subscriptionId: data.subscription,
+          });
+        }
 
         // Update subscription data
         await SubscriptionsModel.findOneAndUpdate(
@@ -280,7 +249,7 @@ module.exports = class SubscriptionsServices {
       }).session(session);
 
       const subscription = await SubscriptionsModel.findOne({
-        userId: user.id,
+        userId: user?.id,
       }).session(session);
 
       // if subscription update failed then pause the subscription and update subscription to free and history
@@ -294,16 +263,7 @@ module.exports = class SubscriptionsServices {
           },
         });
 
-        const data = {
-          userId: user?.id,
-          providerSubscriptionId: null,
-          subscriptionProviders: null,
-          status: subscriptionStatuses.active.value,
-          startDate: getCurrentDate(),
-          endDate: getDateAfterOneMonth(),
-          subscriptionMode: subscriptionModes.free.value,
-          subscriptionType: subscriptionTypes.monthly.value,
-        };
+        const data = prepareFreeSubscriptionData({userId: user?.id});
 
         await SubscriptionsModel.findByIdAndUpdate(
           {_id: subscription.id},
@@ -311,15 +271,10 @@ module.exports = class SubscriptionsServices {
           {new: true, session}
         );
 
-        let historyData = {
-          subscriptionId: subscription.id,
-          userId: user.id,
-          startDate: subscription.startDate,
-          amount: 0,
-          endDate: getCurrentDate(),
-          subscriptionType: subscription.subscriptionType,
-          subscriptionMode: subscription.subscriptionMode,
-        };
+        let historyData = prepareFreeModeHistoryData({
+          subscription,
+          userId: user?.id,
+        });
 
         await SubscriptionsServices.createSubscriptionHistory({
           subscription: historyData,

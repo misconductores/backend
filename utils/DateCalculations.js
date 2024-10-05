@@ -25,7 +25,7 @@ module.exports.dateAfterSevenDays = () => {
   return after7Days;
 };
 
-module.exports.getDateAfter1Year = ({date = null}) => {
+module.exports.getDateAfter1Year = ({date = null} = {}) => {
   const formattedDate = date ? DateTime.fromJSDate(date) : DateTime.now();
   const dateAfter1Year = formattedDate.plus({years: 1});
   return dateAfter1Year;
@@ -44,6 +44,15 @@ module.exports.calculateAge = ({dateOfBirth}) => {
   return age;
 };
 
+module.exports.convertTimestampsToDate = ({timestamps}) => {
+  const date = DateTime.fromSeconds(timestamps);
+  return date.toJSDate();
+};
+
 module.exports.calculateOneMonthAheadDate = ({date}) => {
   return DateTime.fromJSDate(date).plus({months: 1}).toJSDate();
+};
+
+module.exports.calculateOneYearAheadDate = ({date}) => {
+  return DateTime.fromJSDate(date).plus({years: 1}).toJSDate();
 };
