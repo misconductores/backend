@@ -52,43 +52,47 @@ exports.prepareProSubscriptionData = ({eventData, userId}) => {
   return data;
 };
 
-exports.prepareHistoryData = ({eventData, subscription, userId}) => {
+exports.prepareHistoryData = ({
+  eventData,
+  subscription,
+  userId,
+  isFreeModeHistory = false,
+}) => {
   const isMonthlySubscription =
     eventData.lines?.data[0]?.plan?.interval ===
     subscriptionTypes.monthly.stripeValue;
 
-  const isFreeSubscriptionMode =
-    subscription.subscriptionMode === subscriptionModes.free.value;
-
-  const endDate = convertTimestampsToDate({
+  let endDate = convertTimestampsToDate({
     timestamps: eventData.period_start,
   });
+
+  let amount = eventData.total / 100;
+  let subscriptionMode = subscriptionModes.paid.value;
+  let subscriptionType = isMonthlySubscription
+    ? subscriptionTypes.monthly.value
+    : subscriptionTypes.yearly.value;
+
+  // Override if it's free mode history
+  if (isFreeModeHistory) {
+    endDate = subscription.endDate;
+    amount = 0;
+    subscriptionMode = subscriptionModes.free.value;
+    subscriptionType = subscriptionTypes.monthly.value;
+  } else if (subscription.subscriptionMode === subscriptionModes.free.value) {
+    amount = 0;
+    subscriptionMode = subscriptionModes.free.value;
+    subscriptionType = subscriptionTypes.monthly.value;
+  }
 
   let data = {
     subscriptionId: subscription.id,
     userId,
     startDate: subscription.startDate,
     endDate,
-    subscriptionType: isMonthlySubscription
-      ? subscriptionTypes.monthly.value
-      : subscriptionTypes.yearly.value,
-    amount: isFreeSubscriptionMode ? 0 : eventData.total / 100,
-    subscriptionMode: isFreeSubscriptionMode
-      ? subscriptionModes.free.value
-      : subscriptionModes.paid.value,
+    subscriptionType,
+    amount,
+    subscriptionMode,
   };
-  return data;
-};
 
-exports.prepareFreeModeHistoryData = ({subscription, userId}) => {
-  let data = {
-    subscriptionId: subscription.id,
-    userId,
-    startDate: subscription.startDate,
-    amount: 0,
-    endDate: subscription.endDate,
-    subscriptionType: subscription.subscriptionType,
-    subscriptionMode: subscription.subscriptionMode,
-  };
   return data;
 };

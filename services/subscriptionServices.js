@@ -13,7 +13,6 @@ const {
   prepareFreeSubscriptionData,
   prepareProSubscriptionData,
   prepareHistoryData,
-  prepareFreeModeHistoryData,
 } = require('../utils/helpers/subscriptions');
 const StripeUtils = require('../utils/stripeUtils');
 const GeneralServices = require('./generalServices');
@@ -271,9 +270,11 @@ module.exports = class SubscriptionsServices {
           {new: true, session}
         );
 
-        let historyData = prepareFreeModeHistoryData({
+        let historyData = prepareHistoryData({
+          eventData: data,
           subscription,
           userId: user?.id,
+          isFreeModeHistory: true,
         });
 
         await SubscriptionsServices.createSubscriptionHistory({
