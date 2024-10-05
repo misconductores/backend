@@ -57,9 +57,11 @@ module.exports = class UsersController {
 
   static async getUserInformation(req, res, next) {
     const {id: userId} = req.params;
+    const isFreeSubscription = req.isFreeSubscription;
 
     const {success, error, user} = await UsersServices.getRestrictedUserById({
       userId,
+      isFreeSubscription,
     });
 
     if (!user) return next(UsersErrorsFactory.userNotFoundErr());

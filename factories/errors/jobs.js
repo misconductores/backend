@@ -1,3 +1,4 @@
+const {errorCodes} = require('../../constants/usersConstants');
 const AppError = require('./AppError');
 
 module.exports = class JobErrorsFactory {
@@ -35,6 +36,15 @@ module.exports = class JobErrorsFactory {
     return new AppError({
       message: 'Applicant already exist',
       statusCode: 400,
+    });
+  }
+  static forbiddenJobPostErr() {
+    return new AppError({
+      message: 'Only one job allowed in free mode',
+      statusCode: 403,
+      err: {
+        type: errorCodes.ONLY_ONE_JOB_ALLOWED,
+      },
     });
   }
 };

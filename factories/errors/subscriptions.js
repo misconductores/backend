@@ -7,4 +7,10 @@ module.exports = class SubscriptionsErrorsFactory {
       statusCode: 400,
     });
   }
+  static unhandledEventErr() {
+    return new AppError({
+      message: 'Unhandled Event',
+      statusCode: 400,
+    });
+  }
 };

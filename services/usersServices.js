@@ -12,6 +12,7 @@ const {
   connectionStatuses,
   driverStatuses,
   statusTypes,
+  freeSubscriptionSelectedData,
 } = require('../constants/usersConstants');
 const {addDriverConditions} = require('../utils/helpers/users');
 const {
@@ -27,6 +28,7 @@ const region = config.get('awsBucketRegion');
 const mongoose = require('mongoose');
 const {ReviewsModel, ConnectionsModel} = require('../models');
 const GeneralServices = require('./generalServices');
+const {calculateAge} = require('../utils/DateCalculations');
 
 const s3Client = new S3Client({
   region: region,
@@ -503,12 +505,25 @@ module.exports = class UsersServices {
       return {success: false, error};
     }
   }
-  static async getRestrictedUserById({userId}) {
+  static async getRestrictedUserById({userId, isFreeSubscription = false}) {
     try {
-      const user = await UsersModel.findById({_id: userId}).select(
-        restrictedUserData
-      );
-      return {success: true, user};
+      const user = await UsersModel.findById({_id: userId})
+        .select(
+          isFreeSubscription ? freeSubscriptionSelectedData : restrictedUserData
+        )
+        .lean();
+
+      const age = calculateAge({dateOfBirth: user?.dateOfBirth});
+
+      let finalUser = {
+        ...user,
+        age: parseInt(age),
+        id: user?._id,
+      };
+
+      if (isFreeSubscription) delete finalUser.dateOfBirth;
+
+      return {success: true, user: finalUser};
     } catch (error) {
       return {success: false, error};
     }
