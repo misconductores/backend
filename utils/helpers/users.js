@@ -1,4 +1,4 @@
-const {experienceTypes} = require('../../constants/usersConstants');
+const {restrictedUserData} = require('../../constants/usersConstants');
 
 exports.addDriverConditions = ({
   query,
@@ -61,4 +61,12 @@ exports.addDriverConditions = ({
   }
 
   return andConditions;
+};
+
+exports.calculateRestrictedData = ({isCompanyDriver}) => {
+  // if driver is connected with loggedIn company then allow visa number and fast number to be display
+  let connectedDriverData = restrictedUserData
+    .replace('-visaNumber ', '')
+    .replace('-fastNumber ', '');
+  return isCompanyDriver ? connectedDriverData : restrictedUserData;
 };

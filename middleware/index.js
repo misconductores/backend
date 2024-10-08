@@ -19,6 +19,7 @@ const isApplicantExist = require('./isApplicantExist');
 const checkThreeInRowIncident = require('./checkThreeInRowIncident');
 const blockExistingSubscribers = require('./blockExistingSubscribers');
 const subscriptionValidator = require('./subscriptionValidator');
+const verifyDriverOfCompany = require('./verifyDriverOfCompany');
 
 module.exports = {
   authMiddleware,
@@ -42,4 +43,5 @@ module.exports = {
   checkThreeInRowIncident,
   blockExistingSubscribers,
   subscriptionValidator,
+  verifyDriverOfCompany,
 };
