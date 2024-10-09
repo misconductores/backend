@@ -13,8 +13,12 @@ const {
   driverStatuses,
   statusTypes,
   freeSubscriptionSelectedData,
+  subscriptionModes,
 } = require('../constants/usersConstants');
-const {addDriverConditions} = require('../utils/helpers/users');
+const {
+  addDriverConditions,
+  calculateRestrictedData,
+} = require('../utils/helpers/users');
 const {
   S3Client,
   GetObjectCommand,
@@ -26,7 +30,11 @@ const secretAccessKey = config.get('awsSecretAccessKey');
 const Bucket = config.get('awsBucket');
 const region = config.get('awsBucketRegion');
 const mongoose = require('mongoose');
-const {ReviewsModel, ConnectionsModel} = require('../models');
+const {
+  ReviewsModel,
+  ConnectionsModel,
+  SubscriptionsModel,
+} = require('../models');
 const GeneralServices = require('./generalServices');
 const {calculateAge} = require('../utils/DateCalculations');
 
@@ -356,6 +364,7 @@ module.exports = class UsersServices {
     federalLicenseTypes,
     stateLicenseTypes,
     vehicleType,
+    userId,
   }) {
     const query = {
       role: roles.driver.value,
@@ -376,6 +385,14 @@ module.exports = class UsersServices {
       query.$and = andConditions;
     }
 
+    const {doc: subscription} = await GeneralServices.findOne({
+      query: {userId},
+      model: SubscriptionsModel,
+    });
+
+    const isFreeSubscriber =
+      subscription?.subscriptionMode === subscriptionModes.free.value;
+
     try {
       const skip = (page - 1) * limit;
       const [totalCount, data] = await Promise.all([
@@ -383,7 +400,9 @@ module.exports = class UsersServices {
         UsersModel.find(query, null, {
           skip,
           limit,
-        }).select(restrictedUserData),
+        }).select(
+          isFreeSubscriber ? freeSubscriptionSelectedData : restrictedUserData
+        ),
       ]);
       return {success: true, result: {totalCount, data}};
     } catch (err) {
@@ -505,11 +524,17 @@ module.exports = class UsersServices {
       return {success: false, error};
     }
   }
-  static async getRestrictedUserById({userId, isFreeSubscription = false}) {
+  static async getRestrictedUserById({
+    userId,
+    isFreeSubscription = false,
+    isCompanyDriver = false,
+  }) {
     try {
       const user = await UsersModel.findById({_id: userId})
         .select(
-          isFreeSubscription ? freeSubscriptionSelectedData : restrictedUserData
+          isFreeSubscription
+            ? freeSubscriptionSelectedData
+            : calculateRestrictedData({isCompanyDriver})
         )
         .lean();
 
