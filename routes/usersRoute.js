@@ -4,6 +4,8 @@ const {
   validatorMiddleware,
   authMiddleware,
   roleValidatorMiddleware,
+  subscriptionValidator,
+  verifyDriverOfCompany,
 } = require('../middleware');
 const {catchAsync} = require('../utils');
 const {usersSchema, othersSchema} = require('../schemas');
@@ -13,6 +15,7 @@ const {
   PARAMS_PROPERTY,
   QUERY_PROPERTY,
   roles,
+  requestTypes,
 } = require('../constants/usersConstants');
 const router = express.Router();
 
@@ -26,6 +29,7 @@ router.get(
 router.get(
   '/drivers',
   authMiddleware,
+  roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
   validatorMiddleware(othersSchema.validatePaginationParams, QUERY_PROPERTY),
   catchAsync(UsersController.getDriversList)
 );
@@ -45,6 +49,8 @@ router.get(
 router.get(
   '/:id',
   authMiddleware,
+  verifyDriverOfCompany,
+  subscriptionValidator({requestType: requestTypes.userData.value}),
   catchAsync(UsersController.getUserInformation)
 );
 

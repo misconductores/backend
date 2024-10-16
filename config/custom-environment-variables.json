@@ -8,5 +8,7 @@
   "awsAccessKey": "AWS_ACCESS_KEY",
   "awsSecretAccessKey": "AWS_SECRET_ACCESS_KEY",
   "awsBucket": "AWS_BUCKET",
-  "awsBucketRegion": "AWS_BUCKET_REGION"
+  "awsBucketRegion": "AWS_BUCKET_REGION",
+  "stripeSecretKey": "STRIPE_SECRET_KEY",
+  "stripeAccountWebHookSecret": "STRIPE_ACCOUNT_WEBHOOK_SECRET"
 }

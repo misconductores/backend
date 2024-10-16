@@ -3,6 +3,7 @@ const {
   QUERY_PROPERTY,
   PARAMS_PROPERTY,
   driverStatuses,
+  requestTypes,
 } = require('../constants/usersConstants');
 const {DocumentsAccessController} = require('../controllers');
 const {
@@ -13,6 +14,7 @@ const {
   verifyDocsRequestsMiddleware,
   forbidResolveDocsAccessRequests,
   checkDriverStatusMiddleware,
+  subscriptionValidator,
 } = require('../middleware');
 const {documentAccessSchema} = require('../schemas');
 const {catchAsync} = require('../utils');
@@ -24,6 +26,7 @@ router.post(
   authMiddleware,
   roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
   validatorMiddleware(documentAccessSchema.validateSendDocsReq),
+  subscriptionValidator({requestType: requestTypes.docAccess.value}),
   isDocumentAccessRequestExist,
   catchAsync(DocumentsAccessController.requestDocumentsAccess)
 );

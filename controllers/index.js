@@ -7,6 +7,7 @@ const ConnectionsController = require('./connectionsController');
 const ReviewsController = require('./reviewsController');
 const DocumentsAccessController = require('./documentsAccessController');
 const NotificationsController = require('./notificationsController');
+const SubscriptionsController = require('./subscriptionsController');
 
 module.exports = {
   UsersController,
@@ -18,4 +19,5 @@ module.exports = {
   ReviewsController,
   DocumentsAccessController,
   NotificationsController,
+  SubscriptionsController,
 };

@@ -1,3 +1,4 @@
+const {errorCodes} = require('../../constants/usersConstants');
 const AppError = require('./AppError');
 
 module.exports = class DocumentsAccessErrorsFactory {
@@ -11,6 +12,15 @@ module.exports = class DocumentsAccessErrorsFactory {
     return new AppError({
       message: 'This request is already resolved',
       statusCode: 400,
+    });
+  }
+  static forbiddenDocRequestErr() {
+    return new AppError({
+      message: 'You are not allowed to request for documents in free mode',
+      statusCode: 403,
+      err: {
+        type: errorCodes.DOCS_ACCESS_REQ_NOT_ALLOWED,
+      },
     });
   }
 };

@@ -1,3 +1,5 @@
+const config = require('config');
+
 module.exports.ACCESS_LEVELS = {
   create: 'CREATE',
   read: 'READ',
@@ -156,10 +158,18 @@ module.exports.errorCodes = {
   INVALID_TOKEN_ERR: 'INVALID_TOKEN_ERR',
   USER_NOT_VERIFIED: 'USER_NOT_VERIFIED',
   ONLY_COMPANY_ALLOWED: 'ONLY_COMPANY_ALLOWED',
+  ONLY_ONE_JOB_ALLOWED: 'ONLY_ONE_JOB_ALLOWED',
+  DOCS_ACCESS_REQ_NOT_ALLOWED: 'DOCS_ACCESS_REQ_NOT_ALLOWED',
+  JOB_HISTORY_NOT_ALLOWED: 'JOB_HISTORY_NOT_ALLOWED',
 };
 
+// restricted user data without subscription
 module.exports.restrictedUserData =
   '-federalLicenses.federalLicenseNo -stateLicenses.stateLicenseNo -visaNumber -fastNumber -password -verificationToken -documents';
+
+// selected user data with free subscription
+module.exports.freeSubscriptionSelectedData =
+  'firstName role dateOfBirth lastName companyName driverStatus vehicleType handleEquipment postalCode experience federalLicenses.federalLicenseType stateLicenses.stateLicenseType profilePic id';
 
 module.exports.experienceTypes = {
   student: {
@@ -325,5 +335,93 @@ module.exports.blockedErrorTypes = {
   },
   cannot_blocked_err: {
     value: 'cannot_blocked_err',
+  },
+};
+
+module.exports.subscriptionStatuses = {
+  active: {
+    value: 'active',
+  },
+  expired: {
+    value: 'expired',
+  },
+  inactive: {
+    value: 'inactive',
+  },
+  all: {
+    value: 'all',
+  },
+  incomplete: {
+    value: 'incomplete',
+  },
+  pastDue: {
+    value: 'past_due',
+  },
+};
+
+module.exports.subscriptionModes = {
+  free: {
+    value: 'free',
+  },
+  paid: {
+    value: 'paid',
+  },
+};
+
+module.exports.subscriptionProviders = {
+  stripe: {
+    value: 'stripe',
+  },
+};
+
+module.exports.subscriptionTypes = {
+  monthly: {
+    value: 'monthly',
+    stripeValue: 'month',
+  },
+  yearly: {
+    value: 'yearly',
+    stripeValue: 'year',
+  },
+};
+
+module.exports.subscriptionStatusEnums = Object.values(
+  this.subscriptionStatuses
+).map((status) => status.value);
+
+module.exports.subscriptionModeEnums = Object.values(
+  this.subscriptionModes
+).map((mode) => mode.value);
+
+module.exports.subscriptionTypeEnums = Object.values(
+  this.subscriptionTypes
+).map((type) => type.value);
+
+module.exports.stripeEvents = {
+  invoicePaid: {
+    value: 'invoice.paid',
+  },
+  paymentFailed: {
+    value: 'invoice.payment_failed',
+  },
+};
+
+module.exports.checkoutSuccessUrl = `${config.get('frontendURL')}`;
+module.exports.checkoutCancelUrl = `${config.get(
+  'frontendURL'
+)}/dashboard/subscription`;
+
+module.exports.requestTypes = {
+  jobPost: {
+    value: 'jobPost',
+  },
+  docAccess: {
+    value: 'docAccess',
+  },
+  reviewsAccess: {
+    value: 'reviewsAccess',
+  },
+  userData: {
+    value: 'userData',
   },
 };

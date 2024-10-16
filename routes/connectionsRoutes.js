@@ -3,6 +3,7 @@ const {
   QUERY_PROPERTY,
   driverStatuses,
   PARAMS_PROPERTY,
+  requestTypes,
 } = require('../constants/usersConstants');
 const {ConnectionsController} = require('../controllers');
 const {
@@ -12,6 +13,7 @@ const {
   validatorMiddleware,
   checkDriverStatusMiddleware,
   checkThreeInRowIncident,
+  subscriptionValidator,
 } = require('../middleware');
 const {reviewsSchema, connectionsSchema} = require('../schemas');
 const {catchAsync} = require('../utils');
@@ -68,6 +70,7 @@ router.get(
   roleValidatorMiddleware({
     allowedRoles: [roles.driver.value, roles.company.value],
   }),
+  subscriptionValidator({requestType: requestTypes.reviewsAccess.value}),
   validatorMiddleware(
     connectionsSchema.validateGetJobHistoryParams,
     PARAMS_PROPERTY
