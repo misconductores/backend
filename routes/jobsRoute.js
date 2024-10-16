@@ -3,6 +3,7 @@ const {
   PARAMS_PROPERTY,
   roles,
   driverStatuses,
+  requestTypes,
 } = require('../constants/usersConstants');
 const {JobsController} = require('../controllers');
 const {
@@ -12,6 +13,7 @@ const {
   roleValidatorMiddleware,
   isCompanyJobCheckMiddleware,
   checkDriverStatusMiddleware,
+  subscriptionValidator,
 } = require('../middleware');
 const {jobsSchema, othersSchema} = require('../schemas');
 const {catchAsync} = require('../utils');
@@ -48,6 +50,7 @@ router.get(
 router.post(
   '/create',
   authMiddleware,
+  subscriptionValidator({requestType: requestTypes.jobPost.value}),
   validatorMiddleware(jobsSchema.validateJobReq),
   catchAsync(JobsController.createJob)
 );

@@ -1,5 +1,10 @@
 const config = require('config');
-const {UsersServices, FilesServices, GeneralServices} = require('../services');
+const {
+  UsersServices,
+  FilesServices,
+  GeneralServices,
+  SubscriptionServices,
+} = require('../services');
 const actions = require('../utils/actions');
 const {
   UsersErrorsFactory,
@@ -52,9 +57,13 @@ module.exports = class UsersController {
 
   static async getUserInformation(req, res, next) {
     const {id: userId} = req.params;
+    const isFreeSubscription = req.isFreeSubscription;
+    const isCompanyDriver = req.isCompanyDriver;
 
     const {success, error, user} = await UsersServices.getRestrictedUserById({
       userId,
+      isFreeSubscription,
+      isCompanyDriver,
     });
 
     if (!user) return next(UsersErrorsFactory.userNotFoundErr());
@@ -94,10 +103,15 @@ module.exports = class UsersController {
       user: userToLogin,
     });
 
+    const {subscription} = await SubscriptionServices.getSubscriptionByUserId({
+      userId: user.id,
+    });
+
     return next(
       UsersResponsesFactory.userLoggedInSuccessfully({
         user,
         isLoginRequest: true,
+        subscription,
       })
     );
   }
@@ -343,11 +357,8 @@ module.exports = class UsersController {
     );
   }
   static async getDriversList(req, res, next) {
-    const {success, err, user} = await UsersServices.getUserById({
-      id: req.jwtToken.user.id,
-    });
-    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
-    if (!success) throw err;
+    const userId = req.jwtToken.user.id;
+
     let {
       page,
       limit,
@@ -380,6 +391,7 @@ module.exports = class UsersController {
       equipment: formattedHandleEquipment,
       experience: formattedExperience,
       vehicleType,
+      userId,
     });
     if (response)
       return next(
