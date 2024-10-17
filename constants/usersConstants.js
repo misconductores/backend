@@ -169,7 +169,7 @@ module.exports.restrictedUserData =
 
 // selected user data with free subscription
 module.exports.freeSubscriptionSelectedData =
-  'firstName role dateOfBirth lastName companyName driverStatus vehicleType handleEquipment postalCode experience federalLicenses.federalLicenseType stateLicenses.stateLicenseType profilePic id';
+  'firstName role dateOfBirth lastName companyName driverStatus vehicleType handleEquipment postalCode experience federalLicenses.federalLicenseType stateLicenses.stateLicenseType profilePic id city country';
 
 module.exports.experienceTypes = {
   student: {
