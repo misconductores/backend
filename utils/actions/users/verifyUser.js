@@ -3,6 +3,6 @@ const emailNotificationProcesses = require('../../email/processes');
 
 module.exports = async ({user}) => {
   const domain = config.get('frontendURL');
-  const verifyUrl = `${domain}/auth/verify/${user.verificationToken}`;
+  const verifyUrl = `${domain}/es/auth/verify/${user.verificationToken}`;
   await emailNotificationProcesses.verifyUser({user, verifyUrl});
 };
