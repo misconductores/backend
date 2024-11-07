@@ -29,7 +29,9 @@ router.get(
 router.get(
   '/drivers',
   authMiddleware,
-  roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
+  roleValidatorMiddleware({
+    allowedRoles: [roles.admin.value, roles.company.value],
+  }),
   validatorMiddleware(othersSchema.validatePaginationParams, QUERY_PROPERTY),
   catchAsync(UsersController.getDriversList)
 );

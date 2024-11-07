@@ -2,9 +2,14 @@ const {
   statusTypes,
   connectionStatuses,
   roles,
+  subscriptionModes,
 } = require('../constants/usersConstants');
 const {GeneralErrorsFactory} = require('../factories');
-const {DocumentAccessModel, ConnectionsModel} = require('../models');
+const {
+  DocumentAccessModel,
+  ConnectionsModel,
+  SubscriptionsModel,
+} = require('../models');
 const {GeneralServices} = require('../services');
 const {
   getCurrentDate,
@@ -19,6 +24,18 @@ module.exports = async (req, res, next) => {
     // If the user is an admin, immediately proceed
     if (role === roles.admin.value) {
       req.hasAccess = true;
+      return next();
+    }
+
+    const {doc: subscription} = await GeneralServices.findOne({
+      query: {
+        userId: loggedInUserId,
+      },
+      model: SubscriptionsModel,
+    });
+
+    if (subscription?.subscriptionMode === subscriptionModes.free.value) {
+      req.hasAccess = false;
       return next();
     }
 

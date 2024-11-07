@@ -124,7 +124,7 @@ module.exports = class UsersController {
     await user.save();
 
     const domain = config.get('frontendURL');
-    const url = `${domain}/auth/reset/${resetToken}`;
+    const url = `${domain}/es/auth/reset/${resetToken}`;
 
     await actions.users.resetPassword({user, resetUrl: url});
 
