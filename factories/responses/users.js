@@ -158,4 +158,11 @@ module.exports = class UsersResponsesFactory {
       body: {},
     });
   }
+  static servicesRetrieveSuccessfully({services}) {
+    return new AppResponse({
+      message: 'Services retrieved successfully',
+      statusCode: 200,
+      body: {services},
+    });
+  }
 };

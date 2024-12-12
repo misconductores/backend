@@ -546,4 +546,14 @@ module.exports = class UsersController {
 
     if (error) throw error;
   }
+
+  static async getServicesList(req, res, next) {
+    const { success, services, error } = await UsersServices.getServicesList();
+    if (success)
+      return next(
+        UsersResponsesFactory.servicesRetrieveSuccessfully({services})
+      );
+
+    if (error) throw error;
+  }
 };
