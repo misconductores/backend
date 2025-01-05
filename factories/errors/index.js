@@ -9,6 +9,7 @@ const ConnectionErrors = require('./connections');
 const ReviewsErrors = require('./reviews');
 const DocumentsAccessErrors = require('./documentsAccess');
 const SubscriptionsErrors = require('./subscriptions');
+const PaymentIntegrationErrorsFactory = require('./paymentIntegration');
 
 module.exports = {
   AppError,
@@ -22,4 +23,5 @@ module.exports = {
   ReviewsErrors,
   DocumentsAccessErrors,
   SubscriptionsErrors,
+  PaymentIntegrationErrorsFactory,
 };

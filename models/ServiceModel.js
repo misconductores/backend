@@ -31,6 +31,10 @@ const serviceSchema = new Schema({
         type: String,
         required: true,
     },
+    email: {
+        type: String,
+        required: false,
+    },
 });
 
 module.exports = mongoose.model('Services', serviceSchema);
