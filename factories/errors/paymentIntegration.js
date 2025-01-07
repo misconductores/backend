@@ -1,4 +1,5 @@
 const AppError = require('./AppError');
+const AppResponse = require('../responses/AppResponse');
 
 module.exports = class PaymentIntegrationErrorsFactory {
     static unhandledEventErr() {
