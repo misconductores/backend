@@ -407,6 +407,9 @@ module.exports.stripeEvents = {
   paymentSuccess: {
     value: 'payment_intent.succeeded',
   },
+  checkoutSessionCompleted: {
+    value: 'checkout.session.completed',
+  },
 };
 
 module.exports.checkoutSuccessUrl = `${config.get('frontendURL')}`;

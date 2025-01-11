@@ -25,9 +25,8 @@ module.exports = class PaymentIntegrationServices {
         }
     }
 
-    static async updatePaymentAttempt(intent) {
+    static async updatePaymentAttempt(clientReferenceId, intent) {
         try {
-            const clientReferenceId = intent.metadata['client_reference_id'];
             const updatedPaymentAttempt = await PaymentAttemptModel.findOneAndUpdate(
                 { paymentReference: clientReferenceId },
                 { $set: { intent: intent } },

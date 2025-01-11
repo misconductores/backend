@@ -155,4 +155,14 @@ module.exports = class StripeUtils {
       return {success: false, error};
     }
   }
+
+  static async getPaymentIntent({paymentIntentId}) {
+    try {
+      const paymentIntent = await Stripe.paymentIntents.retrieve(paymentIntentId);
+      return paymentIntent;
+    } catch (error) {
+      console.error('Error retrieving Payment Intent', error);
+      throw error;
+    }
+  }
 };

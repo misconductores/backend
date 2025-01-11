@@ -26,11 +26,16 @@ module.exports = class PaymentIntegrationController {
 
         try {
             switch (event.type) {
-                case stripeEvents.paymentSuccess.value: {
-                    const intent = event.data.object;
-                    const {success, error} = await PaymentIntegrationServices.updatePaymentAttempt(intent);
-                    if (!success) throw error;
-    
+                case stripeEvents.checkoutSessionCompleted.value: {
+                    const session = event.data.object;
+                    const paymentIntentId = session.payment_intent;
+                    const paymentIntent = await StripeUtils.getPaymentIntent({ paymentIntentId });
+                    if (paymentIntent.status == 'succeeded') {
+                        const clientReferenceId = session.client_reference_id;
+                        const { success, error } = await PaymentIntegrationServices.updatePaymentAttempt(clientReferenceId, paymentIntent);
+                        if (!success) throw error;
+                    }
+
                     break;
                 }
                 default:
