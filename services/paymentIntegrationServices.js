@@ -38,13 +38,16 @@ module.exports = class PaymentIntegrationServices {
                 throw new Error('Payment attempt update failed');
             }
 
-            const driver = await UsersModel.findById(updatedPaymentAttempt.userId).select('firstName lastName email contact age');
-
+            const driver = await UsersModel.findById(updatedPaymentAttempt.userId);
             if (!driver) {
                 throw new Error('Driver not found');
             }
 
-            const { firstName, lastName, email, contact, age } = driver.toJSON();
+            const firstName = driver.firstName;
+            const lastName = driver.lastName;
+            const email = driver.email;
+            const contact = driver.contact;
+            const age = driver.age;
 
             const service = await ServiceModel.findById(updatedPaymentAttempt.serviceId);
 
@@ -54,7 +57,7 @@ module.exports = class PaymentIntegrationServices {
 
             const to = service.email;
             const from = defaultEmailAddress;
-            const templateId = sendGridCecati144InscriptionPaymentTemplateId;
+            const templateId = service.emailTemplateId;
             const driverFullName = `${firstName} ${lastName}`;
             const dynamicTemplateData = {
                 "name": driverFullName,
@@ -64,6 +67,14 @@ module.exports = class PaymentIntegrationServices {
             };
 
             sendEmail({ to, from, templateId, "dynamic_template_data": dynamicTemplateData });
+            
+            const customerDynamicTemplateData = {
+                "name": driverFullName
+            };
+
+            const customerDynamicTemplateId = service.customerEmailTemplateId;
+
+            sendEmail({ "to": email, from, "templateId": customerDynamicTemplateId, "dynamic_template_data": customerDynamicTemplateData });
 
             return { success: true };
         } catch (error) {

@@ -9,18 +9,18 @@ const serviceSchema = new Schema({
     },
     location: {
         type: String,
-        required: true,
+        required: false,
     },
     description: {
         type: String,
-        required: true,
+        required: false,
     },
     paymentOptions: {
         type: [String],
-        required: true,
+        required: false,
     },
     price: {
-        type: Number,
+        type: String,
         required: true,
     },
     buttonText: {
@@ -35,6 +35,22 @@ const serviceSchema = new Schema({
         type: String,
         required: false,
     },
+    emailTemplateId: {
+        type: String,
+        required: false,
+    },
+    requirements: {
+        type: [String],
+        required: false,
+    },
+    afterPaymentOpts: {
+        type: [String],
+        required: false,
+    },
+    customerEmailTemplateId: {
+        type: String,
+        required: false
+    }
 });
 
 module.exports = mongoose.model('Services', serviceSchema);
