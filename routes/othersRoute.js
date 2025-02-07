@@ -1,5 +1,5 @@
 const {roles} = require('../constants/usersConstants');
-const {OthersController} = require('../controllers');
+const {OthersController, UsersController} = require('../controllers');
 const {authMiddleware, roleValidatorMiddleware} = require('../middleware');
 const {catchAsync} = require('../utils');
 
@@ -15,5 +15,15 @@ router.get(
   }),
   catchAsync(OthersController.getCounters)
 );
+
+router.get(
+  '/services',
+  authMiddleware,
+  roleValidatorMiddleware({
+    allowedRoles: [roles.driver.value],
+  }),
+  catchAsync(UsersController.getServicesList)
+);
+
 
 module.exports = router;

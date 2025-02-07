@@ -37,6 +37,7 @@ const {
 } = require('../models');
 const GeneralServices = require('./generalServices');
 const {calculateAge} = require('../utils/DateCalculations');
+const ServiceModel = require('../models/ServiceModel');
 
 const s3Client = new S3Client({
   region: region,
@@ -553,4 +554,14 @@ module.exports = class UsersServices {
       return {success: false, error};
     }
   }
+
+  static async getServicesList() {
+    try {
+      const services = await ServiceModel.find();
+      return {success: true, services};
+    } catch (err) {
+      return {success: false, err};
+    }
+  }
+
 };
