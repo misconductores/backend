@@ -10,5 +10,6 @@
   "awsBucket": "AWS_BUCKET",
   "awsBucketRegion": "AWS_BUCKET_REGION",
   "stripeSecretKey": "STRIPE_SECRET_KEY",
-  "stripeAccountWebHookSecret": "STRIPE_ACCOUNT_WEBHOOK_SECRET"
+  "stripeAccountWebHookSecret": "STRIPE_ACCOUNT_WEBHOOK_SECRET",
+  "stripeServicePaymentWebHookSecret": "STRIPE_SERVICE_PAYMENT_WEBHOOK_SECRET"
 }

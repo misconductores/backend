@@ -20,7 +20,7 @@ module.exports = class PaymentIntegrationController {
     }
 
     static async webhook(req, res, next) {
-        const { success, event } = await StripeUtils.verifyWebhookSignature({ req });
+        const { success, event } = await StripeUtils.verifyServicePaymentWebhookSignature({ req });
 
         if (!success) return next(AuthErrors.unauthorized());
 
