@@ -6,3 +6,6 @@ module.exports.sendGridResetLoginTemplateId =
 
 module.exports.sendGridVerifyUserTemplateId =
   'd-f0dd856f3bda44468299e3f3ae38228c';
+
+module.exports.sendGridCecati144InscriptionPaymentTemplateId =
+  'd-504a1b6a0c094f1dbd7bc549377eb7af'  

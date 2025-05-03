@@ -11,21 +11,21 @@ const {
   finalResponseMiddleware,
   errorMiddleware,
 } = require('./middleware');
-const {corsOrigin} = require('./utils');
-const {documentDeleteCronJob} = require('./utils/cron-jobs/documents');
+const { corsOrigin } = require('./utils');
+const { documentDeleteCronJob } = require('./utils/cron-jobs/documents');
 const {
   expirePendingDocsAccessRequests,
 } = require('./utils/cron-jobs/docAccessRequests');
-const {updateConnectionsToInactive} = require('./utils/cron-jobs/connections');
-const {updateFreeSubscriptions} = require('./utils/cron-jobs/subscriptions');
+const { updateConnectionsToInactive } = require('./utils/cron-jobs/connections');
+const { updateFreeSubscriptions } = require('./utils/cron-jobs/subscriptions');
 
 const app = express();
 
 Sentry.init({
   dsn: config.get('sentryDsn'),
   integrations: [
-    new Sentry.Integrations.Http({tracing: true}),
-    new Sentry.Integrations.Express({app}),
+    new Sentry.Integrations.Http({ tracing: true }),
+    new Sentry.Integrations.Express({ app }),
   ],
   tracesSampleRate: 1.0,
   profilesSampleRate: 1.0,
@@ -34,13 +34,15 @@ Sentry.init({
 app.use(Sentry.Handlers.requestHandler());
 app.use(Sentry.Handlers.tracingHandler());
 
-app.use('/api/v1/subscriptions/webhook', express.raw({type: '*/*'}));
+app.use('/api/v1/subscriptions/webhook', express.raw({ type: '*/*' }));
+
+app.use('/api/v1/payment-integration/webhook', express.raw({ type: '*/*' }));
 
 app.use(express.json());
 
 app.use(cookieParser());
-app.use(bodyParser.urlencoded({extended: true}));
-app.use(cors({origin: corsOrigin, credentials: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cors({ origin: corsOrigin, credentials: true }));
 
 v1.prepareV1Routes(app);
 

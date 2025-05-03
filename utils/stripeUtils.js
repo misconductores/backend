@@ -20,6 +20,23 @@ module.exports = class StripeUtils {
     }
   }
 
+  static async verifyServicePaymentWebhookSignature({req}) {
+    try {
+      const sig = req.headers['stripe-signature'];
+      const webhookSecret = config.get('stripeServicePaymentWebHookSecret');
+
+      const event = await Stripe.webhooks.constructEvent(
+        req.body,
+        sig,
+        webhookSecret
+      );
+
+      return {success: true, event};
+    } catch (err) {
+      return {success: false, err};
+    }
+  }
+
   static async getProducts() {
     try {
       const products = await Stripe.products.list({
@@ -153,6 +170,16 @@ module.exports = class StripeUtils {
       return {success: true};
     } catch (error) {
       return {success: false, error};
+    }
+  }
+
+  static async getPaymentIntent({paymentIntentId}) {
+    try {
+      const paymentIntent = await Stripe.paymentIntents.retrieve(paymentIntentId);
+      return paymentIntent;
+    } catch (error) {
+      console.error('Error retrieving Payment Intent', error);
+      throw error;
     }
   }
 };
