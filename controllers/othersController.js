@@ -42,4 +42,19 @@ module.exports = class OthersController {
 
     if (error) throw error;
   }
+
+  static async getCarrierInfo(req, res, next) {
+    
+    const { docketNumber } = req.params; 
+
+      const {success, carrierInfo, error } = await OthersServices.getCarrierInfoByDocket(docketNumber);
+      if (success)
+        return next(
+          OthersResponsesFactory.carrierInfoRetrieveSuccessfully({carrierInfo})
+        );
+  
+      if (error) throw error;
+
+  }
+
 };

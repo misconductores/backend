@@ -1,3 +1,5 @@
+const axios = require('axios')
+
 const {statusTypes, roles} = require('../constants/usersConstants');
 const {
   OffersModel,
@@ -53,4 +55,26 @@ module.exports = class OthersServices {
       return {success: false, error};
     }
   }
+
+static async getCarrierInfoByDocket(docketNumber) {
+  try {
+      const baseURL = 'https://mobile.fmcsa.dot.gov/qc/services';
+      const endpoint = `/carriers/docket-number/${docketNumber}`;
+      
+      const response = await axios.get(`${baseURL}${endpoint}`, {
+          params: {
+              webKey: '6b11186016d6aaa304db7e7cc52ebcd7d7038095'
+          }
+      });
+
+      return {
+        success: true,
+        carrierInfo: response?.data?.content?.[0]?.carrier
+      }
+
+  } catch (error) {
+      return {success: false, error};
+  }
+}
+
 };
