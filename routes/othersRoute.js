@@ -17,6 +17,11 @@ router.get(
 );
 
 router.get(
+  '/carriers/dock-number/:docketNumber',
+  catchAsync(OthersController.getCarrierInfo)
+);
+
+router.get(
   '/services',
   authMiddleware,
   roleValidatorMiddleware({

@@ -15,4 +15,13 @@ module.exports = class OthersResponsesFactory {
       body: {counters},
     });
   }
+
+  static carrierInfoRetrieveSuccessfully({carrierInfo}) {
+    return new AppResponse({
+      message: 'Carrier info retrieved successfully',
+      statusCode: 200,
+      body: {carrierInfo},
+    });
+  }
+
 };

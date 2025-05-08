@@ -95,6 +95,7 @@ const usersSchema = new Schema(
     },
     verificationToken: {type: String},
     loginResetToken: {type: String},
+    fmsca: {},
   },
   {
     timestamps: true,
