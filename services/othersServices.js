@@ -77,4 +77,25 @@ static async getCarrierInfoByDocket(docketNumber) {
   }
 }
 
+static async getCarrierInfoByDotNumber(dotNumber) {
+  try {
+      const baseURL = 'https://mobile.fmcsa.dot.gov/qc/services';
+      const endpoint = `/carriers/${dotNumber}`;
+      
+      const response = await axios.get(`${baseURL}${endpoint}`, {
+          params: {
+              webKey: '6b11186016d6aaa304db7e7cc52ebcd7d7038095'
+          }
+      });
+
+      return {
+        success: true,
+        carrierInfo: response?.data?.content?.carrier
+      }
+
+  } catch (error) {
+      return {success: false, error};
+  }
+}
+
 };
