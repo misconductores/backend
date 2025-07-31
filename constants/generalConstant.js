@@ -3,4 +3,8 @@ module.exports = {
   cookieExpirationTime: 24 * 60 * 60 * 1000, // 1 day in milliseconds
   passwordResetTokenExpiry: '1h', // 1 hour
   accountVerificationTokenExpiry: '1h', // 1 hour
+  preRegistrationStatus: {
+    PENDING: 'pending',
+    COMPLETED: 'completed',
+  },
 };

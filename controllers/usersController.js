@@ -12,16 +12,17 @@ const {
   UsersResponsesFactory,
   UsersEntityFactory,
 } = require('../factories');
-const {jwtUtils} = require('../utils');
-const {usersConstants} = require('../constants');
+const { jwtUtils } = require('../utils');
+const { usersConstants } = require('../constants');
 const UsersModel = require('../models/UsersModel');
-const {driverStatuses, roles} = require('../constants/usersConstants');
+const { driverStatuses, roles } = require('../constants/usersConstants');
+const { PreRegisteredDriver } = require('../models/PreRegisteredDriverModel');
 
 module.exports = class UsersController {
   static async createUser(req, res, next) {
     let data = req.body;
 
-    let isUserFound = await UsersServices.getUserByEmail({email: data.email});
+    let isUserFound = await UsersServices.getUserByEmail({ email: data.email });
     if (isUserFound) return next(UsersErrorsFactory.userAlreadyRegisteredErr());
 
     if (data.role === usersConstants.roles.driver.value) {
@@ -31,16 +32,18 @@ module.exports = class UsersController {
       };
     }
 
-    const {success, err, user} = await UsersServices.createUser({data});
+    const { success, err, user } = await UsersServices.createUser({ data });
 
     if (success) {
-      await actions.users.verifyUser({user});
-      return next(UsersResponsesFactory.userRegisteredSuccessfully({user}));
+      if(!user.isVerified) {
+        await actions.users.verifyUser({ user });
+      }
+      return next(UsersResponsesFactory.userRegisteredSuccessfully({ user }));
     } else throw err;
   }
 
   static async getLoggedInUserInformation(req, res, next) {
-    const {success, err, user} = await UsersServices.getUserById({
+    const { success, err, user } = await UsersServices.getUserById({
       id: req.jwtToken.user.id,
     });
 
@@ -56,11 +59,11 @@ module.exports = class UsersController {
   }
 
   static async getUserInformation(req, res, next) {
-    const {id: userId} = req.params;
+    const { id: userId } = req.params;
     const isFreeSubscription = req.isFreeSubscription;
     const isCompanyDriver = req.isCompanyDriver;
 
-    const {success, error, user} = await UsersServices.getRestrictedUserById({
+    const { success, error, user } = await UsersServices.getRestrictedUserById({
       userId,
       isFreeSubscription,
       isCompanyDriver,
@@ -87,13 +90,12 @@ module.exports = class UsersController {
 
     if (!userToLogin) return next(UsersErrorsFactory.wrongEmailOrPasswordErr());
 
-    const {success, err} = await UsersServices.verifyUserPassword({
+    const { success, err } = await UsersServices.verifyUserPassword({
       inputPassword: inputData.password,
       dbPassword: userToLogin.password,
     });
 
     if (!success) return next(UsersErrorsFactory.wrongEmailOrPasswordErr());
-
     if (!userToLogin.isVerified)
       return next(UsersErrorsFactory.userNotVerifiedErr());
 
@@ -103,7 +105,7 @@ module.exports = class UsersController {
       user: userToLogin,
     });
 
-    const {subscription} = await SubscriptionServices.getSubscriptionByUserId({
+    const { subscription } = await SubscriptionServices.getSubscriptionByUserId({
       userId: user.id,
     });
 
@@ -117,7 +119,7 @@ module.exports = class UsersController {
   }
 
   static async forgetPassword(req, res, next) {
-    const user = await UsersServices.getUserByEmail({email: req.body.email});
+    const user = await UsersServices.getUserByEmail({ email: req.body.email });
     if (!user) return next(UsersErrorsFactory.userNotFoundErr());
 
     const resetToken = user.generateResetToken();
@@ -126,7 +128,7 @@ module.exports = class UsersController {
     const domain = config.get('frontendURL');
     const url = `${domain}/es/auth/reset/${resetToken}`;
 
-    await actions.users.resetPassword({user, resetUrl: url});
+    await actions.users.resetPassword({ user, resetUrl: url });
 
     next(
       UsersResponsesFactory.resetPasswordLinkGeneratedSuccessfully({
@@ -140,11 +142,11 @@ module.exports = class UsersController {
     const newPassword = req.body.password;
     const token = req.params.token;
 
-    const decodedToken = jwtUtils.verifyToken({token});
+    const decodedToken = jwtUtils.verifyToken({ token });
     if (!decodedToken) return next(UsersErrorsFactory.loginResetTokenErr());
 
-    const resetArgs = {email: decodedToken.email, newPassword, token};
-    const {user} = await UsersServices.resetPassword({resetArgs});
+    const resetArgs = { email: decodedToken.email, newPassword, token };
+    const { user } = await UsersServices.resetPassword({ resetArgs });
 
     if (!user) return next(UsersErrorsFactory.loginResetTokenUserErr());
 
@@ -157,28 +159,28 @@ module.exports = class UsersController {
   }
 
   static async verifyUser(req, res, next) {
-    const {token} = req.params;
+    const { token } = req.params;
 
-    const decodedToken = jwtUtils.verifyToken({token});
+    const decodedToken = jwtUtils.verifyToken({ token });
     if (!decodedToken) return next(UsersErrorsFactory.loginResetTokenErr());
 
-    const {user} = await UsersServices.getUserById({
+    const { user } = await UsersServices.getUserById({
       id: decodedToken.id,
     });
 
     if (user.isVerified)
       return next(UsersErrorsFactory.userAlreadyVerifiedErr());
 
-    const {success, err} = await UsersServices.verifyUser({decodedToken});
+    const { success, err } = await UsersServices.verifyUser({ decodedToken });
 
     if (success) return next(UsersResponsesFactory.userVerifiedSuccessfully());
     else throw err;
   }
 
   static async regenerateVerifyToken(req, res, next) {
-    const {email} = req.body;
+    const { email } = req.body;
 
-    const user = await UsersServices.getUserByEmail({email});
+    const user = await UsersServices.getUserByEmail({ email });
 
     if (!user?.verificationToken)
       return next(GeneralErrorsFactory.badRequestErr());
@@ -186,13 +188,13 @@ module.exports = class UsersController {
     user.generateVerificationToken();
     await user.save();
 
-    await actions.users.verifyUser({user});
+    await actions.users.verifyUser({ user });
 
     next(UsersResponsesFactory.resendVerificationEmail());
   }
 
   static async updateProfileImage(req, res, next) {
-    const {success, err, user} = await UsersServices.getUserById({
+    const { success, err, user } = await UsersServices.getUserById({
       id: req.jwtToken.user.id,
     });
 
@@ -204,7 +206,7 @@ module.exports = class UsersController {
       success: response,
       user: updatedUser,
       err: error,
-    } = await UsersServices.updateProfileImage({user, file: req.file});
+    } = await UsersServices.updateProfileImage({ user, file: req.file });
 
     if (response) {
       return next(
@@ -219,8 +221,8 @@ module.exports = class UsersController {
   }
 
   static async uploadDocuments(req, res, next) {
-    const {label} = req.body;
-    const {success, err, user} = await UsersServices.getUserById({
+    const { label } = req.body;
+    const { success, err, user } = await UsersServices.getUserById({
       id: req.jwtToken.user.id,
     });
     if (!user) return next(UsersErrorsFactory.userNotFoundErr());
@@ -229,7 +231,7 @@ module.exports = class UsersController {
       success: response,
       user: updatedUser,
       err: error,
-    } = await UsersServices.updateDocuments({user, file: req.file, label});
+    } = await UsersServices.updateDocuments({ user, file: req.file, label });
     if (response) {
       return next(
         UsersResponsesFactory.updateDocumentRes({
@@ -245,7 +247,7 @@ module.exports = class UsersController {
   }
 
   static async uploadPreRegisterDocuments(req, res, next) {
-    const {label} = req.body;
+    const { label } = req.body;
     const file = req.file;
     const filesUrl = await FilesServices.uploadSingleFile({
       file,
@@ -257,7 +259,7 @@ module.exports = class UsersController {
         key: filesUrl.key,
         label: label,
       };
-      const {success} = await UsersServices.createDocuments({
+      const { success } = await UsersServices.createDocuments({
         data: updatedData,
       });
       if (success) {
@@ -274,8 +276,8 @@ module.exports = class UsersController {
   }
 
   static async deleteDocuments(req, res, next) {
-    const {label} = req.params;
-    const {success, err, user} = await UsersServices.getUserById({
+    const { label } = req.params;
+    const { success, err, user } = await UsersServices.getUserById({
       id: req.jwtToken.user.id,
     });
     if (!user) return next(UsersErrorsFactory.userNotFoundErr());
@@ -284,7 +286,7 @@ module.exports = class UsersController {
       success: response,
       user: updatedUser,
       err: error,
-    } = await UsersServices.deleteDocument({user, label});
+    } = await UsersServices.deleteDocument({ user, label });
 
     if (!response) return next(UsersErrorsFactory.documentDeleteErr());
     if (response) {
@@ -300,9 +302,9 @@ module.exports = class UsersController {
   }
 
   static async deletePreRegisterDocuments(req, res, next) {
-    const {key} = req.params;
-    await FilesServices.deleteSingleFile({file: key});
-    const {success} = await UsersServices.deletePreRegisterDocument({key: key});
+    const { key } = req.params;
+    await FilesServices.deleteSingleFile({ file: key });
+    const { success } = await UsersServices.deletePreRegisterDocument({ key: key });
     if (success) {
       return next(
         UsersResponsesFactory.deleteDocumentRes({
@@ -316,7 +318,7 @@ module.exports = class UsersController {
 
   static async updateProfile(req, res, next) {
     const data = req.body;
-    const {success, err, user} = await UsersServices.getUserById({
+    const { success, err, user } = await UsersServices.getUserById({
       id: req.jwtToken.user.id,
     });
     if (!user) return next(UsersErrorsFactory.userNotFoundErr());
@@ -325,7 +327,7 @@ module.exports = class UsersController {
       success: response,
       user: updatedUser,
       err: error,
-    } = await UsersServices.updateProfile({user, data});
+    } = await UsersServices.updateProfile({ user, data });
 
     if (!response) return next(UsersErrorsFactory.profileUpdateErr());
     if (response) {
@@ -341,8 +343,8 @@ module.exports = class UsersController {
   }
 
   static async getPostalCodes(req, res, next) {
-    const {postalCode} = req.params;
-    const {success, data, err} = await UsersServices.getPostalCodes({
+    const { postalCode } = req.params;
+    const { success, data, err } = await UsersServices.getPostalCodes({
       postalCode,
     });
 
@@ -407,12 +409,12 @@ module.exports = class UsersController {
     if (error) throw error;
   }
   static async getCompaniesList(req, res, next) {
-    const {success, err, user} = await UsersServices.getUserById({
+    const { success, err, user } = await UsersServices.getUserById({
       id: req.jwtToken.user.id,
     });
     if (!user) return next(UsersErrorsFactory.userNotFoundErr());
     if (!success) throw err;
-    let {page, limit, title, location} = req.query;
+    let { page, limit, title, location } = req.query;
     page = parseInt(page);
     limit = parseInt(limit);
     const {
@@ -439,21 +441,21 @@ module.exports = class UsersController {
     if (error) throw error;
   }
   static async checkRegisteredEmail(req, res, next) {
-    let {email} = req.body;
+    let { email } = req.body;
     email = email.toLowerCase();
-    const {doc} = await GeneralServices.findOne({
-      query: {email: email},
+    const { doc } = await GeneralServices.findOne({
+      query: { email: email },
       model: UsersModel,
     });
     if (doc) return next(UsersErrorsFactory.emailAlreadyExistErr());
     if (!doc) return next(UsersResponsesFactory.emailAvailable());
   }
   static async rejectAndBlockDriver(req, res, next) {
-    const {userId} = req.params;
-    const {reviewId} = req.body;
+    const { userId } = req.params;
+    const { reviewId } = req.body;
 
-    const {doc: user} = await GeneralServices.findOne({
-      query: {_id: userId},
+    const { doc: user } = await GeneralServices.findOne({
+      query: { _id: userId },
       model: UsersModel,
     });
 
@@ -466,7 +468,7 @@ module.exports = class UsersController {
     if (user.role !== roles.driver.value)
       return next(UsersErrorsFactory.roleOtherThanDriverBlockErr());
 
-    const {success, error} = await UsersServices.rejectAndBlockDriver({
+    const { success, error } = await UsersServices.rejectAndBlockDriver({
       userId,
       reviewId,
     });
@@ -476,10 +478,10 @@ module.exports = class UsersController {
     if (error) throw error;
   }
   static async blockDriver(req, res, next) {
-    const {userId} = req.params;
+    const { userId } = req.params;
 
-    const {doc: user} = await GeneralServices.findOne({
-      query: {_id: userId},
+    const { doc: user } = await GeneralServices.findOne({
+      query: { _id: userId },
       model: UsersModel,
     });
 
@@ -492,9 +494,9 @@ module.exports = class UsersController {
     if (user?.role !== roles.driver.value)
       return next(UsersErrorsFactory.roleOtherThanDriverBlockErr());
 
-    const {success, error} = await GeneralServices.update({
+    const { success, error } = await GeneralServices.update({
       id: userId,
-      data: {driverStatus: driverStatuses.underInspection.value},
+      data: { driverStatus: driverStatuses.underInspection.value },
       model: UsersModel,
     });
 
@@ -503,11 +505,11 @@ module.exports = class UsersController {
     if (error) throw error;
   }
   static async getBlockedDrivers(req, res, next) {
-    let {limit, page, title} = req.query;
+    let { limit, page, title } = req.query;
     page = parseInt(page);
     limit = parseInt(limit);
 
-    const {success, error, result} = await UsersServices.getBlockedDrivers({
+    const { success, error, result } = await UsersServices.getBlockedDrivers({
       page,
       limit,
       title,
@@ -526,19 +528,19 @@ module.exports = class UsersController {
     if (error) throw error;
   }
   static async unBlockDriver(req, res, next) {
-    const {userId} = req.params;
+    const { userId } = req.params;
 
-    const {doc: user} = await GeneralServices.findOne({
-      query: {_id: userId},
+    const { doc: user } = await GeneralServices.findOne({
+      query: { _id: userId },
       model: UsersModel,
     });
 
     if (user.driverStatus !== driverStatuses.underInspection.value)
       return next(UsersErrorsFactory.alreadyUnBlockedErr());
 
-    const {success, error} = await GeneralServices.update({
+    const { success, error } = await GeneralServices.update({
       id: userId,
-      data: {driverStatus: driverStatuses.available.value},
+      data: { driverStatus: driverStatuses.available.value },
       model: UsersModel,
     });
 
@@ -551,9 +553,51 @@ module.exports = class UsersController {
     const { success, services, error } = await UsersServices.getServicesList();
     if (success)
       return next(
-        UsersResponsesFactory.servicesRetrieveSuccessfully({services})
+        UsersResponsesFactory.servicesRetrieveSuccessfully({ services })
       );
 
     if (error) throw error;
   }
+
+  static async preRegisterDriver(req, res, next) {
+    try {
+      const data = {
+        ...req.body,
+        createdBy: req.jwtToken.user.id, // Obtiene el usuario autenticado como creador
+      };
+
+      const result = await UsersServices.preRegisterDriver({ data });
+      if (!result.success) return next(result.error);
+      return next(UsersResponsesFactory.driverPreRegisteredSuccessfully({ user: result.user }));
+    } catch (err) {
+      return next(UsersErrorsFactory.preRegisterDriverErr());
+    }
+  }
+
+  static async preRegisterPassword(req, res) {
+    const { token } = req.params;
+    const { password } = req.body;
+    const result = await UsersServices.preRegisterPassword({ token, password });
+
+    if (!result.success) {
+      return res.status(400).json({ success: false, error: result.error });
+    }
+
+    return res.status(200).json({ success: true });
+  }
+
+  static async getPreRegisteredDriverDetails(req, res, next) {
+    const { token } = req.params;
+
+    const { success, preRegisterDriver, error } = await UsersServices.getPreRegisteredDriverDetails({ token });
+    if (success) {
+      return next(
+        UsersResponsesFactory.preRegisteredDriverDetailsRetrieved({
+          preRegisterDriver: preRegisterDriver,
+        })
+      );
+    }
+    if (error) throw error;
+  }
+
 };

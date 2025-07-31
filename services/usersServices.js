@@ -1,11 +1,12 @@
 const config = require('config');
-const {MongosFactory} = require('../factories');
+const { MongosFactory } = require('../factories');
 const UsersModel = require('../models/UsersModel');
-const {passwordsUtils} = require('../utils');
+const { passwordsUtils } = require('../utils');
 const FilesServices = require('./fileServices');
 const DocumentsModel = require('../models/DocumentsModel');
 const PostalCodeModel = require('../models/PostalCodeModel');
 const JobModel = require('../models/JobModel');
+const sendEmail = require('../utils/email/send');
 const {
   roles,
   restrictedUserData,
@@ -15,6 +16,9 @@ const {
   freeSubscriptionSelectedData,
   subscriptionModes,
 } = require('../constants/usersConstants');
+const {
+    defaultEmailAddress,
+} = require('../values/contants/email');
 const {
   addDriverConditions,
   calculateRestrictedData,
@@ -36,8 +40,13 @@ const {
   SubscriptionsModel,
 } = require('../models');
 const GeneralServices = require('./generalServices');
-const {calculateAge} = require('../utils/DateCalculations');
+const { calculateAge } = require('../utils/DateCalculations');
 const ServiceModel = require('../models/ServiceModel');
+const PreRegisteredDriver = require('../models/PreRegisteredDriverModel'); // Asegúrate de tener este modelo
+const UsersErrorsFactory = require('../factories/errors/users');
+const { preRegistrationStatus } = require('../constants/generalConstant');
+const bcrypt = require('bcrypt');
+const SALT_ROUNDS = 10;
 
 const s3Client = new S3Client({
   region: region,
@@ -48,25 +57,25 @@ const s3Client = new S3Client({
 });
 
 module.exports = class UsersServices {
-  static async getUserByEmail({email}) {
+  static async getUserByEmail({ email }) {
     email = email.toLowerCase();
-    return UsersModel.findOne({email}); // can't use mongooseFactory here because this services is used to login user. If we use the factory here, then this won't return the password which will cause an error
+    return UsersModel.findOne({ email }); // can't use mongooseFactory here because this services is used to login user. If we use the factory here, then this won't return the password which will cause an error
   }
 
-  static async getUserById({id}) {
+  static async getUserById({ id }) {
     try {
-      const query = {_id: id};
-      const {doc: user, success} = await MongosFactory.findOne(
+      const query = { _id: id };
+      const { doc: user, success } = await MongosFactory.findOne(
         UsersModel,
         query
       );
-      return {success, user};
+      return { success, user };
     } catch (err) {
-      return {success: false, err};
+      return { success: false, err };
     }
   }
 
-  static async createUser({data}) {
+  static async createUser({ data }) {
     try {
       data.email = data.email.toLowerCase();
       // remove password encryption from here because we have to define password encryption in user model pre save middleware
@@ -78,11 +87,11 @@ module.exports = class UsersServices {
 
       if (data.documents) {
         const keysToDelete = data.documents.map((document) => document.key);
-        await DocumentsModel.deleteMany({key: {$in: keysToDelete}});
+        await DocumentsModel.deleteMany({ key: { $in: keysToDelete } });
 
         for (const document of data.documents) {
-          const {url, key} = document;
-          const sourceParams = {Bucket, Key: key};
+          const { url, key } = document;
+          const sourceParams = { Bucket, Key: key };
           const modifiedKey = key.replace(/^pre-register-documents\//, '');
           const destinationKey = `documents/${user.id}/${modifiedKey}`;
 
@@ -106,7 +115,7 @@ module.exports = class UsersServices {
           await s3Client.send(deleteObjectCommand);
 
           await UsersModel.updateOne(
-            {_id: user.id, 'documents.key': key},
+            { _id: user.id, 'documents.key': key },
             {
               $set: {
                 'documents.$.url': newUrl,
@@ -117,13 +126,13 @@ module.exports = class UsersServices {
         }
       }
 
-      return {success: true, user};
+      return { success: true, user };
     } catch (err) {
-      return {success: false, err};
+      return { success: false, err };
     }
   }
 
-  static async verifyUserPassword({inputPassword, dbPassword}) {
+  static async verifyUserPassword({ inputPassword, dbPassword }) {
     try {
       const isCorrectPassword = await passwordsUtils.verify({
         inputPassword,
@@ -140,28 +149,28 @@ module.exports = class UsersServices {
     }
   }
 
-  static async resetPassword({resetArgs: {email, newPassword, token}}) {
+  static async resetPassword({ resetArgs: { email, newPassword, token } }) {
     try {
       const password = await passwordsUtils.saltHashPassword({
         password: newPassword,
       });
-      const query = {email, loginResetToken: token};
-      const update = {password, $unset: {loginResetToken: 1}};
+      const query = { email, loginResetToken: token };
+      const update = { password, $unset: { loginResetToken: 1 } };
 
       const res = await MongosFactory.updateOne(UsersModel, query, update);
 
-      return {success: res.success, user: res.doc};
+      return { success: res.success, user: res.doc };
     } catch (err) {
-      return {success: false, err};
+      return { success: false, err };
     }
   }
 
-  static async setPermissions({userId, permissions}, session) {
+  static async setPermissions({ userId, permissions }, session) {
     try {
-      const query = {_id: userId};
+      const query = { _id: userId };
       const update = {};
 
-      const addPermission = ({entityType, entityId, accessLevelsToSet}) => {
+      const addPermission = ({ entityType, entityId, accessLevelsToSet }) => {
         update[`${entityType}.${entityId}`] = accessLevelsToSet;
       };
 
@@ -174,48 +183,48 @@ module.exports = class UsersServices {
         update,
         session
       );
-      const {doc: user, success} = res;
+      const { doc: user, success } = res;
 
-      return {success, user};
+      return { success, user };
     } catch (err) {
-      return {success: false, err};
+      return { success: false, err };
     }
   }
 
-  static async removePermissions({mapKey}) {
+  static async removePermissions({ mapKey }) {
     try {
-      const query = {[mapKey]: {$exists: true}};
-      const update = {$unset: {[mapKey]: 1}};
+      const query = { [mapKey]: { $exists: true } };
+      const update = { $unset: { [mapKey]: 1 } };
 
       const res = await MongosFactory.updateMany(UsersModel, query, update);
 
-      return {success: res.success};
+      return { success: res.success };
     } catch (err) {
-      return {success: false, err};
+      return { success: false, err };
     }
   }
 
-  static async verifyUser({decodedToken}) {
+  static async verifyUser({ decodedToken }) {
     try {
-      const query = {_id: decodedToken.id};
-      const update = {isVerified: true, $unset: {verificationToken: 1}};
+      const query = { _id: decodedToken.id };
+      const update = { isVerified: true, $unset: { verificationToken: 1 } };
 
-      const {success} = await MongosFactory.updateOne(
+      const { success } = await MongosFactory.updateOne(
         UsersModel,
         query,
         update
       );
 
-      return {success};
+      return { success };
     } catch (err) {
-      return {success: false, err};
+      return { success: false, err };
     }
   }
 
-  static async updateProfileImage({user, file}) {
+  static async updateProfileImage({ user, file }) {
     try {
       if (user.profilePic.key) {
-        await FilesServices.deleteSingleFile({file: user.profilePic.key});
+        await FilesServices.deleteSingleFile({ file: user.profilePic.key });
       }
       const filesUrl = await FilesServices.uploadSingleFile({
         file,
@@ -232,23 +241,23 @@ module.exports = class UsersServices {
       const update = {
         profilePic: updatedData,
       };
-      const {success, doc: updatedUser} = await MongosFactory.UpdateById(
+      const { success, doc: updatedUser } = await MongosFactory.UpdateById(
         UsersModel,
         query,
         update
       );
-      return {success, user: updatedUser};
+      return { success, user: updatedUser };
     } catch (err) {
-      return {success: false, err};
+      return { success: false, err };
     }
   }
 
-  static async updateDocuments({user, file, label}) {
+  static async updateDocuments({ user, file, label }) {
     try {
       const findDocument = user.documents.find((x) => x.label === label);
 
       if (findDocument) {
-        return {success: false};
+        return { success: false };
       }
       const filesUrl = await FilesServices.uploadSingleFile({
         file,
@@ -262,63 +271,63 @@ module.exports = class UsersServices {
       };
       const query = user.id;
       const update = updatedData;
-      const {success, doc: updatedUser} =
+      const { success, doc: updatedUser } =
         await MongosFactory.UpdateDocumentsById(UsersModel, query, update);
-      return {success, user: updatedUser};
+      return { success, user: updatedUser };
     } catch (err) {
-      return {success: false, err};
+      return { success: false, err };
     }
   }
 
-  static async deleteDocument({user, label}) {
+  static async deleteDocument({ user, label }) {
     try {
       const findDocument = user.documents.find((x) => x.label === label);
       if (findDocument) {
         const query = user.id;
         const update = label;
-        await FilesServices.deleteSingleFile({file: findDocument.key});
-        const {success, doc: updatedUser} =
+        await FilesServices.deleteSingleFile({ file: findDocument.key });
+        const { success, doc: updatedUser } =
           await MongosFactory.deleteDocumentsById(UsersModel, query, update);
-        return {success, user: updatedUser};
+        return { success, user: updatedUser };
       } else {
-        return {success: false};
+        return { success: false };
       }
     } catch (err) {
-      return {success: false, err};
+      return { success: false, err };
     }
   }
 
-  static async updateProfile({user, data}) {
+  static async updateProfile({ user, data }) {
     try {
       const query = user.id;
       const update = data;
-      const {success, doc: updateUser} = await MongosFactory.UpdateById(
+      const { success, doc: updateUser } = await MongosFactory.UpdateById(
         UsersModel,
         query,
         update
       );
-      return {success, user: updateUser};
+      return { success, user: updateUser };
     } catch (err) {
-      return {success: false, err};
+      return { success: false, err };
     }
   }
 
-  static async createDocuments({data}) {
+  static async createDocuments({ data }) {
     try {
       const document = new DocumentsModel(data);
       await document.save();
-      return {success: true, document};
+      return { success: true, document };
     } catch (err) {
-      return {success: false, err};
+      return { success: false, err };
     }
   }
 
-  static async deletePreRegisterDocument({key}) {
+  static async deletePreRegisterDocument({ key }) {
     try {
-      await DocumentsModel.findOneAndDelete({key: key});
-      return {success: true};
+      await DocumentsModel.findOneAndDelete({ key: key });
+      return { success: true };
     } catch (err) {
-      return {success: false, err};
+      return { success: false, err };
     }
   }
 
@@ -326,33 +335,33 @@ module.exports = class UsersServices {
     try {
       const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
       const documents = await DocumentsModel.find({
-        createdAt: {$lt: twentyFourHoursAgo},
+        createdAt: { $lt: twentyFourHoursAgo },
       });
 
       if (documents.length > 0) {
         for (const document of documents) {
-          await FilesServices.deleteSingleFile({file: document.key});
+          await FilesServices.deleteSingleFile({ file: document.key });
         }
-        await DocumentsModel.deleteMany({createdAt: {$lt: twentyFourHoursAgo}});
-        return {success: true};
+        await DocumentsModel.deleteMany({ createdAt: { $lt: twentyFourHoursAgo } });
+        return { success: true };
       } else {
         return {
           success: false,
         };
       }
     } catch (err) {
-      return {success: false, err};
+      return { success: false, err };
     }
   }
-  static async getPostalCodes({postalCode}) {
+  static async getPostalCodes({ postalCode }) {
     const newPostalCode = Number(postalCode);
     try {
       const data = await PostalCodeModel.find({
         postalCode: newPostalCode,
       });
-      return {success: true, data};
+      return { success: true, data };
     } catch (err) {
-      return {success: false, err};
+      return { success: false, err };
     }
   }
   static async getDriversList({
@@ -386,8 +395,8 @@ module.exports = class UsersServices {
       query.$and = andConditions;
     }
 
-    const {doc: subscription} = await GeneralServices.findOne({
-      query: {userId},
+    const { doc: subscription } = await GeneralServices.findOne({
+      query: { userId },
       model: SubscriptionsModel,
     });
 
@@ -405,13 +414,13 @@ module.exports = class UsersServices {
           isFreeSubscriber ? freeSubscriptionSelectedData : restrictedUserData
         ),
       ]);
-      return {success: true, result: {totalCount, data}};
+      return { success: true, result: { totalCount, data } };
     } catch (err) {
-      return {success: false, err};
+      return { success: false, err };
     }
   }
 
-  static async getCompaniesList({page, limit, title, location}) {
+  static async getCompaniesList({ page, limit, title, location }) {
     try {
       const query = {
         role: roles.company.value,
@@ -421,7 +430,7 @@ module.exports = class UsersServices {
         title = title.trim();
         const titleWords = title.split(' ').filter((word) => word.length > 0);
         query.$and = titleWords.map((word) => ({
-          companyName: {$regex: word, $options: 'i'},
+          companyName: { $regex: word, $options: 'i' },
         }));
       }
 
@@ -437,66 +446,66 @@ module.exports = class UsersServices {
         limit,
       });
       for (const user of data) {
-        const jobs = await JobModel.find({companyId: user._id});
-        let finalObject = {company: user, jobs};
+        const jobs = await JobModel.find({ companyId: user._id });
+        let finalObject = { company: user, jobs };
         finalList.push(finalObject);
       }
-      return {success: true, result: {totalCount, data: finalList}};
+      return { success: true, result: { totalCount, data: finalList } };
     } catch (err) {
-      return {success: false, err};
+      return { success: false, err };
     }
   }
-  static async rejectAndBlockDriver({userId, reviewId}) {
+  static async rejectAndBlockDriver({ userId, reviewId }) {
     const session = await mongoose.startSession();
 
     try {
-      const {doc: connection} = await GeneralServices.findOne({
-        query: {driverId: userId, status: connectionStatuses.active.value},
+      const { doc: connection } = await GeneralServices.findOne({
+        query: { driverId: userId, status: connectionStatuses.active.value },
         model: ConnectionsModel,
       });
 
       session.startTransaction();
 
       await UsersModel.findByIdAndUpdate(
-        {_id: userId},
-        {driverStatus: driverStatuses.underInspection.value},
-        {session}
+        { _id: userId },
+        { driverStatus: driverStatuses.underInspection.value },
+        { session }
       );
 
       await ReviewsModel.findByIdAndUpdate(
-        {_id: reviewId},
-        {status: statusTypes.rejected.value},
-        {session}
+        { _id: reviewId },
+        { status: statusTypes.rejected.value },
+        { session }
       );
 
       if (connection) {
         await ConnectionsModel.updateOne(
-          {driverId: userId, status: connectionStatuses.active.value},
-          {status: connectionStatuses.inactive.value},
-          {session}
+          { driverId: userId, status: connectionStatuses.active.value },
+          { status: connectionStatuses.inactive.value },
+          { session }
         );
       }
 
       await session.commitTransaction();
       session.endSession();
 
-      return {success: true};
+      return { success: true };
     } catch (error) {
       await session.abortTransaction();
       session.endSession();
 
-      return {success: false, error};
+      return { success: false, error };
     }
   }
 
-  static async getBlockedDrivers({page, limit, title}) {
+  static async getBlockedDrivers({ page, limit, title }) {
     try {
       const skip = (page - 1) * limit;
 
       let query = {};
 
       const andConditions = [
-        {driverStatus: driverStatuses.underInspection.value},
+        { driverStatus: driverStatuses.underInspection.value },
       ];
 
       if (title) {
@@ -504,8 +513,8 @@ module.exports = class UsersServices {
         const titleWords = title.split(' ').filter((word) => word.length > 0);
         const titleConditions = titleWords.map((word) => ({
           $or: [
-            {firstName: {$regex: word, $options: 'i'}},
-            {lastName: {$regex: word, $options: 'i'}},
+            { firstName: { $regex: word, $options: 'i' } },
+            { lastName: { $regex: word, $options: 'i' } },
           ],
         }));
         andConditions.push(...titleConditions);
@@ -517,12 +526,12 @@ module.exports = class UsersServices {
 
       const [totalCount, data] = await Promise.all([
         UsersModel.countDocuments(query),
-        UsersModel.find(query, null, {skip, limit}).select(restrictedUserData),
+        UsersModel.find(query, null, { skip, limit }).select(restrictedUserData),
       ]);
 
-      return {success: true, result: {totalCount, data}};
+      return { success: true, result: { totalCount, data } };
     } catch (error) {
-      return {success: false, error};
+      return { success: false, error };
     }
   }
   static async getRestrictedUserById({
@@ -531,15 +540,15 @@ module.exports = class UsersServices {
     isCompanyDriver = false,
   }) {
     try {
-      const user = await UsersModel.findById({_id: userId})
+      const user = await UsersModel.findById({ _id: userId })
         .select(
           isFreeSubscription
             ? freeSubscriptionSelectedData
-            : calculateRestrictedData({isCompanyDriver})
+            : calculateRestrictedData({ isCompanyDriver })
         )
         .lean();
 
-      const age = calculateAge({dateOfBirth: user?.dateOfBirth});
+      const age = calculateAge({ dateOfBirth: user?.dateOfBirth });
 
       let finalUser = {
         ...user,
@@ -549,18 +558,94 @@ module.exports = class UsersServices {
 
       if (isFreeSubscription) delete finalUser.dateOfBirth;
 
-      return {success: true, user: finalUser};
+      return { success: true, user: finalUser };
     } catch (error) {
-      return {success: false, error};
+      return { success: false, error };
     }
   }
 
   static async getServicesList() {
     try {
       const services = await ServiceModel.find();
-      return {success: true, services};
+      return { success: true, services };
     } catch (err) {
-      return {success: false, err};
+      return { success: false, err };
+    }
+  }
+
+  static async preRegisterDriver({ data }) {
+    const email = data.email.toLowerCase();
+
+    const existingUser = await UsersModel.findOne({ email });
+    if (existingUser) {
+      return { success: false, error: UsersErrorsFactory.userAlreadyRegisteredErr() };
+    }
+
+    const preRegisterData = {
+      ...data,
+      role: roles.driver.value,
+      status: preRegistrationStatus.PENDING
+    };
+
+    try {
+      const preRegisteredDriver = new PreRegisteredDriver(preRegisterData);
+      await preRegisteredDriver.save();
+
+      const to = preRegisteredDriver.email;
+      const from = defaultEmailAddress;
+      const templateId = 'd-a1a3caf5d11f4614bd4719615a6210de';
+
+      const driverFullName = `${data.firstName} ${data.lastName}`;
+      const token = preRegisteredDriver.preRegistrationToken;
+      const domain = config.get('frontendURL');
+      const url = `${domain}/auth/preregistration/password/${token}`;
+      const company = await UsersModel.findById(preRegisteredDriver.createdBy);
+      const dynamicTemplateData = {
+        name: driverFullName,
+        companyName: company?.name,
+        email: email,
+        verifyUrl: url,
+      };
+      sendEmail({ to, from, templateId, dynamic_template_data: dynamicTemplateData });
+
+      return { success: true, user: preRegisteredDriver };
+    } catch (err) {
+      return { success: false, error: UsersErrorsFactory.preRegisterDriverErr() };
+    }
+  }
+
+
+
+  static async preRegisterPassword({ token, password }) {
+    const preregister = await PreRegisteredDriver.findOne({ preRegistrationToken: token });
+
+    if (!preregister || preregister.tokenExpiresAt < new Date()) {
+      return { success: false, error: UsersErrorsFactory.invalidTokenErr() };
+    }
+
+    //const hashedPassword = await passwordsUtils.saltHashPassword({ password });
+
+    preregister.password = password;
+    preregister.status = 'passwordSet';
+
+    await preregister.save();
+
+    return { success: true };
+  }
+
+  static async getPreRegisteredDriverDetails({ token }) {
+    try {
+      const preRegisterDriver = await PreRegisteredDriver.findOne({
+        preRegistrationToken: token,
+      });
+
+      if (!preRegisterDriver) {
+        return { success: false, error: UsersErrorsFactory.preRegisterDriverNotFoundErr() };
+      }
+
+      return { success: true, preRegisterDriver };
+    } catch (err) {
+      return { success: false, error: UsersErrorsFactory.preRegisterDriverRetrievalErr() };
     }
   }
 

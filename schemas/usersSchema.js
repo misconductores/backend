@@ -170,3 +170,35 @@ module.exports.validateBlockUnblockUserReq = (data) => {
   });
   return validatorUtils.validate(schema, data);
 };
+
+module.exports.validatePreRegisterDriverRequest = (data) => {
+  const schema = Yup.object().shape({
+    firstName: Yup.string().required('Nombre es obligatorio'),
+    lastName: Yup.string().required('Apellido es obligatorio'),
+    dateOfBirth: Yup.date().required('Fecha de nacimiento es obligatoria'),
+    gender: Yup.string().required('Género es obligatorio'),
+    contact: Yup.string().required('Número telefónico es obligatorio'),
+    email: commonAuthSchema.email,
+    licenseNumber: Yup.string().required('Número de licencia federal es obligatorio'),
+    federalLicenseType: Yup.string().required('Tipo de licencia federal es obligatorio'),
+    licenseExpiration: Yup.date().required('Fecha de expiración es obligatoria'),
+  });
+  return validatorUtils.validate(schema, data);
+};
+
+module.exports.validatePreRegisterPasswordRequest = (data) => {
+  const schema = Yup.object().shape({
+    password: commonAuthSchema.password,
+    // confirmPassword: Yup.string()
+    //   .required('Confirmación de contraseña es obligatoria')
+    //   .oneOf([Yup.ref('password')], 'Las contraseñas deben coincidir'),
+  });
+  return validatorUtils.validate(schema, data);
+};
+
+module.exports.validatePreRegisterDriverToken = (data) => {
+  const schema = Yup.object().shape({
+    token: Yup.string().required('Token is required'),
+  });
+  return validatorUtils.validate(schema, data);
+};
