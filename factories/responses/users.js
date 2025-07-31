@@ -3,92 +3,92 @@ const config = require('config');
 const AppResponse = require('./AppResponse');
 
 module.exports = class UsersResponsesFactory {
-  constructor() {}
+  constructor() { }
 
-  static userRegisteredSuccessfully({user}) {
+  static userRegisteredSuccessfully({ user }) {
     return new AppResponse({
       message: 'User registered successfully',
       statusCode: 201,
-      body: {user},
+      body: { user },
     });
   }
 
-  static userLoggedInSuccessfully({user, isLoginRequest, subscription = null}) {
+  static userLoggedInSuccessfully({ user, isLoginRequest, subscription = null }) {
     return new AppResponse({
       message: 'User logged in successfully',
       statusCode: 200,
-      body: {user, isLoginRequest, subscription},
+      body: { user, isLoginRequest, subscription },
     });
   }
 
-  static singleUserInfoRetrievedRes({user} = {}) {
+  static singleUserInfoRetrievedRes({ user } = {}) {
     return new AppResponse({
       message: 'User info retrieved successfully',
       statusCode: 200,
-      body: {user},
+      body: { user },
     });
   }
 
-  static postalCodeInfoRes({data} = {}) {
+  static postalCodeInfoRes({ data } = {}) {
     return new AppResponse({
       message: 'Postal codes retrieved successfully',
       statusCode: 200,
-      body: {data},
+      body: { data },
     });
   }
 
-  static updateUserProfilePicRes({user} = {}) {
+  static updateUserProfilePicRes({ user } = {}) {
     return new AppResponse({
       message: 'User profile image updated successfully',
       statusCode: 200,
-      body: {user},
+      body: { user },
     });
   }
 
-  static updateDocumentRes({user} = {}) {
+  static updateDocumentRes({ user } = {}) {
     return new AppResponse({
       message: 'Document uploaded successfully',
       statusCode: 200,
-      body: {user},
+      body: { user },
     });
   }
 
-  static uploadPreRegisterDocumentRes({document} = {}) {
+  static uploadPreRegisterDocumentRes({ document } = {}) {
     return new AppResponse({
       message: 'Document uploaded successfully',
       statusCode: 200,
-      body: {document},
+      body: { document },
     });
   }
 
-  static deleteDocumentRes({user} = {}) {
+  static deleteDocumentRes({ user } = {}) {
     return new AppResponse({
       message: 'Document deleted successfully',
       statusCode: 200,
-      body: {user},
+      body: { user },
     });
   }
 
-  static deletePreRegisterDocumentRes({user} = {}) {
+  static deletePreRegisterDocumentRes({ user } = {}) {
     return new AppResponse({
       message: 'Document deleted successfully',
       statusCode: 200,
     });
   }
 
-  static profileUpdateRes({user} = {}) {
+  static profileUpdateRes({ user } = {}) {
     return new AppResponse({
       message: 'Profile updated successfully',
       statusCode: 200,
-      body: {user},
+      body: { user },
     });
   }
 
-  static resetPasswordLinkGeneratedSuccessfully({resetToken, resetUrl}) {
+  static resetPasswordLinkGeneratedSuccessfully({ resetToken, resetUrl }) {
     return new AppResponse({
       message: 'Reset password link sent successfully',
       statusCode: 200,
-      body: {resetToken, resetUrl},
+      body: { resetToken, resetUrl },
     });
   }
 
@@ -123,18 +123,18 @@ module.exports = class UsersResponsesFactory {
       body: {},
     });
   }
-  static driversRetrievedSuccessfully({count, data, page, perPage}) {
+  static driversRetrievedSuccessfully({ count, data, page, perPage }) {
     return new AppResponse({
       message: 'Driver list retrieved successfully',
       statusCode: 200,
-      body: {count, data, page, perPage},
+      body: { count, data, page, perPage },
     });
   }
-  static companyRetrievedSuccessfully({count, data, page, perPage}) {
+  static companyRetrievedSuccessfully({ count, data, page, perPage }) {
     return new AppResponse({
       message: 'Company list retrieved successfully',
       statusCode: 200,
-      body: {count, data, page, perPage},
+      body: { count, data, page, perPage },
     });
   }
   static emailAvailable() {
@@ -158,11 +158,26 @@ module.exports = class UsersResponsesFactory {
       body: {},
     });
   }
-  static servicesRetrieveSuccessfully({services}) {
+  static servicesRetrieveSuccessfully({ services }) {
     return new AppResponse({
       message: 'Services retrieved successfully',
       statusCode: 200,
-      body: {services},
+      body: { services },
+    });
+  }
+  static driverPreRegisteredSuccessfully({ user }) {
+    return new AppResponse({
+      message: 'Driver pre-registered successfully',
+      statusCode: 201,
+      body: { user },
+    });
+  }
+
+  static preRegisteredDriverDetailsRetrieved({ preRegisterDriver }) {
+    return new AppResponse({
+      message: 'Pre-registered driver details retrieved successfully',
+      statusCode: 200,
+      body: { preRegisterDriver },
     });
   }
 };

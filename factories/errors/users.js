@@ -165,4 +165,35 @@ module.exports = class UsersErrorsFactory {
       statusCode: 403,
     });
   }
+  static preRegisterDriverErr() {
+    return new AppError({
+      message: 'Driver pre-registration failed',
+      statusCode: 400,
+    });
+  }
+
+  static invalidTokenErr() {
+    return new AppError({
+      message: 'Invalid token',
+      statusCode: 400,
+      err: {
+        type: errorCodes.INVALID_TOKEN_ERR,
+      },
+    });
+  }
+
+  static preRegisterDriverNotFoundErr() {
+    return new AppError({
+      message: 'Pre-registered driver not found',
+      statusCode: 404,
+    });
+  }
+
+  static preRegisterDriverRetrievalErr() {
+    return new AppError({
+      message: 'Pre-registered driver retrieval failed',
+      statusCode: 400,
+    });
+  }
+
 };

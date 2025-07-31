@@ -174,4 +174,24 @@ router.patch(
   catchAsync(UsersController.unBlockDriver)
 );
 
+router.post(
+  '/pre-register-driver',
+  authMiddleware,
+  roleValidatorMiddleware({allowedRoles: [roles.company.value, roles.admin.value]}),
+  validatorMiddleware(usersSchema.validatePreRegisterDriverRequest),
+  catchAsync(UsersController.preRegisterDriver)
+);
+
+router.post(
+  '/preregistration/password/:token',
+  validatorMiddleware(usersSchema.validatePreRegisterPasswordRequest),
+  catchAsync(UsersController.preRegisterPassword)
+);
+
+router.get(
+  '/pre-register-driver/:token',
+  validatorMiddleware(usersSchema.validatePreRegisterDriverToken, PARAMS_PROPERTY),
+  catchAsync(UsersController.getPreRegisteredDriverDetails)
+);
+
 module.exports = router;
