@@ -7,7 +7,7 @@ const AppError = require('./AppError');
 module.exports = class UsersErrorsFactory {
   static userAlreadyRegisteredErr() {
     return new AppError({
-      message: 'user already registered',
+      message: 'Ya existe un usuario registrado con este correo electrónico',
       statusCode: 400,
     });
   }
