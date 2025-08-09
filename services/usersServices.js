@@ -602,7 +602,7 @@ module.exports = class UsersServices {
       const company = await UsersModel.findById(preRegisteredDriver.createdBy);
       const dynamicTemplateData = {
         name: driverFullName,
-        companyName: company?.name,
+        companyName: company?.companyName,
         email: email,
         verifyUrl: url,
       };
