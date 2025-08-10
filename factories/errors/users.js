@@ -174,7 +174,7 @@ module.exports = class UsersErrorsFactory {
 
   static invalidTokenErr() {
     return new AppError({
-      message: 'Invalid token',
+      message: 'El token es inválido, ha expirado o ya ha sido utilizado.',
       statusCode: 400,
       err: {
         type: errorCodes.INVALID_TOKEN_ERR,

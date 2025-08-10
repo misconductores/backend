@@ -6,5 +6,6 @@ module.exports = {
   preRegistrationStatus: {
     PENDING: 'pending',
     COMPLETED: 'completed',
+    PASSWORD_SET: 'passwordSet',
   },
 };
