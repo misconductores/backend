@@ -617,16 +617,17 @@ module.exports = class UsersServices {
 
 
   static async preRegisterPassword({ token, password }) {
+    
     const preregister = await PreRegisteredDriver.findOne({ preRegistrationToken: token });
 
-    if (!preregister || preregister.tokenExpiresAt < new Date()) {
+    if (!preregister || preregister.tokenExpiresAt < new Date() || preregister.status == preRegistrationStatus.PASSWORD_SET) {
       return { success: false, error: UsersErrorsFactory.invalidTokenErr() };
     }
 
     //const hashedPassword = await passwordsUtils.saltHashPassword({ password });
 
     preregister.password = password;
-    preregister.status = 'passwordSet';
+    preregister.status = preRegistrationStatus.PASSWORD_SET;
 
     await preregister.save();
 
