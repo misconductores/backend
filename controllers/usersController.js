@@ -580,7 +580,7 @@ module.exports = class UsersController {
     const result = await UsersServices.preRegisterPassword({ token, password });
 
     if (!result.success) {
-      return res.status(400).json({ success: false, error: result.error });
+      return res.status(400).json({ success: false, error: result.error.message });
     }
 
     return res.status(200).json({ success: true });
