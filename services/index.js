@@ -10,6 +10,7 @@ const DocumentsAccessServices = require('./documentsAccessServices');
 const OthersServices = require('./othersServices');
 const SubscriptionServices = require('./subscriptionServices');
 const PaymentIntegrationServices = require('./paymentIntegrationServices');
+const CreditsServices = require('./creditsServices');
 
 module.exports = {
   UsersServices,
@@ -24,4 +25,5 @@ module.exports = {
   OthersServices,
   SubscriptionServices,
   PaymentIntegrationServices,
+  CreditsServices,
 };

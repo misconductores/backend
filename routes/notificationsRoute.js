@@ -25,5 +25,9 @@ router.patch(
   validatorMiddleware(notificationsSchema.validateUpdateUnReadNotificationsReq),
   catchAsync(NotificationsController.updateNotificationReadStatus)
 );
+router.post(
+  '/verification-progress',
+  catchAsync(require('../controllers/notificationsController').createVerificationProgressNotification)
+);
 
 module.exports = router;

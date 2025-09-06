@@ -5,12 +5,17 @@ const jwtUtils = require('../utils/jwtUtils');
 
 module.exports = (req, res, next) => {
   const cookie = req.cookies[config.get('tokenVariable')];
-  const token = jwtUtils.verifyToken({token: cookie});
 
-  if (token) {
-    req.jwtToken = token;
-    next();
+  if (cookie) {
+      const token = jwtUtils.verifyToken({ token: cookie });
+        
+      if (token) {
+          req.jwtToken = token;
+          return next();
+      } else {
+          return next(GeneralErrorsFactory.invalidTokenErr());
+      }
   } else {
-    next(GeneralErrorsFactory.invalidTokenErr());
+      return next(GeneralErrorsFactory.invalidTokenErr());
   }
 };

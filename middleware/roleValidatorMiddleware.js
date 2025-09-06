@@ -5,9 +5,9 @@ module.exports =
   async (req, res, next) => {
     try {
       const role = req.jwtToken.user.role;
-
-      if (!role || !allowedRoles.includes(role))
+      if (!role || !allowedRoles.includes(role)) {
         return next(GeneralErrorsFactory.forbiddenRoleErr());
+       }
 
       next();
     } catch (error) {

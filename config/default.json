@@ -7,5 +7,9 @@
     "test": "test"
   },
   "tokenVariable": "x-auth-token",
-  "awakeJobFrequencyInMinutes": "10"
+  "awakeJobFrequencyInMinutes": "10",
+
+  "frontendURL": "http://localhost:3000",
+  "creditsBasicPriceId": "price_XXXX_basic",
+  "creditsPremiumPriceId": "price_XXXX_premium"
 }
