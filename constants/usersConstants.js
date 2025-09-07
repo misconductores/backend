@@ -43,6 +43,7 @@ module.exports.driverStatuses = {
 
 module.exports.PARAMS_PROPERTY = 'params';
 module.exports.QUERY_PROPERTY = 'query';
+module.exports.BODY_PROPERTY = 'body';
 
 module.exports.companyDocumentNames = {
   taxCertificate: {
@@ -286,6 +287,9 @@ module.exports.notificationTypes = {
   driver_removed_docs_access: {
     value: 'driver_removed_docs_access',
   },
+   verification_progress: {
+       value: "verification_progress",
+   },
 };
 
 module.exports.TIMEZONES = {
@@ -417,6 +421,26 @@ module.exports.checkoutCancelUrl = `${config.get(
   'frontendURL'
 )}/dashboard/subscription`;
 
+module.exports.creditPackages = {
+    basicPackage: {
+        value: config.get("creditsBasicPriceId") || "price_1RrtSKB2g3RJ2ZOUumZNyogh",  
+        credits: 5,
+        name: "Paquete Básico" 
+    },
+    premiumPackage: {
+        value: config.get("creditsPremiumPriceId") || "price_1RrtStB2g3RJ2ZOU6pcUi0GZ", 
+        credits: 10,
+        name: "Paquete Pro"
+    }
+};
+
+module.exports.creditsCheckoutSuccessUrl = `${config.get(
+    "frontendURL"
+)}/dashboard/profile?credits=success`;
+module.exports.creditsCheckoutCancelUrl = `${config.get(
+    "frontendURL"
+)}/dashboard/profile?credits=cancelled`;
+
 module.exports.requestTypes = {
   jobPost: {
     value: 'jobPost',
@@ -429,5 +453,17 @@ module.exports.requestTypes = {
   },
   userData: {
     value: 'userData',
+  },
+  backgroundCheck: {
+    value: 'backgroundCheck',
+  },
+  amlCheck: {
+    value: 'amlCheck',
+  },
+  curpValidation: {
+    value: 'curpValidation',
+  },
+  nssCheck: {
+    value: 'nssCheck',
   },
 };

@@ -63,4 +63,35 @@ module.exports = class GeneralErrorsFactory {
       statusCode: 403,
     });
   }
+
+    static unauthorizedErr({ customMessage } = {}) {
+        return new AppError({
+            message:
+                customMessage || "Unauthorized. Invalid or expired credentials",
+            statusCode: 401,
+        });
+    }
+
+    static internalServerErr({ customMessage } = {}) {
+        return new AppError({
+            message: customMessage || "Internal server error",
+            statusCode: 500,
+        });
+    }
+
+    static tooManyRequestsErr({ customMessage } = {}) {
+        return new AppError({
+            message: customMessage || "Too many requests. Rate limit exceeded",
+            statusCode: 429,
+        });
+    }
+
+    static invalidApiKeyErr({ customMessage } = {}) {
+        return new AppError({
+            message:
+                customMessage ||
+                "La API Key ha sido denegada, asegurate de mandar una API Key valida y con una suscripción activa",
+            statusCode: 401,
+        });
+    }
 };

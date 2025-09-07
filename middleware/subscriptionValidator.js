@@ -75,8 +75,24 @@ module.exports =
           req.isFreeSubscription = true;
       }
 
-      next();
-    } catch (error) {
-      return next(GeneralErrorsFactory.internalErr({error}));
-    }
-  };
+            // subscription validation for background check services
+            if (
+                requestType === requestTypes.backgroundCheck.value ||
+                requestType === requestTypes.amlCheck.value ||
+                requestType === requestTypes.curpValidation.value ||
+                requestType === requestTypes.nssCheck.value
+            ) {
+                if (isCompanyUser && hasNoActiveProSubscription)
+                    return next(
+                        GeneralErrorsFactory.badRequestErr({
+                            customMessage:
+                                "Se requiere suscripción activa para usar servicios de verificación de antecedentes",
+                        })
+                    );
+            }
+
+            next();
+        } catch (error) {
+            return next(GeneralErrorsFactory.internalErr({error}));
+        }
+    };

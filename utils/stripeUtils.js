@@ -182,4 +182,48 @@ module.exports = class StripeUtils {
       throw error;
     }
   }
+
+  static async createCreditsCheckoutSession({priceId, userId, successUrl, cancelUrl}) {
+    try {
+      const session = await Stripe.checkout.sessions.create({
+        mode: 'payment', 
+        line_items: [
+          {
+            price: priceId,
+            quantity: 1,
+          },
+        ],
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+        client_reference_id: userId, // pasamos el id del usuario para poder identificarlo en el pago y realizar la validacion
+        metadata: {
+          type: 'credits_purchase',
+          userId: userId
+        }
+      });
+      
+      return {success: true, checkoutUrl: session.url, sessionId: session.id};
+    } catch (error) {
+      console.error('Error creating credits checkout session:', error);
+      return {success: false, error};
+    }
+  }
+
+  static async verifyCreditsWebhookSignature({req}) {
+    try {
+      const sig = req.headers['stripe-signature'];
+      const webhookSecret = config.get('stripeCreditsWebHookSecret'); 
+      
+      const event = await Stripe.webhooks.constructEvent(
+        req.body,
+        sig,
+        webhookSecret
+      );
+
+      return {success: true, event};
+    } catch (err) {
+      console.error('Webhook signature verification failed:', err);
+      return {success: false, err};
+    }
+  }
 };

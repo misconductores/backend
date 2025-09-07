@@ -12,6 +12,8 @@ const {
   notificationsRoute,
   subscriptionsRoute,
   paymentIntegrationRoute,
+  backgroundCheckRoutes,
+  creditsRoute,
 } = require(`../routes`);
 
 const apiPrefix = '/api/v1/';
@@ -28,6 +30,8 @@ const prepareV1Routes = (app) => {
   app.use(`${apiPrefix}public`, publicRoute);
   app.use(`${apiPrefix}private`, authMiddleware, privateRoute);
   app.use(`${apiPrefix}payment-integration`, paymentIntegrationRoute);
+  app.use(`${apiPrefix}check-background`, backgroundCheckRoutes);
+  app.use(`${apiPrefix}credits`, creditsRoute);
 };
 
 module.exports = {apiPrefix, prepareV1Routes};

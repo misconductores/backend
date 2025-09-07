@@ -7,6 +7,8 @@ const connectionsSchema = require('./connectionsSchema');
 const documentAccessSchema = require('./documentsAccessSchema');
 const notificationsSchema = require('./notifications');
 const subscriptionsSchema = require('./subscriptionsSchema');
+const backgroundCheckSchema = require('./backgroundCheckSchema');
+const creditsSchema = require('./creditsSchema');
 
 module.exports = {
   usersSchema,
@@ -18,4 +20,6 @@ module.exports = {
   documentAccessSchema,
   notificationsSchema,
   subscriptionsSchema,
+  backgroundCheckSchema,
+  creditsSchema,
 };

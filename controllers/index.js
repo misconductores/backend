@@ -9,6 +9,8 @@ const DocumentsAccessController = require('./documentsAccessController');
 const NotificationsController = require('./notificationsController');
 const SubscriptionsController = require('./subscriptionsController');
 const PaymentIntegrationController = require('./paymentIntegrationController');
+const BackgroundCheckController = require('./backgroundCheckController');
+const CreditsController = require('./creditsController');
 
 module.exports = {
   UsersController,
@@ -22,4 +24,6 @@ module.exports = {
   NotificationsController,
   SubscriptionsController,
   PaymentIntegrationController,
+  BackgroundCheckController,
+  CreditsController,
 };

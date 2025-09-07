@@ -20,6 +20,7 @@ const usersSchema = new Schema(
     firstName: {type: String},
     lastName: {type: String},
     companyName: {type: String},
+    curp: { type: String },
     email: {
       type: String,
       required: true,
@@ -77,6 +78,7 @@ const usersSchema = new Schema(
     ],
 
     role: {type: String, required: true},
+    credits: { type: Number, default: 0 },
     isVerified: {type: Boolean, default: false},
     driverStatus: {type: String},
     documents: [
