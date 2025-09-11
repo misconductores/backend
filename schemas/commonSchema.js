@@ -26,6 +26,13 @@ const commonDriverFields = {
   gender: Yup.string()
     .oneOf(genderOptions, 'Please select a gender')
     .required('Gender is required'),
+  curp: Yup.string()
+    .required("CURP es requerido")
+    .length(18, "CURP debe tener exactamente 18 caracteres")
+    .matches(
+      /^([A-Z][AEIOUX][A-Z]{2}\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])[HM](?:AS|B[CS]|C[CLMSH]|D[FG]|G[TR]|HG|JC|M[CNS]|N[ETL]|OC|PL|Q[TR]|S[PLR]|T[CSL]|VZ|YN|ZS)[B-DF-HJ-NP-TV-Z]{3}[A-Z\d])(\d)$/,
+      "Formato de CURP inválido"
+    ),
 };
 
 const commonExpDocSchema = {
