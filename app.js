@@ -38,6 +38,7 @@ app.use(Sentry.Handlers.tracingHandler());
 app.use('/api/v1/subscriptions/webhook', express.raw({ type: '*/*' }));
 
 app.use('/api/v1/payment-integration/webhook', express.raw({ type: '*/*' }));
+app.use('/api/v1/credits/webhook', bodyParser.raw({ type: 'application/json' }));
 
 app.use(express.json());
 
