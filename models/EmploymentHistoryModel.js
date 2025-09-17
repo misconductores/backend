@@ -41,6 +41,7 @@ const ocrSchema = new Schema(
 // Esquema principal
 const employmentHistorySchema = new Schema(
     {
+        id_compania: { type: String, required: true },
         id_conductor: { type: String, required: true },
         request_id: { type: String, required: true },
         request_status: { type: String, required: true },

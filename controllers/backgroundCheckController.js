@@ -1,4 +1,4 @@
-const multer = require('multer');
+const multer = require("multer");
 const upload = multer({ storage: multer.memoryStorage() });
 const {
     GeneralResponsesFactory,
@@ -14,24 +14,44 @@ const NufiService = require("../integrations/backgroundCheckServices");
 const fs = require("fs");
 const path = require("path");
 const { userBlockedSuccessfully } = require("../factories/responses/users");
+const getAMLByConductorId = async (id_conductor, id_compania) => {
+    if (!id_conductor) return null;
+    try { // Se añade el filtro por id_compania
+        const amlRecord = await BlackListSchema.findOne({
+            id_conductor: id_conductor,
+            id_compania: id_compania
+        }).sort({ createdAt: -1 }).lean();
+        return amlRecord;
+    } catch (error) {
+        console.error("ERROR en getAMLByConductorId:", error);
+        return null;
+    }
+}
+const getJudicialRecordByConductorId = async (id_conductor, id_compania) => {
+    if (!id_conductor) return null;
+    try { // Se añade el filtro por id_compania
+        const judicialRecord = await CriminalRecordSchema.findOne({
+            id_conductor: id_conductor,
+            id_compania: id_compania,
+        }).sort({ createdAt: -1 }).lean();
+        return judicialRecord;
+    } catch (error) {
+        console.error("ERROR en getJudicialRecordByConductorId:", error);
+        return null;
+    }
+}
 
 module.exports = class backgroundCheckController {
     /**
      * Buscar antecedentes judiciales por id_conductor
      * @param {string} id_conductor
-     * @returns {Promise<Object|null>} 
+     * @returns {Promise<Object|null>}
      */
     static async getJudicialRecordByConductorId(id_conductor) {
-        if (!id_conductor) return null;
-        try {
-            const judicialRecord = await CriminalRecordSchema.findOne({
-                id_conductor: id_conductor,
-            }).sort({ createdAt: -1 });
-            return judicialRecord;
-        } catch (error) {
-            console.error("ERROR en getJudicialRecordByConductorId:", error);
-            return null;
-        }
+        // Este método ahora es obsoleto y se ha corregido para usar el contexto de la petición.
+        // Se recomienda llamar a la versión no estática que recibe `req`.
+        console.error("Llamada a método estático obsoleto: getJudicialRecordByConductorId. Usar la versión del controlador de ruta.");
+        return null;
     }
     /**
      * Endpoint para consultar antecedentes judiciales
@@ -39,83 +59,129 @@ module.exports = class backgroundCheckController {
      */
     static async consultarAntecedentesJudiciales(req, res, next) {
         try {
-            const { nombre, paterno, materno, detalle, estado, id_conductor } =
-                req.body;
+            const {
+                nombre,
+                paterno,
+                materno,
+                detalle,
+                estado,
+                id_conductor,
+                id_compania,
+            } = req.body;
 
-            let searchFilter = {};
+            // Normaliza strings básicos para evitar fallos por espacios/uppercases
+            const norm = (s) => (typeof s === "string" ? s.trim() : s);
 
+            const params = {
+                nombre: norm(nombre),
+                paterno: norm(paterno),
+                materno: norm(materno),
+                detalle: norm(detalle),
+                estado: norm(estado),
+            };
+
+            // 1) Intenta buscar por id_conductor primero (si viene)
             if (id_conductor) {
-                searchFilter.id_conductor = id_conductor;
-            } else {
-                searchFilter = {
-                    "search_params.nombre": nombre,
-                    "search_params.paterno": paterno,
-                    "search_params.materno": materno,
-                    "search_params.detalle": detalle,
-                    "search_params.estado": estado,
-                };
+                const existingById = await CriminalRecordSchema.findOne({
+                    id_conductor,
+                    id_compania,
+                })
+                    .sort({ createdAt: -1 })
+                    .lean();
+
+                if (existingById) {
+                    return next(
+                        GeneralResponsesFactory.dataRetrievedSuccessfully({
+                            data: {
+                                criminal_record: existingById,
+                                nufi_response: null,
+                                source: "database",
+                            },
+                            key: "antecedentesJudiciales",
+                            message:
+                                "Datos obtenidos desde la base de datos (por id_conductor)",
+                        })
+                    );
+                }
             }
 
-            const existingRecord = await CriminalRecordSchema.findOne(
-                searchFilter
-            ).sort({ createdAt: -1 });
+            // 2) Sin id_conductor o no se encontró: intenta por parámetros de búsqueda (si los tienes)
+            const providedParams = Object.fromEntries(
+                Object.entries(params).filter(
+                    ([_, v]) =>
+                        v !== undefined && v !== null && String(v).trim() !== ""
+                )
+            );
 
-            if (existingRecord) {
-                return next(
-                    GeneralResponsesFactory.dataRetrievedSuccessfully({
-                        data: {
-                            criminal_record: existingRecord,
-                            nufi_response: null,
-                            source: "database",
-                        },
-                        key: "antecedentesJudiciales",
-                        message: "Datos obtenidos desde la base de datos",
-                    })
-                );
+            if (hasAllParams) {
+                const existingByParams = await CriminalRecordSchema.findOne({
+                    "search_params.nombre": params.nombre,
+                    "search_params.paterno": params.paterno,
+                    "search_params.materno": params.materno,
+                    "search_params.detalle": params.detalle || null,
+                    "search_params.estado": params.estado,
+                })
+                    .sort({ createdAt: -1 })
+                    .lean();
+
+                if (existingByParams) {
+                    return next(
+                        GeneralResponsesFactory.dataRetrievedSuccessfully({
+                            data: {
+                                criminal_record: existingByParams,
+                                nufi_response: null,
+                                source: "database",
+                            },
+                            key: "antecedentesJudiciales",
+                            message:
+                                "Datos obtenidos desde la base de datos (por search_params)",
+                        })
+                    );
+                }
             }
 
+            // 3) Si no hay en DB, consulta la API
             const result =
                 await NufiService.consultarAntecedentesJudicialesPersonaFisica({
-                    nombre,
-                    paterno,
-                    materno,
-                    detalle,
-                    estado,
+                    nombre: params.nombre,
+                    paterno: params.paterno,
+                    materno: params.materno,
+                    detalle: params.detalle,
+                    estado: params.estado,
                 });
 
-            let criminalRecord;
+            // 4) Persiste la respuesta en DB (mejor esfuerzo)
+            let criminalRecord = null;
             try {
                 const recordData = {
-                    code: result.code || 200,
-                    status: result.status || "success",
-                    message: result.message || "Consulta exitosa",
+                    code: result?.code ?? 200,
+                    status: result?.status ?? "success",
+                    message: result?.message ?? "Consulta exitosa",
                     data: {
-                        numero_resultados: result.data?.numero_resultados || 0,
-                        homonimia: result.data?.homonimia || "0",
-                        resultados: result.data?.resultados || [],
+                        numero_resultados: result?.data?.numero_resultados ?? 0,
+                        homonimia: result?.data?.homonimia ?? "0",
+                        resultados: result?.data?.resultados ?? [],
                     },
                     id_conductor: id_conductor || null,
-                    search_params: {
-                        nombre,
-                        paterno,
-                        materno,
-                        detalle,
-                        estado,
-                    },
+                    search_params: Object.keys(providedParams).length
+                        ? providedParams
+                        : null,
                 };
 
                 criminalRecord = await CriminalRecordSchema.create(recordData);
             } catch (dbError) {
                 console.error("ERROR al guardar en DB:", dbError);
             }
-            next(
+
+            return next(
                 GeneralResponsesFactory.dataRetrievedSuccessfully({
                     data: {
-                        criminal_record: criminalRecord || result,
+                        criminal_record: criminalRecord || result, // por si falló el insert
                         nufi_response: result,
                         source: "nufi_api",
                     },
                     key: "antecedentesJudiciales",
+                    message: "Datos obtenidos desde la API de NUFI",
                 })
             );
         } catch (error) {
@@ -141,7 +207,7 @@ module.exports = class backgroundCheckController {
                 );
             }
 
-            next(
+            return next(
                 GeneralErrorsFactory.internalServerErr(
                     "Error al consultar antecedentes judiciales"
                 )
@@ -154,9 +220,9 @@ module.exports = class backgroundCheckController {
      * POST /api/background-check/aml
      */
     static async consultarAML(req, res, next) {
-    console.log('BODY RECIBIDO EN /aml:', req.body);
         try {
             const {
+                id_compania,
                 id_conductor,
                 nombre_completo,
                 primer_nombre,
@@ -164,11 +230,11 @@ module.exports = class backgroundCheckController {
                 apellidos,
                 fecha_nacimiento,
                 lugar_nacimiento,
-                
             } = req.body;
 
             const existingRecord = await BlackListSchema.findOne({
                 id_conductor: id_conductor,
+                id_compania: id_compania,
             }).sort({ createdAt: -1 });
 
             if (existingRecord) {
@@ -197,7 +263,6 @@ module.exports = class backgroundCheckController {
                 fecha_nacimiento,
                 lugar_nacimiento,
             });
-
 
             let blackListRecord;
             try {
@@ -230,6 +295,7 @@ module.exports = class backgroundCheckController {
                                 result.data?.result_payload?.pep_entries || [],
                         },
                     },
+                    id_compania: id_compania,
                     id_conductor: id_conductor,
                     search_params: {
                         nombre_completo,
@@ -301,19 +367,12 @@ module.exports = class backgroundCheckController {
     /**
      * Buscar registro AML por id_conductor
      * @param {string} id_conductor
-     * @returns {Promise<Object|null>} 
+     * @returns {Promise<Object|null>}
      */
     static async getAMLByConductorId(id_conductor) {
-        if (!id_conductor) return null;
-        try {
-            const amlRecord = await BlackListSchema.findOne({
-                id_conductor: id_conductor,
-            }).sort({ createdAt: -1 });
-            return amlRecord;
-        } catch (error) {
-            console.error("ERROR en getAMLByConductorId:", error);
-            return null;
-        }
+        // Este método ahora es obsoleto y se ha corregido para usar el contexto de la petición.
+        console.error("Llamada a método estático obsoleto: getAMLByConductorId. Usar la versión del controlador de ruta.");
+        return null;
     }
 
     /**
@@ -409,7 +468,7 @@ module.exports = class backgroundCheckController {
      */
     static async getHistorialLaboralCurp(req, res, next) {
         try {
-            const { curp, id_conductor } = req.query;
+            const { curp, id_conductor, id_compania } = req.query;
 
             let searchFilter = {};
 
@@ -419,6 +478,7 @@ module.exports = class backgroundCheckController {
                 searchFilter.curp = curp;
             }
 
+            searchFilter.id_compania = id_compania;
             // Buscar el documento (el más reciente por fecha)
             const employmentHistory = await EmploymentHistorySchema.findOne(
                 searchFilter
@@ -540,24 +600,29 @@ module.exports = class backgroundCheckController {
                     updateData,
                     { new: true, runValidators: false }
                 );
-            
-                try {
-                    const ConnectionsModel = require("../models/ConnectionsModel");
-                    const NotificationsServices = require("../services/notificationsServices");
-                    const { notificationTypes } = require("../constants/usersConstants");
-                    const connection = await ConnectionsModel.findOne({
-                        driverId: employmentHistory.id_conductor
-                    }).sort({ createdAt: -1 });
-                    if (connection && connection.companyId) {
-                        await NotificationsServices.createNotification({
-                            userId: connection.companyId,
-                            relatedUserId: employmentHistory.id_conductor,
-                            type: notificationTypes.verification_progress.value
-                        });
-                    }
-                } catch (notifyError) {
-                    console.error("Error enviando notificación de progreso de verificación:", notifyError);
+
+            try {
+                const ConnectionsModel = require("../models/ConnectionsModel");
+                const NotificationsServices = require("../services/notificationsServices");
+                const {
+                    notificationTypes,
+                } = require("../constants/usersConstants");
+                const connection = await ConnectionsModel.findOne({
+                    driverId: employmentHistory.id_conductor,
+                }).sort({ createdAt: -1 });
+                if (connection && connection.companyId) {
+                    await NotificationsServices.createNotification({
+                        userId: connection.companyId,
+                        relatedUserId: employmentHistory.id_conductor,
+                        type: notificationTypes.verification_progress.value,
+                    });
                 }
+            } catch (notifyError) {
+                console.error(
+                    "Error enviando notificación de progreso de verificación:",
+                    notifyError
+                );
+            }
 
             res.status(200).json({
                 success: true,
@@ -663,22 +728,52 @@ module.exports = class backgroundCheckController {
      */
     static async consultarCreditoInfonavit(req, res, next) {
         try {
-            const { curp, id_conductor } = req.body;
+            const { curp, id_conductor, id_compania } = req.body;
 
             const webhook = `${process.env.URL_NUFI_WEBHOOK}/api/v1/background-check/webhook/infonavit`;
 
-
+            // -------------------------------
+            // 1) Armar filtro de búsqueda
+            // -------------------------------
             let searchFilter = {};
-
             if (id_conductor) {
-                // Si se proporciona id_conductor, buscar por ese campo (prioridad)
-                searchFilter.id_conductor = id_conductor;
+                searchFilter.id_conductor = id_conductor; // prioridad
             } else if (curp) {
-                // Si solo se proporciona CURP, buscar por CURP
                 searchFilter.curp = curp;
             }
+            searchFilter.id_compania = id_compania;
 
-            // Buscar el documento en EmploymentHistorySchema (el más reciente por fecha)
+            // Validación mínima: debe venir al menos uno
+            if (Object.keys(searchFilter).length === 0) {
+                return next(
+                    GeneralErrorsFactory.badRequestErr(
+                        "Debes proporcionar id_conductor o CURP."
+                    )
+                );
+            }
+
+            // ---------------------------------------------------------
+            // 2) Buscar PRIMERO en la DB el registro de INFONAVIT existente
+            // ---------------------------------------------------------
+            const infonavitFromDB = await InfonavitRecordSchema.findOne(
+                searchFilter
+            ).sort({ createdAt: -1 });
+
+            if (infonavitFromDB) {
+                // Si existe en DB, devolvemos eso (requisito del usuario)
+                return next(
+                    GeneralResponsesFactory.dataRetrievedSuccessfully({
+                        data: infonavitFromDB,
+                        key: "creditoInfonavit",
+                        message:
+                            "Crédito INFONAVIT recuperado desde la base de datos",
+                    })
+                );
+            }
+
+            // --------------------------------------------------------------------
+            // 3) No existe INFONAVIT en DB → obtener NSS desde historial laboral
+            // --------------------------------------------------------------------
             const employmentHistory = await EmploymentHistorySchema.findOne(
                 searchFilter
             ).sort({ createdAt: -1 });
@@ -689,7 +784,7 @@ module.exports = class backgroundCheckController {
                     : `CURP: ${curp}`;
                 return next(
                     GeneralErrorsFactory.notFoundErr(
-                        `No se encontró historial laboral para ${searchBy}. Es necesario conssultar el NSS para consultar crédito INFONAVIT.`
+                        `No se encontró historial laboral para ${searchBy}. Es necesario consultar/registrar el NSS antes de solicitar crédito INFONAVIT.`
                     )
                 );
             }
@@ -697,26 +792,33 @@ module.exports = class backgroundCheckController {
             if (!employmentHistory.numero_seguridad_social) {
                 return next(
                     GeneralErrorsFactory.badRequestErr(
-                        "El historial laboral encontrado no tiene Número de Seguridad Social (NSS). Es necesario completar el proceso de NSS primero."
+                        "El historial laboral encontrado no tiene Número de Seguridad Social (NSS). Completa primero el proceso de NSS."
                     )
                 );
             }
 
             const nss = employmentHistory.numero_seguridad_social;
 
+            // ----------------------------------------------------
+            // 4) Llamar API externa de NUFI para crédito Infonavit
+            // ----------------------------------------------------
             const infonavitData = await NufiService.consultarCreditoInfonavit(
                 nss,
                 webhook
             );
 
+            // ----------------------------------------------------
+            // 5) Persistir un nuevo registro 'pending' con el uuid
+            // ----------------------------------------------------
             let infonavitRecord;
             try {
                 const recordData = {
-                    id_request: infonavitData.data?.uuid || "",
-                    status: "pending", 
+                    id_request: infonavitData?.data?.uuid || "",
+                    status: "pending",
                     numero_seguro_social: nss,
                     curp: employmentHistory.curp,
                     id_conductor: employmentHistory.id_conductor,
+                    id_compania: employmentHistory.id_compania,
                     data: {
                         estatus_credito: "",
                         producto_credito: "",
@@ -730,17 +832,20 @@ module.exports = class backgroundCheckController {
                 );
             } catch (dbError) {
                 console.error("ERROR al guardar en DB INFONAVIT:", dbError);
+                // No bloqueamos la respuesta al cliente si falló el guardado,
+                // pero dejamos trazabilidad en logs.
             }
 
-            next(
+            return next(
                 GeneralResponsesFactory.dataRetrievedSuccessfully({
                     data: {
-                        infonavit_request_uuid: infonavitData.data.uuid || "",
+                        infonavit_request_uuid: infonavitData?.data?.uuid || "",
                         nss_used: nss,
+                        record_id: infonavitRecord?._id || null,
                     },
                     key: "creditoInfonavit",
                     message:
-                        "Solicitud de crédito INFONAVIT procesada exitosamente",
+                        "Solicitud de crédito INFONAVIT enviada a NUFI exitosamente",
                 })
             );
         } catch (error) {
@@ -772,7 +877,7 @@ module.exports = class backgroundCheckController {
                 );
             }
 
-            next(
+            return next(
                 GeneralErrorsFactory.internalServerErr(
                     "Error al consultar crédito INFONAVIT"
                 )
@@ -786,7 +891,7 @@ module.exports = class backgroundCheckController {
      */
     static async consultarCreditoInfonavitResultado(req, res, next) {
         try {
-            const { curp, id_conductor } = req.query;
+            const { curp, id_conductor, id_compania } = req.query;
 
             let searchFilter = {};
 
@@ -795,6 +900,8 @@ module.exports = class backgroundCheckController {
             } else if (curp) {
                 searchFilter.curp = curp;
             }
+
+            searchFilter.id_compania = id_compania;
 
             // Buscar el documento en InfonavitRecord (el más reciente por fecha)
             const infonavitRecord = await InfonavitRecordSchema.findOne(
@@ -839,7 +946,7 @@ module.exports = class backgroundCheckController {
      */
     static async webhookInfonavit(req, res, next) {
         try {
-            const { curp } = req.params; 
+            const { curp } = req.params;
 
             console.log("Webhook de crédito INFONAVIT recibido:");
             console.log("CURP desde parámetros de ruta:", curp);
@@ -908,50 +1015,77 @@ module.exports = class backgroundCheckController {
         }
     }
 
-    ////*--------------------
     /**
-     * Endpoint para consultar Historial Laboral mediante CURP - Asíncrono
+     * Endpoint para consultar Historial Laboral mediante CURP
      * GET /api/background-check/historial-laboral
      */
     static async consultarHistorialLaboralCurp(req, res, next) {
         try {
-            const { curp, id_conductor } = req.query;
+            // 1) Normalizar entradas (ya están validadas antes de llegar aquí)
+            const { curp, id_conductor, id_compania } = req.query;
+            const curpNorm = String(curp).trim().toUpperCase();
+            const idConductorNorm = String(id_conductor).trim();
+            const idCompaniaNorm = String(id_compania).trim();
 
-            // Webhook para NSS
-            const webhook = `${process.env.URL_NUFI_WEBHOOK}/api/v1/check-background/webhook/nss`;
+            // 2) Filtro fijo (siempre llegan ambos)
+            const searchFilter = {
+                id_compania: idCompaniaNorm,
+                id_conductor: idConductorNorm,
+                curp: curpNorm,
+            };
 
-            // Llamar a NufiService para consultar el NSS
-            const result = await NufiService.consultarNumeroSeguridadSocial(
-                curp,
-                webhook
-            );
+            // 3) Buscar el registro más reciente en DB (
+            const existingRecord = await EmploymentHistorySchema.findOne(
+                searchFilter
+            )
+                .sort({ createdAt: -1 })
+                .lean();
 
-            // Extraer el UUID de la respuesta de NUFI
-            const requestId = result.data?.uuid;
-
-            if (!requestId) {
+            if (existingRecord) {
+                console.log(
+                    "Registro de historial laboral encontrado en DB:",
+                    existingRecord._id
+                );
                 return next(
-                    GeneralErrorsFactory.internalServerErr(
-                        "No se recibió UUID de la solicitud NSS"
-                    )
+                    GeneralResponsesFactory.dataRetrievedSuccessfully({
+                        data: {
+                            employment_history: existingRecord,
+                            source: "database",
+                        },
+                        key: "historialLaboralRequest",
+                        message:
+                            "Historial laboral obtenido desde la base de datos",
+                    })
                 );
             }
 
-            // Guardar en base de datos con los datos iniciales
+            // 4) Preparar webhook y consultar NUFI (sin validar result.data?.uuid)
+            const webhook = `${process.env.URL_NUFI_WEBHOOK}/api/v1/check-background/webhook/nss`;
+
+            const result = await NufiService.consultarNumeroSeguridadSocial(
+                curpNorm,
+                webhook
+            );
+
+            // Nota: a petición tuya, NO se valida result.data?.uuid
+            const requestId = result?.data?.uuid;
+
+            // 5) Guardar en base de datos con los datos iniciales
             try {
                 const employmentHistory = await EmploymentHistorySchema.create({
-                    id_conductor,
-                    curp,
-                    request_id: requestId,
+                    id_conductor: idConductorNorm,
+                    id_compania: idCompaniaNorm,
+                    curp: curpNorm,
+                    request_id: requestId, // puede ser undefined; si el esquema lo requiere estrictamente, fallará y caerá en este catch
                     request_status: "Waiting NSS",
                     numero_seguridad_social: "",
                     base64_semanas_cotizadas_nss: "",
-                    // ocr se llenará cuando llegue el webhook con los resultados
+                    // ocr se llenará cuando llegue el webhook
                 });
 
                 console.log(
-                    "DEBUG: Registro guardado en DB:",
-                    employmentHistory
+                    "Nuevo registro de historial laboral guardado en DB:",
+                    employmentHistory._id
                 );
             } catch (dbError) {
                 console.error("ERROR al guardar en DB:", dbError);
@@ -962,11 +1096,13 @@ module.exports = class backgroundCheckController {
                 );
             }
 
-            next(
+            // 6) Responder al cliente
+            return next(
                 GeneralResponsesFactory.dataRetrievedSuccessfully({
                     data: {
-                        request_id: requestId,
+                        request_id: requestId ?? null,
                         status: "Waiting NSS",
+                        source: "nufi_api",
                         message:
                             "Solicitud de historial laboral procesada. Los resultados se enviarán al webhook configurado.",
                     },
@@ -981,6 +1117,7 @@ module.exports = class backgroundCheckController {
                 status: error.response?.status,
             });
 
+            // Manejo específico de errores de la API de NUFI
             if (error.response?.status === 401) {
                 return next(
                     GeneralErrorsFactory.unauthorizedErr(
@@ -1003,7 +1140,7 @@ module.exports = class backgroundCheckController {
                 );
             }
 
-            next(
+            return next(
                 GeneralErrorsFactory.internalServerErr(
                     "Error al solicitar consulta de historial laboral"
                 )
@@ -1011,64 +1148,158 @@ module.exports = class backgroundCheckController {
         }
     }
 
-/** Hook para enviar el correo de verificacion completado */
+    /** Hook para enviar el correo de verificacion completado */
 
     static async sendBackCheckCompletedEmail(req, res, next) {
         try {
             const { user, verifyUrl } = req.body;
-            const backCheckCompleted = require('../utils/email/processes/backChechkCompleted');
+            const backCheckCompleted = require("../utils/email/processes/backChechkCompleted");
             await backCheckCompleted({ user, verifyUrl });
-            res.status(200).json({ statusCode: 200, success: true, message: 'Correo enviado correctamente.' });
+            res.status(200).json({
+                statusCode: 200,
+                success: true,
+                message: "Correo enviado correctamente.",
+            });
         } catch (error) {
-            if (error.response && error.response.body && error.response.body.errors) {
-                const sendGridErrors = error.response.body.errors.map(e => e.message).join('; ');
-                return res.status(500).json({ statusCode: 500, success: false, message: 'Error al enviar correo: ' + sendGridErrors });
+            if (
+                error.response &&
+                error.response.body &&
+                error.response.body.errors
+            ) {
+                const sendGridErrors = error.response.body.errors
+                    .map((e) => e.message)
+                    .join("; ");
+                return res.status(500).json({
+                    statusCode: 500,
+                    success: false,
+                    message: "Error al enviar correo: " + sendGridErrors,
+                });
             }
-            return res.status(500).json({ statusCode: 500, success: false, message: 'Error interno al enviar correo', error: error.message });
+            return res.status(500).json({
+                statusCode: 500,
+                success: false,
+                message: "Error interno al enviar correo",
+                error: error.message,
+            });
         }
     }
-/* envio de correo con el reporte adjunto */
-     static async sendBackCheckSendEmail(req, res, next) {
+    /* envio de correo con el reporte adjunto */
+    static async sendBackCheckSendEmail(req, res, next) {
         try {
-            console.log('--- [backgroundCheckController.sendBackCheckSendEmail] INICIO ---');
+            console.log(
+                "--- [backgroundCheckController.sendBackCheckSendEmail] INICIO ---"
+            );
             let pdfBase64 = undefined;
             let fileName = undefined;
             if (req.file) {
                 fileName = req.file.originalname;
-                pdfBase64 = req.file.buffer.toString('base64');
-                console.log('[DEBUG] Archivo recibido por multipart:', fileName, 'size:', req.file.size);
+                pdfBase64 = req.file.buffer.toString("base64");
+                console.log(
+                    "[DEBUG] Archivo recibido por multipart:",
+                    fileName,
+                    "size:",
+                    req.file.size
+                );
             } else {
                 pdfBase64 = req.body.pdfBase64;
                 fileName = req.body.fileName;
-                console.log('[DEBUG] pdfBase64:', typeof pdfBase64 === 'string' ? pdfBase64.slice(0, 100) : pdfBase64);
-                console.log('[DEBUG] fileName:', fileName);
+                console.log(
+                    "[DEBUG] pdfBase64:",
+                    typeof pdfBase64 === "string"
+                        ? pdfBase64.slice(0, 100)
+                        : pdfBase64
+                );
+                console.log("[DEBUG] fileName:", fileName);
             }
-            let user = req.body.user ? (typeof req.body.user === 'string' ? JSON.parse(req.body.user) : req.body.user) : undefined;
+            let user = req.body.user
+                ? typeof req.body.user === "string"
+                    ? JSON.parse(req.body.user)
+                    : req.body.user
+                : undefined;
             const verifyUrl = req.body.verifyUrl;
-            const backCheckSendEmail = require('../utils/email/processes/backCheckSendEmail');
+            const backCheckSendEmail = require("../utils/email/processes/backCheckSendEmail");
             await backCheckSendEmail({
                 user,
                 verifyUrl,
                 pdfBase64,
-                fileName
+                fileName,
             });
-            console.log('--- [backgroundCheckController.sendBackCheckSendEmail] FIN (correo enviado) ---');
-            res.status(200).json({ statusCode: 200, success: true, message: 'Correo con archivo adjunto enviado correctamente.' });
+            console.log(
+                "--- [backgroundCheckController.sendBackCheckSendEmail] FIN (correo enviado) ---"
+            );
+            res.status(200).json({
+                statusCode: 200,
+                success: true,
+                message: "Correo con archivo adjunto enviado correctamente.",
+            });
         } catch (error) {
-            console.error('--- [backgroundCheckController.sendBackCheckSendEmail] ERROR ---');
-            console.error('Error en sendBackCheckSendEmail:', error);
-            if (error.response && error.response.body && error.response.body.errors) {
-                const sendGridErrors = error.response.body.errors.map(e => e.message).join('; ');
-                return res.status(500).json({ statusCode: 500, success: false, message: 'Error al enviar correo: ' + sendGridErrors });
+            console.error(
+                "--- [backgroundCheckController.sendBackCheckSendEmail] ERROR ---"
+            );
+            console.error("Error en sendBackCheckSendEmail:", error);
+            if (
+                error.response &&
+                error.response.body &&
+                error.response.body.errors
+            ) {
+                const sendGridErrors = error.response.body.errors
+                    .map((e) => e.message)
+                    .join("; ");
+                return res.status(500).json({
+                    statusCode: 500,
+                    success: false,
+                    message: "Error al enviar correo: " + sendGridErrors,
+                });
             }
-            if (error instanceof RangeError && error.message.includes('Invalid status code')) {
-                return res.status(500).json({ statusCode: 500, success: false, message: 'Error interno: status code inválido. Revisa el middleware de respuesta final.', error: error.message });
+            if (
+                error instanceof RangeError &&
+                error.message.includes("Invalid status code")
+            ) {
+                return res.status(500).json({
+                    statusCode: 500,
+                    success: false,
+                    message:
+                        "Error interno: status code inválido. Revisa el middleware de respuesta final.",
+                    error: error.message,
+                });
             }
-            return res.status(500).json({ statusCode: 500, success: false, message: 'Error interno al enviar correo', error: error.message });
+            return res.status(500).json({
+                statusCode: 500,
+                success: false,
+                message: "Error interno al enviar correo",
+                error: error.message,
+            });
         }
     }
 
+    static async getAggregatedResults(req, res, next) {
+        try {
+            const { id_conductor, id_compania } = req.query;
+            
 
+            if (!id_conductor || !id_compania) {
+                return next(GeneralErrorsFactory.badRequestErr("Faltan IDs de conductor o compañía."));
+            }
 
+            const [employmentHistory, infonavitCredit, judicialRecord, amlRecord] = await Promise.all([
+                EmploymentHistorySchema.findOne({ id_conductor, id_compania }).sort({ createdAt: -1 }).lean(),
+                InfonavitRecordSchema.findOne({ id_conductor, id_compania }).sort({ createdAt: -1 }).lean(),
+                getJudicialRecordByConductorId(id_conductor, id_compania),
+                getAMLByConductorId(id_conductor, id_compania)
+            ]);
 
+            const results = {
+                employmentHistory: employmentHistory || null,
+                infonavitCredit: infonavitCredit || null,
+                judicialRecord: judicialRecord || null,
+                lastAmlDirect: amlRecord ? (amlRecord.data?.result_payload?.sanctionlist_sources || []) : null,
+            };
+
+            const hasData = Object.values(results).some(value => value && (Array.isArray(value) ? value.length > 0 : Object.keys(value).length > 0));
+
+            return next(GeneralResponsesFactory.dataRetrievedSuccessfully({ data: hasData ? results : null, key: 'aggregatedResults' }));
+        } catch (error) {
+            next(GeneralErrorsFactory.internalServerErr("Error al obtener resultados agregados."));
+        }
+    }
 };

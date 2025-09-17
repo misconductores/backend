@@ -21,6 +21,7 @@ const infonavitRecordSchema = new Schema(
         numero_seguro_social: { type: String, required: true },
         curp: { type: String, required: true },
         id_conductor: { type: String, required: true },
+        id_compania: { type: String, required: true },
         data: { type: creditoDataSchema, required: false },
     },
     {

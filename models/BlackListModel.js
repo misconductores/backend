@@ -71,6 +71,7 @@ const ResultPayloadSchema = new Schema(
 const BlackListSchema = new Schema(
     {
         id_conductor: { type: String, required: true },
+        id_compania: { type: String, required: true },
         data: {
             has_crimelist_match: { type: Boolean, default: false },
             has_pep_match: { type: Boolean, default: false },

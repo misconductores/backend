@@ -27,7 +27,6 @@ const expedienteSchema = new Schema(
     { _id: false }
 );
 
-// Subschema para resultados dentro de data
 const resultadoSchema = new Schema(
     {
         entidad: { type: String, required: false },
@@ -36,7 +35,6 @@ const resultadoSchema = new Schema(
     { _id: false }
 );
 
-// Subschema de data principal
 const dataSchema = new Schema(
     {
         numero_resultados: { type: Number, required: false },
@@ -46,13 +44,36 @@ const dataSchema = new Schema(
     { _id: false }
 );
 
-// Esquema principal
+const searchParamsSchema = new Schema(
+    {
+        nombre: { type: String },
+        paterno: { type: String },
+        materno: { type: String },
+        detalle: { type: String },
+        estado: { type: String },
+    },
+    { _id: false }
+);
+
 const consultaSchema = new Schema(
     {
         code: { type: Number, required: true },
         status: { type: String, required: true },
         message: { type: String, required: true },
         data: { type: dataSchema, required: false },
+        id_compania: {
+            type: String,
+            index: true,
+            default: null,
+            required: true,
+        },
+        id_conductor: {
+            type: String,
+            index: true,
+            default: null,
+            required: true,
+        },
+        search_params: { type: searchParamsSchema, default: null },
     },
     {
         timestamps: true,
@@ -60,5 +81,16 @@ const consultaSchema = new Schema(
         toJSON: { virtuals: true },
     }
 );
+
+consultaSchema.index({ id_conductor: 1, createdAt: -1 });
+
+consultaSchema.index({
+    "search_params.nombre": 1,
+    "search_params.paterno": 1,
+    "search_params.materno": 1,
+    "search_params.detalle": 1,
+    "search_params.estado": 1,
+    createdAt: -1,
+});
 
 module.exports = mongoose.model("criminal_records", consultaSchema);
