@@ -17,6 +17,12 @@ function buildCurpSchema() {
                 /^[0-9a-fA-F]{24}$/,
                 "ID del conductor debe ser un ObjectId válido (24 caracteres hexadecimales)"
             ),
+        id_compania: Yup.string()
+            .required("ID de la compania es requerido")
+            .matches(
+                /^[0-9a-fA-F]{24}$/,
+                "ID de la compania debe ser un ObjectId válido (24 caracteres hexadecimales)"
+            ),
     });
 }
 module.exports.validateCURP = (data) => {
@@ -61,6 +67,12 @@ function buildCurpOrIdConductorSchema() {
                         );
                     }
                 ),
+            id_compania: Yup.string()
+                .required("ID de la compania es requerido")
+                .matches(
+                    /^[0-9a-fA-F]{24}$/,
+                    "ID de la compania debe ser un ObjectId válido (24 caracteres hexadecimales)"
+                ),
             id_conductor: Yup.string()
                 .optional()
                 .test(
@@ -88,6 +100,10 @@ function buildCurpOrIdConductorSchema() {
 }
 
 module.exports.validateCurpOrIdConductor = (data) => {
+    const schema = buildCurpSchema();
+    return validatorUtils.validate(schema, data);
+};
+module.exports.validateIdConductorIdCompany = (data) => {
     const schema = buildCurpOrIdConductorSchema();
     return validatorUtils.validate(schema, data);
 };
@@ -95,16 +111,40 @@ module.exports.validateCurpOrIdConductor = (data) => {
 // Antecedentes judiciales
 function buildAntecedentesJudicialesSchema() {
     return Yup.object().shape({
+        //ID de la compañia: requerido y debe ser un ObjectId válido
+        id_compania: Yup.string()
+            .required("El ID de la compania es obligatorio")
+            .test(
+                "id-format",
+                "ID de la compania debe ser un ObjectId válido (24 caracteres hexadecimales)",
+                function (value) {
+                    if (!value) return false;
+                    return /^[0-9a-fA-F]{24}$/.test(value);
+                }
+            ),
+        // ID del conductor: requerido y debe ser un ObjectId válido
+        id_conductor: Yup.string()
+            .required("El ID del conductor es obligatorio")
+            .test(
+                "id-format",
+                "ID del conductor debe ser un ObjectId válido (24 caracteres hexadecimales)",
+                function (value) {
+                    if (!value) return false;
+                    return /^[0-9a-fA-F]{24}$/.test(value);
+                }
+            ),
+
         // Nombre de la persona física. Es requerido.
         nombre: Yup.string()
             .required("Nombre es requerido")
             .min(1, "Nombre no puede estar vacío"),
+
         // Apellido paterno de la persona física. Es requerido.
         paterno: Yup.string()
             .required("Apellido paterno es requerido")
             .min(1, "Apellido paterno no puede estar vacío"),
+
         // Apellido materno de la persona física.
-        // En caso de que la persona no cuente con apellido materno es necesario enviar un espacio en blanco.
         materno: Yup.string()
             .required(
                 'Apellido materno es requerido (usar " " si no tiene apellido materno)'
@@ -116,8 +156,11 @@ function buildAntecedentesJudicialesSchema() {
                     typeof val === "string" &&
                     (val.trim().length > 0 || val === " ")
             ),
+
+        // Detalle: booleano opcional
         detalle: Yup.boolean(),
-        // Estado: Si es por Entidad se escribe la abreviatura, si es por Nacional se escribe nacional.
+
+        // Estado: Si es por Entidad se escribe la abreviatura, si es por Nacional se escribe "nacional".
         estado: Yup.string().test(
             "valid-estado",
             'Estado debe ser una abreviatura válida (2 letras mayúsculas) o "nacional"',
@@ -136,6 +179,12 @@ module.exports.validateAntecedentesJudiciales = (data) => {
 // AML
 function buildAmlSchema() {
     return Yup.object().shape({
+        id_compania: Yup.string()
+            .required("ID de la compania es requerido")
+            .matches(
+                /^[0-9a-fA-F]{24}$/,
+                "ID de la compania debe ser un ObjectId válido (24 caracteres hexadecimales)"
+            ),
         id_conductor: Yup.string()
             .required("ID del conductor es requerido")
             .matches(

@@ -191,5 +191,18 @@ router.post('/back-check-completed',
         upload.single('file'),
         backgroundCheckController.sendBackCheckSendEmail);
 
+// Ruta para obtener todos los resultados de verificación agregados
+router.get(
+    "/resultados-agregados",
+    authMiddleware,
+    roleValidatorMiddleware({
+        allowedRoles: [roles.admin.value, roles.company.value],
+    }),
+    validatorMiddleware(
+        backgroundCheckSchema.validateIdConductorIdCompany,
+        QUERY_PROPERTY
+    ),
+    catchAsync(backgroundCheckController.getAggregatedResults)
+);
 
 module.exports = router;
