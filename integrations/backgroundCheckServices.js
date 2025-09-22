@@ -36,12 +36,12 @@ module.exports = class NufiService {
                     headers: {
                         Accept: "application/json",
                         "Content-Type": "application/json",
-                        // "NUFI-API-KEY":
-                        //     process.env.NUFI_SUBSCRIPTION_KEY_PREMIUM,
+                         "NUFI-API-KEY":
+                             process.env.NUFI_SUBSCRIPTION_KEY_PREMIUM,
                     },
                 }
             );
-
+            
             return response.data;
         } catch (error) {
             console.error(

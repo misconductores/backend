@@ -112,7 +112,7 @@ module.exports = class backgroundCheckController {
                         v !== undefined && v !== null && String(v).trim() !== ""
                 )
             );
-
+            const hasAllParams = Object.keys(providedParams).length > 0;
             if (hasAllParams) {
                 const existingByParams = await CriminalRecordSchema.findOne({
                     "search_params.nombre": params.nombre,
@@ -149,6 +149,7 @@ module.exports = class backgroundCheckController {
                     detalle: params.detalle,
                     estado: params.estado,
                 });
+                
 
             // 4) Persiste la respuesta en DB (mejor esfuerzo)
             let criminalRecord = null;
@@ -163,6 +164,7 @@ module.exports = class backgroundCheckController {
                         resultados: result?.data?.resultados ?? [],
                     },
                     id_conductor: id_conductor || null,
+                    id_compania: id_compania || null,
                     search_params: Object.keys(providedParams).length
                         ? providedParams
                         : null,
