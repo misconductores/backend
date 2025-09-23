@@ -17,7 +17,7 @@ module.exports = async ({user, verifyUrl, attachmentPath, pdfBase64, fileName}) 
   console.log('pdfBase64:', pdfBase64 ? pdfBase64.slice(0, 100) : 'undefined');
   console.log('fileName:', fileName);
 
-  const {firstName, lastName, companyName, role} = user;
+  const {firstName, lastName, companyName, role, email} = user;
 
   let name;
   if (role === usersConstants.roles.driver.value) {

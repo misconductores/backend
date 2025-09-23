@@ -6,6 +6,7 @@ const cors = require('cors');
 const config = require('config');
 
 const v1 = require('./apiVersions/v1');
+const backgroundCheckRoutes = require('./routes/backgroundCheckRoutes');
 const {
   refreshTokenMiddleware,
   finalResponseMiddleware,
@@ -40,11 +41,15 @@ app.use('/api/v1/subscriptions/webhook', express.raw({ type: '*/*' }));
 app.use('/api/v1/payment-integration/webhook', express.raw({ type: '*/*' }));
 app.use('/api/v1/credits/webhook', bodyParser.raw({ type: 'application/json' }));
 
-app.use(express.json());
-
+//app.use(express.json());
+app.use(express.json({ limit: '20mb' }));
 app.use(cookieParser());
-app.use(bodyParser.urlencoded({ extended: true }));
+//app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(bodyParser.urlencoded({ extended: true, limit: '20mb' }));
 app.use(cors({ origin: corsOrigin, credentials: true }));
+
+app.use('/api/v1/background-check', backgroundCheckRoutes);
 
 v1.prepareV1Routes(app);
 
