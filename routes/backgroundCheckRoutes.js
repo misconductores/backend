@@ -181,15 +181,10 @@ router.get(
     catchAsync(backgroundCheckController.consultarCreditoInfonavitResultado)
 );
 
-/** enviar el correo de verificacion terminado */
 router.post('/back-check-completed', 
     backgroundCheckController.sendBackCheckCompletedEmail);
 
-    const multer = require('multer');
-    const upload = multer({ storage: multer.memoryStorage() });
-    router.post('/send-report-email', 
-        upload.single('file'),
-        backgroundCheckController.sendBackCheckSendEmail);
+router.post('/send-email', backgroundCheckController.sendBackCheckSendEmail);
 
 // Ruta para obtener todos los resultados de verificación agregados
 router.get(
