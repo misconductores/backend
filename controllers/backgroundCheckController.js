@@ -626,10 +626,14 @@ module.exports = class backgroundCheckController {
                 );
             }
 
-            res.status(200).json({
-                success: true,
-                message: "Webhook de historial laboral procesado correctamente",
-            });
+            await backgroundCheckController.consultarCreditoInfonavit({
+                body: {
+                    id_conductor: employmentHistory.id_conductor,
+                    curp: employmentHistory.curp,
+                    id_compania: employmentHistory.id_compania
+                }
+            }, res, next);
+                return;
         } catch (error) {
             console.error("ERROR en webhookHistorialLaboral:", {
                 message: error.message,
