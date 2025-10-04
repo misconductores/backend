@@ -423,14 +423,14 @@ module.exports.checkoutCancelUrl = `${config.get(
 
 module.exports.creditPackages = {
     basicPackage: {
-        value: config.get("creditsBasicPriceId") || "price_1RrtSKB2g3RJ2ZOUumZNyogh",  
+        value: config.get("creditsBasicPriceId") || "price_1SDxd7BtxgkeCYv5M1STAuiX",  
         credits: 5,
-        name: "Paquete Básico" 
+        name: "Revisión de Antecedentes (5)" 
     },
     premiumPackage: {
-        value: config.get("creditsPremiumPriceId") || "price_1RrtStB2g3RJ2ZOU6pcUi0GZ", 
+        value: config.get("creditsPremiumPriceId") || "price_1SDxdzBtxgkeCYv5Kd0lIELk", 
         credits: 10,
-        name: "Paquete Pro"
+        name: "Revisión de Antecedentes (10)"
     }
 };
 

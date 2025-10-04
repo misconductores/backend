@@ -15,7 +15,7 @@ const creditsSchema = new mongoose.Schema({
 
   packageType: {
     type: String,
-    enum: ['Paquete Básico', 'Paquete Pro', 'Verificación'],
+    enum: ['Revisión de Antecedentes (5)', 'Revisión de Antecedentes (10)', 'Verificación'],
     required: true
   },
 

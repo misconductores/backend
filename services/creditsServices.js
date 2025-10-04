@@ -49,7 +49,7 @@ module.exports = class CreditsServices {
         throw checkoutSession.error;
       }
 
-      const packageNameInDataBase = packageType === 'basicPackage' ? 'Paquete Básico' : 'Paquete Pro';
+      const packageNameInDataBase = packageType === 'basicPackage' ? 'Revisión de Antecedentes (5)' : 'Revisión de Antecedentes (10)';
       
       const creditTransaction = new CreditsModel({
         userId,
@@ -159,7 +159,7 @@ module.exports = class CreditsServices {
         availableCredits += transaction.credits;
         
         if (transaction.packageType !== 'Verificación' && 
-            (transaction.packageType === 'Paquete Básico' || transaction.packageType === 'Paquete Pro')) {
+            (transaction.packageType === 'Revisión de Antecedentes (5)' || transaction.packageType === 'Revisión de Antecedentes (10)')) {
           if (!lastPurchase || transaction.createdAt > lastPurchase.createdAt) {
             lastPurchase = transaction;
           }

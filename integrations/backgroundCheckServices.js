@@ -3,7 +3,7 @@ const axios = require("axios");
 
 module.exports = class NufiService {
     /**
-     * Consulta antecedentes judiciales de una persona física a través de la API de NUFI
+     * Consulta antecedentes judiciales de una persona física
      *
      * @param {Object} params - Parámetros para la consulta
      * @param {string} params.nombre - Nombre de la persona física (requerido si no se especifica apellido)
@@ -37,7 +37,7 @@ module.exports = class NufiService {
                         Accept: "application/json",
                         "Content-Type": "application/json",
                          "NUFI-API-KEY":
-                             process.env.NUFI_SUBSCRIPTION_KEY_PREMIUM,
+                             process.env.NUFI_API_KEY,
                     },
                 }
             );
@@ -76,7 +76,7 @@ module.exports = class NufiService {
                         Accept: "application/json",
                         "Content-Type": "application/json",
                         "Ocp-Apim-Subscription-Key":
-                            process.env.NUFI_SUBSCRIPTION_KEY_OCP,
+                            process.env.NUFI_API_KEY,
                     },
                 }
             );
@@ -168,7 +168,7 @@ module.exports = class NufiService {
                     headers: {
                         Accept: "application/json",
                         "Content-Type": "application/json",
-                        "NUFI-API-KEY": process.env.NUFI_SUBSCRIPTION_KEY_INT,
+                        "NUFI-API-KEY": process.env.NUFI_API_KEY,
                     },
                 }
             );
