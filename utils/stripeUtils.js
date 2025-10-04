@@ -43,14 +43,22 @@ module.exports = class StripeUtils {
         expand: ['data.default_price'],
       });
 
-      const preparedData = products.data.map((product) => ({
-        id: product.id,
-        active: product.active,
-        priceId: product.default_price?.id,
-        price: product.default_price?.unit_amount / 100,
-        description: product.description,
-        metadata: product.metadata,
-      }));
+      const preparedData = products.data
+        .filter((product) => {
+          // Filtrar solo productos activos que tengan metadata.interval
+          return product.active && 
+                 product.metadata && 
+                 product.metadata.interval &&
+                 product.default_price?.unit_amount;
+        })
+        .map((product) => ({
+          id: product.id,
+          active: product.active,
+          priceId: product.default_price?.id,
+          price: product.default_price.unit_amount / 100,
+          description: product.description,
+          metadata: product.metadata,
+        }));
 
       return {success: true, products: preparedData};
     } catch (err) {
