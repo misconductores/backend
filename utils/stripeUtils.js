@@ -39,34 +39,71 @@ module.exports = class StripeUtils {
 
   static async getProducts() {
     try {
-      console.log('🔍 Fetching products from Stripe...');
+      console.log('🔍 Fetching ALL products from Stripe with pagination...');
+
+      // Función para obtener todos los productos con paginación
+      const getAllProducts = async (expandMethod) => {
+        const allProducts = [];
+        let hasMore = true;
+        let startingAfter = null;
+
+        while (hasMore) {
+          const params = {
+            limit: 100, // Máximo permitido por Stripe
+            ...(expandMethod && { expand: expandMethod }),
+            ...(startingAfter && { starting_after: startingAfter })
+          };
+
+          console.log(`📄 Fetching page with params:`, params);
+          const response = await Stripe.products.list(params);
+
+          allProducts.push(...response.data);
+          hasMore = response.has_more;
+
+          if (hasMore && response.data.length > 0) {
+            startingAfter = response.data[response.data.length - 1].id;
+          }
+
+          console.log(`📦 Page fetched: ${response.data.length} products, has_more: ${hasMore}`);
+        }
+
+        return { data: allProducts };
+      };
 
       // Método 1: Intentar con expand tradicional
       let products;
       try {
-        products = await Stripe.products.list({
-          expand: ['data.default_price'],
-        });
+        products = await getAllProducts(['data.default_price']);
         console.log('✅ Method 1 (expand array) worked');
       } catch (expandError) {
-        console.log('❌ Method 1 failed, trying method 2...');
+        console.log('❌ Method 1 failed, trying method 2...', expandError.message);
 
         // Método 2: Intentar con expand como string
         try {
-          products = await Stripe.products.list({
-            expand: 'data.default_price',
-          });
+          products = await getAllProducts('data.default_price');
           console.log('✅ Method 2 (expand string) worked');
         } catch (stringError) {
-          console.log('❌ Method 2 failed, trying method 3...');
+          console.log('❌ Method 2 failed, trying method 3...', stringError.message);
 
           // Método 3: Sin expand, obtener productos y luego precios
-          products = await Stripe.products.list();
+          products = await getAllProducts(null);
           console.log('✅ Method 3 (no expand) worked');
         }
       }
 
-      console.log(`📦 Found ${products.data.length} products`);
+      console.log(`📦 Total products found: ${products.data.length}`);
+
+      // Análisis rápido de productos
+      const activeProducts = products.data.filter(p => p.active);
+      const productsWithMetadata = products.data.filter(p => p.metadata && p.metadata.interval);
+      const productsWithDefaultPrice = products.data.filter(p => p.default_price);
+
+      console.log(`📊 Product analysis:`, {
+        total: products.data.length,
+        active: activeProducts.length,
+        withMetadataInterval: productsWithMetadata.length,
+        withDefaultPrice: productsWithDefaultPrice.length
+      });
 
       const preparedData = [];
 
