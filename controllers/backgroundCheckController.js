@@ -10,13 +10,16 @@ const EmploymentHistorySchema = require("../models/EmploymentHistoryModel");
 const CriminalRecordSchema = require("../models/CriminalRecordModel");
 const InfonavitRecordSchema = require("../models/InfonavitRecord");
 const BlackListSchema = require("../models/BlackListModel");
+const UsersModel = require("../models/UsersModel");
 const NufiService = require("../integrations/backgroundCheckServices");
 const fs = require("fs");
 const path = require("path");
 const { userBlockedSuccessfully } = require("../factories/responses/users");
+
+
 const getAMLByConductorId = async (id_conductor, id_compania) => {
     if (!id_conductor) return null;
-    try { // Se añade el filtro por id_compania
+    try { 
         const amlRecord = await BlackListSchema.findOne({
             id_conductor: id_conductor,
             id_compania: id_compania
@@ -29,7 +32,7 @@ const getAMLByConductorId = async (id_conductor, id_compania) => {
 }
 const getJudicialRecordByConductorId = async (id_conductor, id_compania) => {
     if (!id_conductor) return null;
-    try { // Se añade el filtro por id_compania
+    try { 
         const judicialRecord = await CriminalRecordSchema.findOne({
             id_conductor: id_conductor,
             id_compania: id_compania,
@@ -47,12 +50,6 @@ module.exports = class backgroundCheckController {
      * @param {string} id_conductor
      * @returns {Promise<Object|null>}
      */
-    static async getJudicialRecordByConductorId(id_conductor) {
-        // Este método ahora es obsoleto y se ha corregido para usar el contexto de la petición.
-        // Se recomienda llamar a la versión no estática que recibe `req`.
-        console.error("Llamada a método estático obsoleto: getJudicialRecordByConductorId. Usar la versión del controlador de ruta.");
-        return null;
-    }
     /**
      * Endpoint para consultar antecedentes judiciales
      * POST /api/background-check/antecedentes-judiciales
@@ -60,98 +57,73 @@ module.exports = class backgroundCheckController {
     static async consultarAntecedentesJudiciales(req, res, next) {
         try {
             const {
-                nombre,
-                paterno,
-                materno,
-                detalle,
-                estado,
                 id_conductor,
                 id_compania,
             } = req.body;
 
-            // Normaliza strings básicos para evitar fallos por espacios/uppercases
-            const norm = (s) => (typeof s === "string" ? s.trim() : s);
+            if (!id_conductor || !id_compania) {
+                return next(
+                    GeneralErrorsFactory.badRequestErr("id_conductor y id_compania son requeridos")
+                );
+            }
+
+            // 1) Buscar registro existente por id_conductor
+            const existingById = await CriminalRecordSchema.findOne({
+                id_conductor,
+                id_compania,
+            })
+                .sort({ createdAt: -1 })
+                .lean();
+
+            if (existingById) {
+                return next(
+                    GeneralResponsesFactory.dataRetrievedSuccessfully({
+                        data: {
+                            criminal_record: existingById,
+                            nufi_response: null,
+                            source: "database",
+                        },
+                        key: "antecedentesJudiciales",
+                        message:
+                            "Datos obtenidos desde la base de datos (por id_conductor)",
+                    })
+                );
+            }
+
+            console.log("Buscando conductor con ID:", id_conductor);
+            const conductor = await UsersModel.findById(id_conductor).select(
+                'firstName lastName'
+            );
+
+            if (!conductor) {
+                console.log("ERROR: Conductor no encontrado en la base de datos");
+                return next(
+                    GeneralErrorsFactory.badRequestErr("Conductor no encontrado")
+                );
+            }
+
+            let paterno = '';
+            let materno = '';
+            if (conductor.lastName) {
+                const apellidos = conductor.lastName.trim().split(' ');
+                paterno = apellidos[0] || '';
+                materno = apellidos.length > 1 ? apellidos.slice(1).join(' ') : '';
+            }
 
             const params = {
-                nombre: norm(nombre),
-                paterno: norm(paterno),
-                materno: norm(materno),
-                detalle: norm(detalle),
-                estado: norm(estado),
+                nombre: conductor.firstName || '',
+                paterno: paterno,
+                materno: materno,
+                detalle: true,  
+                estado: 'nacional', 
             };
 
-            // 1) Intenta buscar por id_conductor primero (si viene)
-            if (id_conductor) {
-                const existingById = await CriminalRecordSchema.findOne({
-                    id_conductor,
-                    id_compania,
-                })
-                    .sort({ createdAt: -1 })
-                    .lean();
-
-                if (existingById) {
-                    return next(
-                        GeneralResponsesFactory.dataRetrievedSuccessfully({
-                            data: {
-                                criminal_record: existingById,
-                                nufi_response: null,
-                                source: "database",
-                            },
-                            key: "antecedentesJudiciales",
-                            message:
-                                "Datos obtenidos desde la base de datos (por id_conductor)",
-                        })
-                    );
-                }
-            }
-
-            // 2) Sin id_conductor o no se encontró: intenta por parámetros de búsqueda (si los tienes)
-            const providedParams = Object.fromEntries(
-                Object.entries(params).filter(
-                    ([_, v]) =>
-                        v !== undefined && v !== null && String(v).trim() !== ""
-                )
-            );
-            const hasAllParams = Object.keys(providedParams).length > 0;
-            if (hasAllParams) {
-                const existingByParams = await CriminalRecordSchema.findOne({
-                    "search_params.nombre": params.nombre,
-                    "search_params.paterno": params.paterno,
-                    "search_params.materno": params.materno,
-                    "search_params.detalle": params.detalle || null,
-                    "search_params.estado": params.estado,
-                })
-                    .sort({ createdAt: -1 })
-                    .lean();
-
-                if (existingByParams) {
-                    return next(
-                        GeneralResponsesFactory.dataRetrievedSuccessfully({
-                            data: {
-                                criminal_record: existingByParams,
-                                nufi_response: null,
-                                source: "database",
-                            },
-                            key: "antecedentesJudiciales",
-                            message:
-                                "Datos obtenidos desde la base de datos (por search_params)",
-                        })
-                    );
-                }
-            }
-
-            // 3) Si no hay en DB, consulta la API
+            console.log("Parámetros para consulta de antecedentes judiciales:", params);
             const result =
-                await NufiService.consultarAntecedentesJudicialesPersonaFisica({
-                    nombre: params.nombre,
-                    paterno: params.paterno,
-                    materno: params.materno,
-                    detalle: params.detalle,
-                    estado: params.estado,
-                });
+                await NufiService.consultarAntecedentesJudicialesPersonaFisica(params);
                 
 
-            // 4) Persiste la respuesta en DB (mejor esfuerzo)
+            // 5) Persiste la respuesta en DB (mejor esfuerzo)
             let criminalRecord = null;
             try {
                 const recordData = {
@@ -163,14 +135,16 @@ module.exports = class backgroundCheckController {
                         homonimia: result?.data?.homonimia ?? "0",
                         resultados: result?.data?.resultados ?? [],
                     },
-                    id_conductor: id_conductor || null,
-                    id_compania: id_compania || null,
-                    search_params: Object.keys(providedParams).length
-                        ? providedParams
-                        : null,
+                    id_conductor: id_conductor,
+                    id_compania: id_compania,
+                    search_params: params,
                 };
 
                 criminalRecord = await CriminalRecordSchema.create(recordData);
+                console.log(
+                    "Nuevo registro de antecedentes judiciales guardado en DB:",
+                    criminalRecord._id
+                );
             } catch (dbError) {
                 console.error("ERROR al guardar en DB:", dbError);
             }
@@ -178,7 +152,7 @@ module.exports = class backgroundCheckController {
             return next(
                 GeneralResponsesFactory.dataRetrievedSuccessfully({
                     data: {
-                        criminal_record: criminalRecord || result, // por si falló el insert
+                        criminal_record: criminalRecord || result, 
                         nufi_response: result,
                         source: "nufi_api",
                     },
@@ -187,6 +161,9 @@ module.exports = class backgroundCheckController {
                 })
             );
         } catch (error) {
+            console.error("=== ERROR en consultarAntecedentesJudiciales ===");
+            console.error("Error completo:", error);
+
             if (error.response?.status === 401) {
                 return next(
                     GeneralErrorsFactory.unauthorizedErr(
@@ -195,9 +172,10 @@ module.exports = class backgroundCheckController {
                 );
             }
             if (error.response?.status === 400) {
+                console.log("Error 400 desde NUFI:", error.response?.data);
                 return next(
                     GeneralErrorsFactory.badRequestErr(
-                        "Datos inválidos enviados a la API"
+                        error.response?.data?.message || "Datos inválidos enviados a la API"
                     )
                 );
             }
@@ -226,13 +204,13 @@ module.exports = class backgroundCheckController {
             const {
                 id_compania,
                 id_conductor,
-                nombre_completo,
-                primer_nombre,
-                segundo_nombre,
-                apellidos,
-                fecha_nacimiento,
-                lugar_nacimiento,
             } = req.body;
+
+            if (!id_conductor || !id_compania) {
+                return next(
+                    GeneralErrorsFactory.badRequestErr("id_conductor y id_compania son requeridos")
+                );
+            }
 
             const existingRecord = await BlackListSchema.findOne({
                 id_conductor: id_conductor,
@@ -257,14 +235,37 @@ module.exports = class backgroundCheckController {
                 );
             }
 
-            const result = await NufiService.consultarAML({
-                nombre_completo,
-                primer_nombre,
-                segundo_nombre,
-                apellidos,
-                fecha_nacimiento,
-                lugar_nacimiento,
-            });
+            const conductor = await UsersModel.findById(id_conductor).select(
+                'firstName lastName dateOfBirth'
+            );
+
+            if (!conductor) {
+                return next(
+                    GeneralErrorsFactory.badRequestErr("Conductor no encontrado")
+                );
+            }
+
+            // Preparar datos del conductor para la consulta AML
+            const fechaNacimiento = conductor.dateOfBirth || '';
+            let primerNombre = '';
+            let segundoNombre = '';
+            if (conductor.firstName) {
+                const nombres = conductor.firstName.trim().split(' ');
+                primerNombre = nombres[0] || '';
+                segundoNombre = nombres.length > 1 ? nombres.slice(1).join(' ') : '';
+            }
+            const conductorData = {
+                nombre_completo: `${conductor.firstName || ''} ${conductor.lastName || ''}`.trim(),
+                primer_nombre: primerNombre,
+                segundo_nombre: segundoNombre,
+                apellidos: conductor.lastName || '',
+                fecha_nacimiento: fechaNacimiento,
+                lugar_nacimiento:  ''
+            };
+            console.log("Datos del conductor para la consulta AML:", conductorData);
+
+
+            const result = await NufiService.consultarAML(conductorData);
 
             let blackListRecord;
             try {
@@ -300,12 +301,12 @@ module.exports = class backgroundCheckController {
                     id_compania: id_compania,
                     id_conductor: id_conductor,
                     search_params: {
-                        nombre_completo,
-                        primer_nombre,
-                        segundo_nombre,
-                        apellidos,
-                        fecha_nacimiento,
-                        lugar_nacimiento,
+                        nombre_completo: conductorData.nombre_completo,
+                        primer_nombre: primerNombre,
+                        segundo_nombre: segundoNombre,
+                        apellidos: conductorData.apellidos,
+                        fecha_nacimiento: fechaNacimiento,
+                        lugar_nacimiento: conductorData.lugar_nacimiento,
                     },
                 };
 
@@ -371,11 +372,6 @@ module.exports = class backgroundCheckController {
      * @param {string} id_conductor
      * @returns {Promise<Object|null>}
      */
-    static async getAMLByConductorId(id_conductor) {
-        // Este método ahora es obsoleto y se ha corregido para usar el contexto de la petición.
-        console.error("Llamada a método estático obsoleto: getAMLByConductorId. Usar la versión del controlador de ruta.");
-        return null;
-    }
 
     /**
      * Endpoint para consultar CURP
@@ -583,7 +579,7 @@ module.exports = class backgroundCheckController {
             const employmentHistory = await EmploymentHistorySchema.findOne({
                 curp: curp,
             }).sort({ createdAt: -1 });
-
+ 
             const updateData = {
                 request_status: "Completed",
                 ocr: data.ocr || {},
@@ -634,6 +630,7 @@ module.exports = class backgroundCheckController {
                 }
             }, res, next);
                 return;
+
         } catch (error) {
             console.error("ERROR en webhookHistorialLaboral:", {
                 message: error.message,
@@ -657,7 +654,6 @@ module.exports = class backgroundCheckController {
 
             const curp = req.body.data.curp;
 
-            // Buscar el documento por CURP (el más reciente)
             const employmentHistory = await EmploymentHistorySchema.findOne({
                 curp: curp,
             }).sort({ createdAt: -1 });
@@ -838,8 +834,6 @@ module.exports = class backgroundCheckController {
                 );
             } catch (dbError) {
                 console.error("ERROR al guardar en DB INFONAVIT:", dbError);
-                // No bloqueamos la respuesta al cliente si falló el guardado,
-                // pero dejamos trazabilidad en logs.
             }
 
             return next(
@@ -909,7 +903,6 @@ module.exports = class backgroundCheckController {
 
             searchFilter.id_compania = id_compania;
 
-            // Buscar el documento en InfonavitRecord (el más reciente por fecha)
             const infonavitRecord = await InfonavitRecordSchema.findOne(
                 searchFilter
             ).sort({ createdAt: -1 });
@@ -961,7 +954,6 @@ module.exports = class backgroundCheckController {
                 JSON.stringify(req.body, null, 2)
             );
 
-            // Buscar el documento InfonavitRecord por CURP (el más reciente)
             const infonavitRecord = await InfonavitRecordSchema.findOne({
                 curp: curp,
             }).sort({ createdAt: -1 });
@@ -1027,20 +1019,44 @@ module.exports = class backgroundCheckController {
      */
     static async consultarHistorialLaboralCurp(req, res, next) {
         try {
-            // 1) Normalizar entradas (ya están validadas antes de llegar aquí)
-            const { curp, id_conductor, id_compania } = req.query;
-            const curpNorm = String(curp).trim().toUpperCase();
+            const { id_conductor, id_compania } = req.query;
+            
             const idConductorNorm = String(id_conductor).trim();
             const idCompaniaNorm = String(id_compania).trim();
+            
+            let conductor;
+            conductor = await UsersModel.findById(idConductorNorm).select('curp');
+           
+            if (!conductor) {
+                console.log("ERROR: Conductor no encontrado en la base de datos");
+                return next(
+                    GeneralErrorsFactory.notFoundErr("Conductor no encontrado en la base de datos")
+                );
+            }
+            
+            if (!conductor.curp || conductor.curp.trim() === '') {
+                console.log("ERROR: El conductor no tiene CURP asignado");
+                return next(
+                    GeneralErrorsFactory.badRequestErr("El conductor no cuenta con CURP. Es necesario completar el perfil del conductor antes de realizar consultas de historial laboral.")
+                );
+            }
 
-            // 2) Filtro fijo (siempre llegan ambos)
+            const curpNorm = String(conductor.curp).trim().toUpperCase();
+            console.log(`CURP recuperada del conductor ${idConductorNorm}:`, curpNorm);
+            
+            if (curpNorm.length !== 18) {
+                console.log("ERROR: CURP tiene formato inválido (longitud incorrecta)");
+                return next(
+                    GeneralErrorsFactory.badRequestErr("El conductor tiene una CURP con formato inválido. Debe tener exactamente 18 caracteres.")
+                );
+            }
+
             const searchFilter = {
                 id_compania: idCompaniaNorm,
                 id_conductor: idConductorNorm,
                 curp: curpNorm,
             };
 
-            // 3) Buscar el registro más reciente en DB (
             const existingRecord = await EmploymentHistorySchema.findOne(
                 searchFilter
             )
@@ -1073,16 +1089,14 @@ module.exports = class backgroundCheckController {
                 webhook
             );
 
-            // Nota: a petición tuya, NO se valida result.data?.uuid
             const requestId = result?.data?.uuid;
 
-            // 5) Guardar en base de datos con los datos iniciales
             try {
                 const employmentHistory = await EmploymentHistorySchema.create({
                     id_conductor: idConductorNorm,
                     id_compania: idCompaniaNorm,
                     curp: curpNorm,
-                    request_id: requestId, // puede ser undefined; si el esquema lo requiere estrictamente, fallará y caerá en este catch
+                    request_id: requestId, 
                     request_status: "Waiting NSS",
                     numero_seguridad_social: "",
                     base64_semanas_cotizadas_nss: "",
@@ -1192,30 +1206,15 @@ module.exports = class backgroundCheckController {
     /* envio de correo con el reporte adjunto */
     static async sendBackCheckSendEmail(req, res, next) {
         try {
-            console.log(
-                "--- [backgroundCheckController.sendBackCheckSendEmail] INICIO ---"
-            );
             let pdfBase64 = undefined;
             let fileName = undefined;
             if (req.file) {
                 fileName = req.file.originalname;
                 pdfBase64 = req.file.buffer.toString("base64");
-                console.log(
-                    "[DEBUG] Archivo recibido por multipart:",
-                    fileName,
-                    "size:",
-                    req.file.size
-                );
+               
             } else {
                 pdfBase64 = req.body.pdfBase64;
                 fileName = req.body.fileName;
-                console.log(
-                    "[DEBUG] pdfBase64:",
-                    typeof pdfBase64 === "string"
-                        ? pdfBase64.slice(0, 100)
-                        : pdfBase64
-                );
-                console.log("[DEBUG] fileName:", fileName);
             }
             let user = req.body.user
                 ? typeof req.body.user === "string"
@@ -1231,7 +1230,7 @@ module.exports = class backgroundCheckController {
                 fileName,
             });
             console.log(
-                "--- [backgroundCheckController.sendBackCheckSendEmail] FIN (correo enviado) ---"
+                "--- correo con archivo adjunto enviado correctamente ---"
             );
             res.status(200).json({
                 statusCode: 200,
@@ -1239,9 +1238,6 @@ module.exports = class backgroundCheckController {
                 message: "Correo con archivo adjunto enviado correctamente.",
             });
         } catch (error) {
-            console.error(
-                "--- [backgroundCheckController.sendBackCheckSendEmail] ERROR ---"
-            );
             console.error("Error en sendBackCheckSendEmail:", error);
             if (
                 error.response &&
