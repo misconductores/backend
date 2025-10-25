@@ -117,7 +117,7 @@ router.get(
     roleValidatorMiddleware({
         allowedRoles: [roles.company.value, roles.admin.value],
     }),
-    validatorMiddleware(backgroundCheckSchema.validateCURP, QUERY_PROPERTY),
+    validatorMiddleware(backgroundCheckSchema.validateIdConductorIdCompany, QUERY_PROPERTY),
     catchAsync(backgroundCheckController.consultarHistorialLaboralCurp)
 );
 

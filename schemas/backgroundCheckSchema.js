@@ -103,15 +103,32 @@ module.exports.validateCurpOrIdConductor = (data) => {
     const schema = buildCurpSchema();
     return validatorUtils.validate(schema, data);
 };
+
+function buildIdConductorIdCompanyRequiredSchema() {
+    return Yup.object().shape({
+        id_conductor: Yup.string()
+            .required("ID del conductor es requerido")
+            .matches(
+                /^[0-9a-fA-F]{24}$/,
+                "ID del conductor debe ser un ObjectId válido (24 caracteres hexadecimales)"
+            ),
+        id_compania: Yup.string()
+            .required("ID de la compania es requerido")
+            .matches(
+                /^[0-9a-fA-F]{24}$/,
+                "ID de la compania debe ser un ObjectId válido (24 caracteres hexadecimales)"
+            ),
+    });
+}
+
 module.exports.validateIdConductorIdCompany = (data) => {
-    const schema = buildCurpOrIdConductorSchema();
+    const schema = buildIdConductorIdCompanyRequiredSchema();
     return validatorUtils.validate(schema, data);
 };
 
 // Antecedentes judiciales
 function buildAntecedentesJudicialesSchema() {
     return Yup.object().shape({
-        //ID de la compañia: requerido y debe ser un ObjectId válido
         id_compania: Yup.string()
             .required("El ID de la compania es obligatorio")
             .test(
@@ -122,7 +139,6 @@ function buildAntecedentesJudicialesSchema() {
                     return /^[0-9a-fA-F]{24}$/.test(value);
                 }
             ),
-        // ID del conductor: requerido y debe ser un ObjectId válido
         id_conductor: Yup.string()
             .required("El ID del conductor es obligatorio")
             .test(
@@ -134,34 +150,28 @@ function buildAntecedentesJudicialesSchema() {
                 }
             ),
 
-        // Nombre de la persona física. Es requerido.
         nombre: Yup.string()
-            .required("Nombre es requerido")
+            .optional()
             .min(1, "Nombre no puede estar vacío"),
 
-        // Apellido paterno de la persona física. Es requerido.
         paterno: Yup.string()
-            .required("Apellido paterno es requerido")
+            .optional()
             .min(1, "Apellido paterno no puede estar vacío"),
 
-        // Apellido materno de la persona física.
         materno: Yup.string()
-            .required(
-                'Apellido materno es requerido (usar " " si no tiene apellido materno)'
-            )
+            .optional()
             .test(
                 "materno-espacio",
                 'Si no tiene apellido materno debe ser un espacio en blanco (" ")',
-                (val) =>
-                    typeof val === "string" &&
-                    (val.trim().length > 0 || val === " ")
+                (val) => {
+                    if (val === undefined) return true;
+                    return typeof val === "string" &&
+                        (val.trim().length > 0 || val === " ");
+                }
             ),
 
-        // Detalle: booleano opcional
-        detalle: Yup.boolean(),
-
-        // Estado: Si es por Entidad se escribe la abreviatura, si es por Nacional se escribe "nacional".
-        estado: Yup.string().test(
+        detalle: Yup.boolean().optional(),
+        estado: Yup.string().optional().test(
             "valid-estado",
             'Estado debe ser una abreviatura válida (2 letras mayúsculas) o "nacional"',
             (value) => {
@@ -256,7 +266,6 @@ module.exports.validateBatchBackgroundCheck = (data) => {
     return validatorUtils.validate(schema, data);
 };
 
-// Comprehensive check
 function buildComprehensiveCheckSchema() {
     return Yup.object().shape({
         ...buildAntecedentesJudicialesSchema().fields,
@@ -316,7 +325,6 @@ function buildHistorialLaboralCompletoSchema() {
                                 nss: Yup.string()
                                     .required("NSS en datos es requerido")
                                     .min(1, "NSS no puede estar vacío"),
-                                // Los siguientes campos son opcionales
                                 fecha_emision: Yup.string().optional(),
                                 semanas_cotizadas: Yup.number().optional(),
                                 semanas_descontadas: Yup.number().optional(),
@@ -326,7 +334,6 @@ function buildHistorialLaboralCompletoSchema() {
                         empleos: Yup.array()
                             .of(
                                 Yup.object().shape({
-                                    // Todos los campos de empleos son opcionales
                                     patron: Yup.string().optional(),
                                     registro_patronal: Yup.string().optional(),
                                     entidda_federativa: Yup.string().optional(),
@@ -370,7 +377,6 @@ function buildWebhookNssSchema() {
                 nombres: Yup.string()
                     .required("Nombres es requerido")
                     .min(1, "Nombres no puede estar vacío"),
-                // Los siguientes campos son opcionales
                 apellido_paterno: Yup.string().optional(),
                 apellido_materno: Yup.string().optional(),
                 fecha_nacimiento: Yup.string().optional(),
