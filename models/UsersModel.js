@@ -54,6 +54,8 @@ const usersSchema = new Schema(
         federalLicenseNo: {type: String, maxlength: 15},
         federalLicenseType: {type: String, enum: federalLicenseTypes},
         expiryDate: {type: String},
+        expiryReminderSent: {type: Boolean, default: false},
+        expiryExpiredSent: {type: Boolean, default: false},
       },
     ],
     stateLicenses: [
@@ -61,6 +63,8 @@ const usersSchema = new Schema(
         stateLicenseNo: {type: String, maxlength: 15},
         stateLicenseType: {type: String, enum: stateLicenseTypes},
         expiryDate: {type: String},
+        expiryReminderSent: {type: Boolean, default: false},
+        expiryExpiredSent: {type: Boolean, default: false},
       },
     ],
     experience: {type: String},
@@ -68,8 +72,12 @@ const usersSchema = new Schema(
     vehicleType: {type: String},
     visaNumber: {type: String},
     visaExpiry: {type: String},
+    visaExpiryReminderSent: {type: Boolean, default: false},
+    visaExpiryExpiredSent: {type: Boolean, default: false},
     fastNumber: {type: String},
     fastExpiry: {type: String},
+    fastExpiryReminderSent: {type: Boolean, default: false},
+    fastExpiryExpiredSent: {type: Boolean, default: false},
     additionalDocuments: [
       {
         additionalDocumentName: {type: String},

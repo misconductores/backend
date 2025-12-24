@@ -14,5 +14,6 @@
   "stripeServicePaymentWebHookSecret": "STRIPE_SERVICE_PAYMENT_WEBHOOK_SECRET",
   "stripeCreditsWebHookSecret": "STRIPE_CREDITS_WEBHOOK_SECRET",
   "creditsBasicPriceId": "CREDITS_BASIC_PRICE_ID",
-  "creditsPremiumPriceId": "CREDITS_PREMIUM_PRICE_ID"
+  "creditsPremiumPriceId": "CREDITS_PREMIUM_PRICE_ID",
+  "documentExpirationWarningDays": "DOCUMENT_EXPIRATION_WARNING_DAYS"
 }

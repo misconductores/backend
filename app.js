@@ -20,6 +20,7 @@ const {
 const { updateConnectionsToInactive } = require('./utils/cron-jobs/connections');
 const { updateFreeSubscriptions } = require('./utils/cron-jobs/subscriptions');
 const { updateCompaniesFmcsaData } = require('./utils/cron-jobs/fmcsa');
+const { sendDocumentExpirationNotifications } = require('./utils/cron-jobs/documentsExpiration');
 
 const app = express();
 
@@ -76,6 +77,7 @@ expirePendingDocsAccessRequests();
 updateConnectionsToInactive();
 updateFreeSubscriptions();
 updateCompaniesFmcsaData();
+sendDocumentExpirationNotifications();
 
 if (config.get('env') !== config.get('envVariables.test')) {
   const PORT = config.get('port') || 3001;

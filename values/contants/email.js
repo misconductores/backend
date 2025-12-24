@@ -13,4 +13,10 @@ module.exports.sendGridCecati144InscriptionPaymentTemplateId =
   'd-4c3d9a0fe8ba471dbb4cbb26360f94af';
 
 module.exports.sendGridBackCheckReportTemplateId =
-  'd-594aab6038374280922224e2cdf78ca0'; 
+  'd-594aab6038374280922224e2cdf78ca0';
+
+module.exports.sendGridDocumentExpirationWarningTemplateId =
+  'd-driver-document-expiration-warning';
+
+module.exports.sendGridDocumentExpiredTemplateId =
+  'd-driver-document-expired';
