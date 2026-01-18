@@ -11,6 +11,9 @@ const emailNotificationProcesses = require('../email/processes');
 const logger = require('../../middleware/loggerMiddleware');
 
 const DEFAULT_WARNING_DAYS = 7;
+const CDMX_TIMEZONE = 'America/Mexico_City';
+// TEST_EMAIL: set to a value to limit processing for local testing.
+const TEST_EMAIL = 'mitodo.oficios@gmail.com';
 const SCHEDULE = '0 * * * * *'; // every minute (testing)
 
 const getReminderThreshold = () => {
@@ -20,6 +23,9 @@ const getReminderThreshold = () => {
   }
   return DEFAULT_WARNING_DAYS;
 };
+
+const normalizeToCstDay = (dateTime) =>
+  dateTime.setZone(CDMX_TIMEZONE, {keepLocalTime: true}).startOf('day');
 
 const parseExpiryDate = (value) => {
   if (!value) return null;
@@ -31,18 +37,18 @@ const parseExpiryDate = (value) => {
 
   if (normalizedValue instanceof Date) {
     const fromDate = DateTime.fromJSDate(normalizedValue);
-    return fromDate.isValid ? fromDate.startOf('day') : null;
+    return fromDate.isValid ? normalizeToCstDay(fromDate) : null;
   }
 
   const fromISO = DateTime.fromISO(normalizedValue);
-  if (fromISO.isValid) return fromISO.startOf('day');
+  if (fromISO.isValid) return normalizeToCstDay(fromISO);
 
   const fromJSDate = DateTime.fromJSDate(new Date(normalizedValue));
-  return fromJSDate.isValid ? fromJSDate.startOf('day') : null;
+  return fromJSDate.isValid ? normalizeToCstDay(fromJSDate) : null;
 };
 
 const formatDateForTemplate = (dateTime) =>
-  dateTime ? dateTime.toISODate() : null;
+  dateTime ? normalizeToCstDay(dateTime).toFormat('yyyy/LL/dd') : null;
 
 const evaluateDocument = ({
   expiryDate,
@@ -50,13 +56,16 @@ const evaluateDocument = ({
   expiredSent,
   setReminderSent,
   setExpiredSent,
-  reminderPayload,
-  expiredPayload,
+  addReminderNotification,
+  addExpiredNotification,
   label,
   now,
   reminderThreshold,
 }) => {
   const parsedDate = parseExpiryDate(expiryDate);
+  logger.info(
+    `[DocumentsExpirationCron] Evaluating ${label}: rawExpiry=${expiryDate} parsedExpiry=${formatDateForTemplate(parsedDate)} now=${formatDateForTemplate(now)} reminderSent=${reminderSent} expiredSent=${expiredSent}`
+  );
 
   if (!parsedDate) {
     if (reminderSent) setReminderSent(false);
@@ -65,14 +74,17 @@ const evaluateDocument = ({
   }
 
   const diff = parsedDate.diff(now, 'days').days;
-
+  console.log("days passed", diff);
   if (diff < 0) {
     if (!expiredSent) {
-      expiredPayload.push({
-        label,
-        expiryDate: formatDateForTemplate(parsedDate),
-      });
-      setExpiredSent(true);
+      addExpiredNotification(
+        {
+          documentName: label,
+          expirationDate: formatDateForTemplate(parsedDate),
+          daysToExpire: 0,
+        },
+        () => setExpiredSent(true)
+      );
     }
     if (reminderSent) setReminderSent(false);
     return;
@@ -80,12 +92,14 @@ const evaluateDocument = ({
 
   if (diff <= reminderThreshold) {
     if (!reminderSent) {
-      reminderPayload.push({
-        label,
-        expiryDate: formatDateForTemplate(parsedDate),
-        daysRemaining: Math.max(0, Math.ceil(diff)),
-      });
-      setReminderSent(true);
+      addReminderNotification(
+        {
+          documentName: label,
+          expirationDate: formatDateForTemplate(parsedDate),
+          daysToExpire: Math.max(0, Math.ceil(diff)),
+        },
+        () => setReminderSent(true)
+      );
     }
     if (expiredSent) setExpiredSent(false);
     return;
@@ -95,8 +109,8 @@ const evaluateDocument = ({
   if (expiredSent) setExpiredSent(false);
 };
 
-const fetchDriversWithDocuments = () =>
-  UsersModel.find({
+const fetchDriversWithDocuments = () => {
+  const query = {
     role: roles.driver.value,
     $or: [
       {'federalLicenses.expiryDate': {$nin: [null, '']}},
@@ -104,18 +118,37 @@ const fetchDriversWithDocuments = () =>
       {visaExpiry: {$nin: [null, '']}},
       {fastExpiry: {$nin: [null, '']}},
     ],
-  }).select(
+  };
+
+  if (TEST_EMAIL) {
+    query.email = TEST_EMAIL;
+  }
+
+  return UsersModel.find(query).select(
     'email firstName lastName companyName role federalLicenses stateLicenses visaExpiry fastExpiry visaExpiryReminderSent visaExpiryExpiredSent fastExpiryReminderSent fastExpiryExpiredSent'
   );
+};
 
-const processDriverDocuments = async ({driver, reminderThreshold, now}) => {
-  const reminderPayload = [];
-  const expiredPayload = [];
+const processDriverDocuments = async ({
+  driver,
+  reminderThreshold,
+  now,
+}) => {
+  const reminderNotifications = [];
+  const expiredNotifications = [];
   let shouldSave = false;
 
   const setSaveAndMutate = (mutator) => {
     shouldSave = true;
     mutator();
+  };
+
+  const addReminderNotification = (notification, mutator) => {
+    reminderNotifications.push({notification, mutator});
+  };
+
+  const addExpiredNotification = (notification, mutator) => {
+    expiredNotifications.push({notification, mutator});
   };
 
   const handleDocument = ({
@@ -134,11 +167,11 @@ const processDriverDocuments = async ({driver, reminderThreshold, now}) => {
         setSaveAndMutate(() => setReminderSent(value)),
       setExpiredSent: (value) =>
         setSaveAndMutate(() => setExpiredSent(value)),
-      reminderPayload,
-      expiredPayload,
       label,
       now,
       reminderThreshold,
+      addReminderNotification,
+      addExpiredNotification,
     });
   };
 
@@ -202,38 +235,55 @@ const processDriverDocuments = async ({driver, reminderThreshold, now}) => {
     label: 'FAST',
   });
 
+  const sendNotifications = async ({notifications, handlerName, sender}) => {
+    for (const {notification, mutator} of notifications) {
+      logger.info(
+        `[DocumentsExpirationCron] Sending ${handlerName} email to ${driver.email} for ${notification.documentName} (${notification.expirationDate})`
+      );
+      // Email sending disabled temporarily for testing.
+      await sender({
+         user: driver,
+         notification,
+       });
+      setSaveAndMutate(mutator);
+    }
+  };
+
+  if (reminderNotifications.length === 0 && expiredNotifications.length === 0) {
+    logger.info(
+      `[DocumentsExpirationCron] No notifications queued for ${driver.email}.`
+    );
+  } else {
+    logger.info(
+      `[DocumentsExpirationCron] Queued ${reminderNotifications.length} reminder and ${expiredNotifications.length} expired notification(s) for ${driver.email}.`
+    );
+  }
+
+  await sendNotifications({
+    notifications: reminderNotifications,
+    handlerName: 'reminder',
+    sender: emailNotificationProcesses.documentExpirationWarning,
+  });
+  await sendNotifications({
+    notifications: expiredNotifications,
+    handlerName: 'expired',
+    sender: emailNotificationProcesses.documentExpired,
+  });
+
   if (shouldSave) {
     await driver.save();
     logger.info(
       `[DocumentsExpirationCron] Updated reminder flags for driver ${driver.email}`
     );
   }
-
-  if (reminderPayload.length > 0) {
-    logger.info(
-      `[DocumentsExpirationCron] Sending reminder email to ${driver.email} for ${reminderPayload.length} document(s): ${JSON.stringify(reminderPayload)}`
-    );
-    await emailNotificationProcesses.documentExpirationWarning({
-      user: driver,
-      documents: reminderPayload,
-    });
-  }
-
-  if (expiredPayload.length > 0) {
-    logger.info(
-      `[DocumentsExpirationCron] Sending expired email to ${driver.email} for ${expiredPayload.length} document(s): ${JSON.stringify(expiredPayload)}`
-    );
-    await emailNotificationProcesses.documentExpired({
-      user: driver,
-      documents: expiredPayload,
-    });
-  }
 };
 
 const runJob = async () => {
   try {
     const reminderThreshold = getReminderThreshold();
-    const now = DateTime.now().startOf('day');
+    const now = DateTime.now()
+      .setZone(CDMX_TIMEZONE, {keepLocalTime: true})
+      .startOf('day');
     logger.info(
       `[DocumentsExpirationCron] Starting run. Reminder threshold: ${reminderThreshold} days`
     );
@@ -246,7 +296,11 @@ const runJob = async () => {
       logger.info(
         `[DocumentsExpirationCron] Processing driver ${driver.email} (${driver._id})`
       );
-      await processDriverDocuments({driver, reminderThreshold, now});
+      await processDriverDocuments({
+        driver,
+        reminderThreshold,
+        now,
+      });
     }
     logger.info('[DocumentsExpirationCron] Completed run successfully');
   } catch (error) {

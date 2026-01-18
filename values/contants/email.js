@@ -16,7 +16,7 @@ module.exports.sendGridBackCheckReportTemplateId =
   'd-594aab6038374280922224e2cdf78ca0';
 
 module.exports.sendGridDocumentExpirationWarningTemplateId =
-  'd-driver-document-expiration-warning';
+  'd-e757fab8a46f472fb71047269a0a4ae2';
 
 module.exports.sendGridDocumentExpiredTemplateId =
-  'd-driver-document-expired';
+  'd-e757fab8a46f472fb71047269a0a4ae2';
