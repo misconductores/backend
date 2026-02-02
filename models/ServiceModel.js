@@ -50,6 +50,13 @@ const serviceSchema = new Schema({
     customerEmailTemplateId: {
         type: String,
         required: false
+    },
+    documentType: {
+        type: String,
+        required: false,
+        // Tipos posibles: visa, fast, federalLicense, stateLicense
+        // null/undefined permitido para servicios que no están relacionados con documentos
+        enum: ['visa', 'fast', 'federalLicense', 'stateLicense'],
     }
 });
 

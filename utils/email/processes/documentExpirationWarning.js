@@ -5,6 +5,7 @@ const {
   sendGridDocumentExpirationWarningTemplateId,
 } = require('../../../values/contants/email');
 const {usersConstants} = require('../../../constants');
+const {getDocumentPaymentLink} = require('../../helpers/documentPaymentLink');
 
 module.exports = async ({user, notification}) => {
   const {email, firstName, lastName, companyName, role} = user;
@@ -15,6 +16,9 @@ module.exports = async ({user, notification}) => {
       ? composedName || 'Usuario'
       : companyName || composedName || 'Usuario';
 
+  // Obtener el paymentLink para el documento
+  const paymentUrl = await getDocumentPaymentLink(notification.documentName);
+
   const to = {email, name: driverFullName};
   const from = {email: defaultEmailAddress, name: defaultEmailName};
   const templateId = sendGridDocumentExpirationWarningTemplateId;
@@ -23,6 +27,7 @@ module.exports = async ({user, notification}) => {
     driverFullName,
     expirationDate: notification.expirationDate,
     daysToExpire: notification.daysToExpire,
+    paymentUrl,
   };
 
   await sendEmail({to, from, templateId, dynamic_template_data});

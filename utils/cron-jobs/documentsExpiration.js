@@ -13,7 +13,7 @@ const logger = require('../../middleware/loggerMiddleware');
 const DEFAULT_WARNING_DAYS = 7;
 const CDMX_TIMEZONE = 'America/Mexico_City';
 // TEST_EMAIL: set to a value to limit processing for local testing.
-const TEST_EMAIL = 'mitodo.oficios@gmail.com';
+const TEST_EMAIL = 'tcxogblkxekngotsug@nesopf.com';
 const SCHEDULE = '0 * * * * *'; // every minute (testing)
 
 const getReminderThreshold = () => {
