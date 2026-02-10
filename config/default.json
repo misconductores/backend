@@ -10,6 +10,7 @@
   "awakeJobFrequencyInMinutes": "10",
 
   "documentExpirationWarningDays": 7,
+  "documentExpirationCronSchedule": "0 0 9 * * *",
 
   "frontendURL": "http://localhost:3000",
   "creditsBasicPriceId": "price_XXXX_basic",

@@ -12,9 +12,22 @@ const logger = require('../../middleware/loggerMiddleware');
 
 const DEFAULT_WARNING_DAYS = 7;
 const CDMX_TIMEZONE = 'America/Mexico_City';
-// TEST_EMAIL: set to a value to limit processing for local testing.
-const TEST_EMAIL = 'tcxogblkxekngotsug@nesopf.com';
-const SCHEDULE = '0 * * * * *'; // every minute (testing)
+
+// Configuración del cron job desde variables de ambiente
+const getSchedule = () => {
+  // Por defecto: cada día a las 9:00 AM
+  const defaultSchedule = '0 0 9 * * *';
+  return process.env.DOCUMENT_EXPIRATION_CRON_SCHEDULE || defaultSchedule;
+};
+
+// Email de prueba solo para ambientes no productivos
+const getTestEmail = () => {
+  const isProd = config.get('env') === config.get('envVariables.prod');
+  if (isProd) {
+    return null; // No usar email de prueba en producción
+  }
+  return process.env.DOCUMENT_EXPIRATION_TEST_EMAIL || null;
+};
 
 const getReminderThreshold = () => {
   if (config.has('documentExpirationWarningDays')) {
@@ -120,8 +133,10 @@ const fetchDriversWithDocuments = () => {
     ],
   };
 
-  if (TEST_EMAIL) {
-    query.email = TEST_EMAIL;
+  const testEmail = getTestEmail();
+  if (testEmail) {
+    query.email = testEmail;
+    logger.info(`[DocumentsExpirationCron] Using test email filter: ${testEmail}`);
   }
 
   return UsersModel.find(query).select(
@@ -309,7 +324,15 @@ const runJob = async () => {
 };
 
 exports.sendDocumentExpirationNotifications = () => {
+  const schedule = getSchedule();
+  logger.info(`[DocumentsExpirationCron] Initializing with schedule: ${schedule}`);
+  
+  const testEmail = getTestEmail();
+  if (testEmail) {
+    logger.info(`[DocumentsExpirationCron] Test mode enabled with email: ${testEmail}`);
+  }
+
   Object.values(TIMEZONES).map(({value: timezone}) => {
-    return new CronJob(SCHEDULE, () => runJob(), null, true, timezone);
+    return new CronJob(schedule, () => runJob(), null, true, timezone);
   });
 };
