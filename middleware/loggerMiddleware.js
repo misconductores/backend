@@ -14,11 +14,18 @@ const sentryTransport = new Sentry({
   level: 'error',
 });
 
-const transportsObj = {sentry: sentryTransport};
+// Console transport para todos los ambientes (Heroku necesita logs en stdout)
+const consoleTransport = new winston.transports.Console({
+  level: 'info',
+  format: winston.format.simple(), // Formato simple para Heroku
+});
+
+const transportsObj = {
+  console: consoleTransport,
+  sentry: sentryTransport,
+};
 
 if (isEnvDev) {
-  const consoleTransport = new winston.transports.Console({level: 'info'});
-  transportsObj.console = consoleTransport;
   transportsObj.sentry.level = 'info';
 }
 
