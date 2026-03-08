@@ -54,6 +54,14 @@ router.post(
   validatorMiddleware(jobsSchema.validateJobReq),
   catchAsync(JobsController.createJob)
 );
+
+router.post(
+  '/eligible-drivers-count',
+  authMiddleware,
+  roleValidatorMiddleware({allowedRoles: [roles.company.value]}),
+  validatorMiddleware(jobsSchema.validateJobReq),
+  catchAsync(JobsController.getEligibleDriversCount)
+);
 router.patch(
   '/:id',
   authMiddleware,

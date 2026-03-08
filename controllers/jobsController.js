@@ -4,7 +4,12 @@ const {
   JobErrors,
   UsersErrorsFactory,
 } = require('../factories');
-const {JobsServices, UsersServices, GeneralServices} = require('../services');
+const {
+  JobsServices,
+  UsersServices,
+  GeneralServices,
+  JobNotificationServices,
+} = require('../services');
 const JobModel = require('../models/JobModel');
 const {ApplicantsModel} = require('../models');
 const JobServices = require('../services/jobsServices');
@@ -26,7 +31,23 @@ module.exports = class JobController {
       error,
       doc: job,
     } = await GeneralServices.create({data, model: JobModel});
+    
     if (response) {
+      // Notificar a conductores elegibles sobre la nueva vacante
+      JobNotificationServices.notifyDriversAboutNewJob({job})
+        .then((result) => {
+          if (result.success) {
+            console.log(
+              `Job ${job._id} created. Notified ${result.notifiedCount} of ${result.totalEligible} eligible drivers. Emails sent: ${result.emailsSent}.`
+            );
+          } else {
+            console.error('Error notifying drivers:', result.error);
+          }
+        })
+        .catch((error) => {
+          console.error('Error in notification process:', error);
+        });
+
       return next(JobResponsesFactory.jobCreatedSuccessfully({job}));
     }
     if (error) {
@@ -231,6 +252,34 @@ module.exports = class JobController {
       return next(
         JobResponsesFactory.appliedJobsRetrievedSuccessfully({appliedJobs})
       );
+
+    if (error) throw error;
+  }
+
+  static async getEligibleDriversCount(req, res, next) {
+    const {success, err, user} = await UsersServices.getUserById({
+      id: req.jwtToken.user.id,
+    });
+    if (!user) return next(UsersErrorsFactory.userNotFoundErr());
+    if (user?.role !== roles.company.value)
+      return next(UsersErrorsFactory.forbiddenCompanyErr());
+    if (!success) throw err;
+
+    const jobData = req.body;
+
+    const {
+      success: response,
+      eligibleCount,
+      error,
+    } = await JobNotificationServices.getEligibleDriversCount({jobData});
+
+    if (response) {
+      return next(
+        JobResponsesFactory.eligibleDriversCountRetrievedSuccessfully({
+          eligibleCount,
+        })
+      );
+    }
 
     if (error) throw error;
   }

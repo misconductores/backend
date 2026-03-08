@@ -287,9 +287,12 @@ module.exports.notificationTypes = {
   driver_removed_docs_access: {
     value: 'driver_removed_docs_access',
   },
-   verification_progress: {
-       value: "verification_progress",
-   },
+  verification_progress: {
+    value: "verification_progress",
+  },
+  new_job_posted: {
+    value: 'new_job_posted',
+  },
 };
 
 module.exports.TIMEZONES = {

@@ -59,4 +59,12 @@ module.exports = class JobResponsesFactory {
       body: {appliedJobs},
     });
   }
+
+  static eligibleDriversCountRetrievedSuccessfully({eligibleCount}) {
+    return new AppResponse({
+      message: 'Eligible drivers count retrieved successfully',
+      statusCode: 200,
+      body: {eligibleCount},
+    });
+  }
 };
