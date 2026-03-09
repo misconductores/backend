@@ -1,6 +1,7 @@
 const config = require('config');
 const sendEmail = require('../send');
 const {defaultEmailAddress} = require('../../../values/contants/email');
+const {translateJobForEmail} = require('../../translations/jobTranslations');
 
 /**
  * Envía un email a un conductor notificándole sobre una nueva vacante
@@ -20,13 +21,19 @@ module.exports = async function sendNewJobPostedEmail({driver, job, company}) {
     const domain = config.get('frontendURL');
     const jobUrl = `${domain}/jobs/${job._id}`;
 
+    // Traducir datos del trabajo al español
+    const translatedJob = translateJobForEmail(job);
+
     const dynamicTemplateData = {
       driverName: driverName,
-      jobTitle: job.title,
+      jobTitle: translatedJob.title,
       companyName: company.companyName,
-      city: job.city,
-      vehicleType: job.vehicleType,
-      experience: job.experience?.join(', ') || 'No especificada',
+      city: translatedJob.city,
+      vehicleType: translatedJob.vehicleType,
+      experience: translatedJob.experience,
+      handledEquipment: translatedJob.handledEquipment,
+      federalLicenseTypes: translatedJob.federalLicenseTypes,
+      stateLicenseTypes: translatedJob.stateLicenseTypes,
       jobUrl: jobUrl,
     };
 
