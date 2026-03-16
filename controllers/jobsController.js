@@ -183,12 +183,28 @@ module.exports = class JobController {
       model: JobModel,
       data,
     });
-    if (response)
+    if (response) {
+      // Notificar a conductores elegibles sobre la vacante actualizada
+      JobNotificationServices.notifyDriversAboutNewJob({job: updatedData})
+        .then((result) => {
+          if (result.success) {
+            console.log(
+              `Job ${updatedData._id} updated. Notified ${result.notifiedCount} of ${result.totalEligible} eligible drivers. Emails sent: ${result.emailsSent}.`
+            );
+          } else {
+            console.error('Error notifying drivers on update:', result.error);
+          }
+        })
+        .catch((error) => {
+          console.error('Error in notification process on update:', error);
+        });
+
       return next(
         JobResponsesFactory.jobUpdatedSuccessfully({
           job: updatedData,
         })
       );
+    }
     if (error) throw next(JobErrors.jobUpdateErr());
   }
   static async deleteJobById(req, res, next) {
